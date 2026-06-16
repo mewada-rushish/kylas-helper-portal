@@ -1,0 +1,187 @@
+/* --- POLARIS AUTHENTICATION LAYOUT --- */
+.loginPageContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f4f6f8; /* Shopify Admin Canvas */
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  padding: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.loginCard {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  padding: 40px 32px;
+  /* Deep layered shadow for standalone focus */
+  box-shadow: 0 0 0 1px rgba(63, 63, 68, 0.05), 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* --- BRAND HEADER --- */
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.brandBadge {
+  width: 48px;
+  height: 48px;
+  background-color: #202223;
+  color: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeader h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #202223;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.cardHeader p {
+  font-size: 14px;
+  color: #6d7175;
+}
+
+/* --- SECURITY ERROR BANNER --- */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #fff4f4;
+  border: 1px solid #e32c2b;
+  border-radius: 8px;
+  color: #d82c0d;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.errorIcon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* --- FORM ARCHITECTURE --- */
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fieldIcon {
+  position: absolute;
+  left: 14px;
+  color: #8c9196;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  font-size: 14px;
+  color: #202223;
+  background-color: #ffffff;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.inputWrapper input::placeholder {
+  color: #babfc3;
+}
+
+/* Polaris Focus Ring Protocol */
+.inputWrapper input:focus {
+  outline: none;
+  border-color: #2c6ecb;
+  box-shadow: 0 0 0 2px #e3edfa, inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.inputWrapper input:disabled {
+  background-color: #f4f6f8;
+  color: #8c9196;
+  cursor: not-allowed;
+}
+
+/* --- PRIMARY ACTION BUTTON --- */
+.submitButton {
+  margin-top: 8px;
+  width: 100%;
+  padding: 14px;
+  background-color: #202223; /* Dark mode high-contrast primary action */
+  color: #ffffff;
+  border: 1px solid #202223;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #4a4a4a;
+  border-color: #4a4a4a;
+}
+
+.submitButton:active:not(:disabled) {
+  background-color: #000000;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.submitButton:disabled {
+  background-color: #babfc3;
+  border-color: #babfc3;
+  cursor: wait;
+}
+
+/* --- SUBTEXT FOOTER --- */
+.cardFooter {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f1f2f4;
+  text-align: center;
+}
+
+.cardFooter p {
+  font-size: 12px;
+  color: #8c9196;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}

@@ -1,0 +1,93 @@
+/* --- BASE ATOMIC BUTTON PROPERTIES --- */
+.btnBase {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 32px; /* Fixed height envelope protection */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  background: none;
+  font-family: inherit;
+}
+
+.btnBase:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* --- VERTICAL BASELINE ALIGNMENT PROTECTION ENVELOPE --- */
+.btnContent {
+  display: inline-flex;
+  align-items: center; /* Forces tight mid-point intersection symmetry */
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.btnIcon {
+  font-size: 16px;
+  display: block; /* Suppresses browser inline baseline calculations */
+  flex-shrink: 0;
+}
+
+.btnText {
+  display: inline-block;
+  line-height: 14px; /* Restricts typography calculation variance */
+}
+
+/* --- POLARIS VISUAL SPECIFICATION VARIANTS --- */
+
+/* Secondary Style (Default Outline Button) */
+.btn_secondary {
+  background-color: #ffffff;
+  color: #202223;
+  border-color: #c9cccf;
+}
+
+.btn_secondary:hover:not(:disabled) {
+  background-color: #f6f6f7;
+  border-color: #babfc3;
+}
+
+.btn_secondary.btnActive {
+  background-color: #f1f2f4;
+  border-color: #8c9196;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Primary Style (High-Contrast Core Action) */
+.btn_primary {
+  background-color: #008060; /* Shopify Core Action Green */
+  color: #ffffff;
+  border-color: #008060;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn_primary:hover:not(:disabled) {
+  background-color: #006e52;
+  border-color: #006e52;
+}
+
+.btn_primary:active:not(:disabled) {
+  background-color: #005c44;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark Style (Alternative Polaris Action Layout) */
+.btn_dark {
+  background-color: #202223;
+  color: #ffffff;
+  border-color: #202223;
+}
+
+.btn_dark:hover:not(:disabled) {
+  background-color: #4a4a4a;
+  border-color: #4a4a4a;
+}

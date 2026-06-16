@@ -1,0 +1,195 @@
+.reportCard {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e1e3e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  background-clip: padding-box;
+  height: 100%;
+  animation: cardEnter 0.5s ease-out forwards;
+  z-index: 1;
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.menuActiveLayer {
+  z-index: 100 !important;
+}
+
+.card_1x1 { grid-column: span 1; grid-row: span 1; }
+.card_2x1 { grid-column: span 2; grid-row: span 1; }
+.card_1x2 { grid-column: span 1; grid-row: span 2; }
+.card_2x2 { grid-column: span 2; grid-row: span 2; }
+.card_3x2 { grid-column: span 3; grid-row: span 2; }
+
+.editableGlow {
+  border: 1px dashed var(--deep-navy, #27347B);
+  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.08);
+  transform: scale(0.995);
+  cursor: grab;
+}
+
+.editableGlow:active {
+  cursor: grabbing;
+}
+
+.isDragging {
+  opacity: 0.2;
+  box-shadow: none;
+  transform: scale(0.98);
+}
+
+.cardHeader {
+  padding: 16px 20px 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.cardTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--deep-navy, #27347B);
+  letter-spacing: -0.2px;
+  margin: 0;
+}
+
+.actionMenuWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.menuTrigger {
+  background: transparent;
+  border: none;
+  color: #6d7175;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.menuTrigger:hover {
+  background-color: var(--system-bg, #F8F8FB);
+  color: #202223;
+}
+
+.dropdownList {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 999;
+  min-width: 180px;
+  background-color: #ffffff;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dropdownList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #202223;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.dropdownList li:hover:not(.menuSectionLabel):not(.menuDivider) {
+  background-color: var(--system-bg, #F8F8FB);
+}
+
+.menuSectionLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8c9196;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 12px 2px 12px !important;
+  cursor: default !important;
+}
+
+.menuDivider {
+  height: 1px;
+  background-color: #e1e3e5;
+  margin: 6px 0;
+  padding: 0 !important;
+  cursor: default !important;
+}
+
+.activeOption {
+  background-color: var(--system-bg, #F8F8FB);
+  color: var(--deep-navy, #27347B) !important;
+  font-weight: 600;
+}
+
+.deleteOption {
+  color: var(--action-red, #E21F26) !important;
+}
+
+.deleteOption:hover {
+  background-color: #fff4f4 !important;
+}
+
+.cardBody {
+  padding: 0 20px 20px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.chartContainer {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.summaryValueContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 8px 0;
+}
+
+.summaryValue {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #202223;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.summarySubtext {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #8c9196;
+  margin-top: 4px;
+}

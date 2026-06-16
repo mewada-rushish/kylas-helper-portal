@@ -1,0 +1,45 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  role      String   @default("ADMIN") @db.VarChar(50)
+  createdAt DateTime @default(now())
+}
+
+model WorkflowRule {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  triggerType String   @db.VarChar(100)
+  conditions  String   @db.Text         
+  actions     String   @db.Text         
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SyncLog {
+  id           Int       @id @default(autoincrement())
+  leadId       String    @unique @db.VarChar(100)
+  status       String    @default("QUEUED") @db.VarChar(50) // QUEUED, PROCESSING, SUCCESS, FAILED
+  payload      String    @db.Text                 
+  attempts     Int       @default(0)
+  errorMessage String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model InvoiceTemplate {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  config    String   @db.Text                 
+  createdAt DateTime @default(now())
+}
