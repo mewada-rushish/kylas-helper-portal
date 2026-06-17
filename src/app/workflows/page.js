@@ -145,16 +145,15 @@ export default function WorkflowsDirectory() {
                 />
               </div>
               <div className={styles.filtersWrapper}>
-                {/* Changed onChange to onSelect to match the custom Dropdown component */}
                 <Dropdown 
                   options={triggerOptions} 
-                  value={triggerFilter} 
-                  onSelect={(val) => { setTriggerFilter(val?.value || val); setCurrentPage(1); }} 
+                  selectedValue={triggerFilter} 
+                  onSelect={(val) => { setTriggerFilter(val); setCurrentPage(1); }} 
                 />
                 <Dropdown 
                   options={statusOptions} 
-                  value={statusFilter} 
-                  onSelect={(val) => { setStatusFilter(val?.value || val); setCurrentPage(1); }} 
+                  selectedValue={statusFilter} 
+                  onSelect={(val) => { setStatusFilter(val); setCurrentPage(1); }} 
                 />
               </div>
             </div>
@@ -218,31 +217,26 @@ export default function WorkflowsDirectory() {
                               
                               {openMenuId === wf.id && (
                                 <div className={styles.actionDropdown}>
-                                  
                                   {wf.status === "draft" && (
                                     <button onClick={() => changeStatus(wf.id, "active")}>
                                       <FiPlay /> Publish Workflow
                                     </button>
                                   )}
-                                  
                                   {wf.status === "inactive" && (
                                     <button onClick={() => changeStatus(wf.id, "active")}>
                                       <FiPlay /> Enable Workflow
                                     </button>
                                   )}
-
                                   {wf.status === "active" && (
                                     <button className={styles.dangerText} onClick={() => changeStatus(wf.id, "inactive")}>
                                       <FiPause /> Disable Workflow
                                     </button>
                                   )}
-
                                   {wf.status !== "draft" && (
                                     <button onClick={() => changeStatus(wf.id, "draft")}>
                                       <FiFileText /> Save as Draft
                                     </button>
                                   )}
-
                                 </div>
                               )}
                             </div>
