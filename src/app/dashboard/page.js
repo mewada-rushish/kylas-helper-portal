@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { 
   FiLayout, FiCheck, FiPlus, FiLogOut, 
   FiChevronDown, FiTrash2, FiSettings, FiLoader, FiCreditCard, FiActivity, FiEdit3 
@@ -27,8 +27,18 @@ export default function MasterDashboard() {
     }))
   );
 
+  const workflowRef = useRef(null);
+  const invoiceRef = useRef(null);
+
   const toggleAccordion = (section) => {
     setOpenAccordions(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const scrollToSection = (ref, section) => {
+    setOpenAccordions(prev => ({ ...prev, [section]: true }));
+    setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
   const handleUpdateWidgetMetadata = (id, updates) => setWidgetsMetadata(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
@@ -125,7 +135,13 @@ export default function MasterDashboard() {
 
         <nav className={styles.navigation}>
           <button type="button" className={`${styles.navItem} ${styles.activeNav}`}>
-            <FiLayout className={styles.navIcon} /> Dashboards
+            <FiLayout className={styles.navIcon} /> Overview Canvas
+          </button>
+          <button type="button" className={styles.navItem} onClick={() => scrollToSection(workflowRef, "workflows")}>
+            <FiActivity className={styles.navIcon} /> Workflows
+          </button>
+          <button type="button" className={styles.navItem} onClick={() => scrollToSection(invoiceRef, "invoices")}>
+            <FiCreditCard className={styles.navIcon} /> Invoices & ERP
           </button>
           <button type="button" className={styles.navItem} disabled>
             <FiSettings className={styles.navIcon} /> Settings
@@ -155,7 +171,7 @@ export default function MasterDashboard() {
                 {isSaving ? (
                   <span className={styles.buttonContent}><FiLoader className={styles.spinAnimation} /> Saving...</span>
                 ) : (
-                  <span className={styles.buttonContent}>{isEditing ? <><FiCheck /> Save</> : <><FiEdit3 /> Edit</>}</span>
+                  <span className={styles.buttonContent}>{isEditing ? <><FiCheck /> Save Layout</> : <><FiEdit3 /> Edit Layout</>}</span>
                 )}
               </AdminButton>
             </div>
@@ -189,7 +205,7 @@ export default function MasterDashboard() {
           )}
 
           <div className={styles.pageContent}>
-            <div className={styles.accordionSection}>
+            <div ref={workflowRef} className={styles.accordionSection}>
               <button className={styles.accordionHeader} onClick={() => toggleAccordion("workflows")}>
                 <h2><FiActivity /> Workflow Telemetry</h2>
                 <FiChevronDown className={`${styles.accordionIcon} ${openAccordions.workflows ? styles.iconRotated : ""}`} />
@@ -199,7 +215,7 @@ export default function MasterDashboard() {
               </div>
             </div>
 
-            <div className={styles.accordionSection}>
+            <div ref={invoiceRef} className={styles.accordionSection}>
               <button className={styles.accordionHeader} onClick={() => toggleAccordion("invoices")}>
                 <h2><FiCreditCard /> Financial ERP Ledger (BBPS)</h2>
                 <FiChevronDown className={`${styles.accordionIcon} ${openAccordions.invoices ? styles.iconRotated : ""}`} />
