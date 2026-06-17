@@ -1,5 +1,6 @@
 "use client";
 
+import { FiLoader } from "react-icons/fi";
 import styles from "./button.module.css";
 
 export default function AdminButton({ 
@@ -9,6 +10,8 @@ export default function AdminButton({
   onClick, 
   isActive = false, 
   disabled = false,
+  loading = false,
+  loadingText = "Saving...",
   type = "button",
   className = "" 
 }) {
@@ -24,11 +27,19 @@ export default function AdminButton({
       type={type}
       className={buttonClassName} 
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
     >
       <span className={styles.btnContent}>
-        {Icon && <Icon className={styles.btnIcon} />}
-        {children && <span className={styles.btnText}>{children}</span>}
+        {loading ? (
+          <FiLoader className={styles.spinAnimation} />
+        ) : (
+          Icon && <Icon className={styles.btnIcon} />
+        )}
+        {children && (
+          <span className={styles.btnText}>
+            {loading ? loadingText : children}
+          </span>
+        )}
       </span>
     </button>
   );

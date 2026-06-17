@@ -6,21 +6,17 @@
   display: flex;
   flex-direction: column;
   overflow: visible;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   background-clip: padding-box;
   height: 100%;
-  animation: cardEnter 0.5s ease-out forwards;
   z-index: 1;
-}
-
-@keyframes cardEnter {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  transition: grid-column 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              grid-row 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .menuActiveLayer {
-  z-index: 100 !important;
+  z-index: 1000 !important;
 }
 
 .card_1x1 { grid-column: span 1; grid-row: span 1; }
@@ -32,7 +28,6 @@
 .editableGlow {
   border: 1px dashed var(--deep-navy, #27347B);
   box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.08);
-  transform: scale(0.995);
   cursor: grab;
 }
 
@@ -41,13 +36,20 @@
 }
 
 .isDragging {
-  opacity: 0.2;
+  opacity: 0.15;
   box-shadow: none;
-  transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+.resizingActiveFrame {
+  border: 2px solid var(--deep-navy, #27347B) !important;
+  box-shadow: 0 8px 24px rgba(39, 52, 123, 0.15) !important;
+  z-index: 500 !important;
+  cursor: se-resize !important;
 }
 
 .cardHeader {
-  padding: 16px 20px 8px 20px;
+  padding: 14px 20px 4px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -57,11 +59,12 @@
 
 .cardTitle {
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--deep-navy, #27347B);
-  letter-spacing: -0.2px;
+  letter-spacing: -0.1px;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .actionMenuWrapper {
@@ -91,7 +94,7 @@
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  z-index: 999;
+  z-index: 9999;
   min-width: 180px;
   background-color: #ffffff;
   border: 1px solid #c9cccf;
@@ -139,7 +142,7 @@
 }
 
 .activeOption {
-  background-color: var(--system-bg, #F8F8FB);
+  background-color: #e3edfa;
   color: var(--deep-navy, #27347B) !important;
   font-weight: 600;
 }
@@ -153,12 +156,17 @@
 }
 
 .cardBody {
-  padding: 0 20px 20px 20px;
+  padding: 8px 20px 16px 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+  overflow: visible;
+  background-image: 
+    linear-gradient(rgba(39, 52, 123, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 52, 123, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 .chartContainer {
@@ -167,29 +175,91 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
 }
 
-.summaryValueContainer {
+.premiumKpiCanvas {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   height: 100%;
-  padding: 8px 0;
+  padding: 6px 0;
 }
 
-.summaryValue {
+.kpiRowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.kpiMetricBadge {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: rgba(39, 52, 123, 0.06);
+  color: var(--deep-navy, #27347B);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-poppins), sans-serif;
-  font-size: 32px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.trendUp {
+  background-color: #e2f9f0;
+  color: #008060;
+}
+
+.trendDown {
+  background-color: #fff4f4;
+  color: var(--action-red, #E21F26);
+}
+
+.kpiValueWrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+}
+
+.premiumKpiValue {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 26px;
   font-weight: 700;
   color: #202223;
   line-height: 1.1;
   letter-spacing: -0.5px;
 }
 
-.summarySubtext {
+.kpiContextLabel {
   font-family: var(--font-poppins), sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   color: #8c9196;
-  margin-top: 4px;
+  margin-top: 2px;
+}
+
+.photoshopResizeHandle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--deep-navy, #27347B) 50%);
+  border-bottom-right-radius: 6px;
+  z-index: 100;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.photoshopResizeHandle:hover {
+  opacity: 1;
 }

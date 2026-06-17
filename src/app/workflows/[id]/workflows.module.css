@@ -1,0 +1,379 @@
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--system-bg, #F8F8FB);
+  font-family: var(--font-poppins), sans-serif;
+  color: #202223;
+}
+
+.mainCanvas {
+  flex: 1;
+  margin-left: 240px;
+  padding: 40px 48px;
+}
+
+.pageMaxWidth {
+  max-width: 800px; /* Narrower for workflow builder */
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerTitle h1 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #202223;
+  margin: 0;
+}
+
+.statusBadge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: #e1e3e5;
+  color: #6d7175;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* --- VERTICAL BUILDER CANVAS --- */
+.builderCanvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 100px;
+}
+
+.nodeWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.verticalLine {
+  width: 2px;
+  height: 40px;
+  background-color: #c9cccf;
+}
+
+/* --- NODE CARDS --- */
+.nodeCard {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.nodeCard:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.triggerCard {
+  border-top: 4px solid #8e24aa; /* Purple for Triggers */
+}
+
+.conditionCard {
+  border-top: 4px solid #f57c00; /* Orange for Conditions */
+}
+
+.actionCard {
+  border-top: 4px solid #008060; /* Green for Actions */
+}
+
+.nodeHeader {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e1e3e5;
+  position: relative;
+}
+
+.nodeIconWrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  border: 1px solid #e1e3e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 16px;
+}
+
+.triggerCard .nodeIconWrapper { color: #8e24aa; }
+.conditionCard .nodeIconWrapper { color: #f57c00; }
+.actionCard .nodeIconWrapper { color: #008060; }
+
+.nodeTitles h3 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #202223;
+  margin: 0 0 2px 0;
+}
+
+.nodeTitles p {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.deleteBtn {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #8c9196;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.deleteBtn:hover {
+  background-color: #fff4f4;
+  color: var(--action-red, #E21F26);
+}
+
+.nodeBody {
+  padding: 20px;
+}
+
+/* --- INPUTS --- */
+.selectInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #202223;
+  background-color: #ffffff;
+  outline: none;
+}
+
+.selectInput:focus {
+  border-color: var(--deep-navy, #27347B);
+  box-shadow: 0 0 0 1px var(--deep-navy, #27347B);
+}
+
+.emptyStateSetup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f4f6f8;
+  border: 1px dashed #c9cccf;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #6d7175;
+  cursor: pointer;
+}
+
+.emptyStateSetup:hover {
+  border-color: var(--deep-navy, #27347B);
+  color: var(--deep-navy, #27347B);
+}
+
+/* --- CONDITION BRANCHING UI --- */
+.branchesContainer {
+  display: flex;
+  background-color: #ffffff;
+}
+
+.branchColumn {
+  flex: 1;
+  border-right: 1px solid #e1e3e5;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.branchColumn:last-child {
+  border-right: none;
+}
+
+.branchHeader {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #202223;
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e1e3e5;
+  margin-bottom: 16px;
+}
+
+.branchDropzone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.miniActionCard {
+  background-color: #ffffff;
+  border: 1px solid #c9cccf;
+  border-left: 3px solid #008060;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #202223;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.addBranchActionBtn {
+  background: transparent;
+  border: 1px dashed #c9cccf;
+  color: #6d7175;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addBranchActionBtn:hover {
+  background-color: #f4f6f8;
+  border-color: var(--deep-navy, #27347B);
+  color: var(--deep-navy, #27347B);
+}
+
+/* --- ADD NODE SELECTOR --- */
+.addNodeWrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.mainAddBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 1px solid #c9cccf;
+  color: var(--deep-navy, #27347B);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.mainAddBtn:hover {
+  border-color: var(--deep-navy, #27347B);
+  transform: scale(1.05);
+}
+
+.nodeSelectorMenu {
+  background-color: #ffffff;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  width: 320px;
+  z-index: 20;
+  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nodeSelectorMenu h4 {
+  margin: 0 0 12px 0;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #202223;
+  text-transform: uppercase;
+}
+
+.selectorGrid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.selectorGrid button {
+  flex: 1;
+  background-color: #f4f6f8;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectorGrid button:hover {
+  background-color: #ffffff;
+  border-color: var(--deep-navy, #27347B);
+}
+
+.selIcon {
+  font-size: 24px;
+  color: var(--deep-navy, #27347B);
+}
+
+.selectorGrid span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.cancelBtn {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #6d7175;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  color: #202223;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

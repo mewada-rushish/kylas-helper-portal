@@ -1,0 +1,146 @@
+.sidebar {
+  width: 240px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 20px 12px 32px 12px;
+  border-right: 1px solid #e1e3e5;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+}
+
+.sidebarHeader {
+  margin-bottom: 24px;
+  padding: 0 8px;
+}
+
+.storeProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.storeAvatar {
+  width: 36px;
+  height: 36px;
+  background-color: var(--deep-navy, #27347B);
+  color: #ffffff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.storeDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.storeName {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #202223;
+  line-height: 1.2;
+}
+
+.storeLink {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #6d7175;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.1s ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.navItem:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: #202223;
+}
+
+.navItem:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.activeNav {
+  background-color: #ebebeb !important;
+  color: var(--deep-navy, #27347B) !important;
+  font-weight: 600;
+}
+
+.navIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.sidebarFooter {
+  padding-top: 16px;
+  margin-bottom: 24px;
+  border-top: 1px solid #e1e3e5;
+}
+
+.logoutBtn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--action-red, #E21F26);
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.logoutBtn * {
+  position: relative !important;
+  transform: none !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
+}
+
+.logoutBtn:hover {
+  background-color: #fff4f4 !important;
+}
