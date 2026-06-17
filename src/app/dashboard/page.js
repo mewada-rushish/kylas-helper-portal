@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { 
-  FiLayout, FiCheck, FiPlus, FiTrash2, FiSettings, FiCreditCard, FiActivity, FiEdit3 
+  FiCheck, FiPlus, FiTrash2, FiSettings, FiCreditCard, FiActivity, FiEdit3 
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import Accordion from "@/components/ui/accordion/accordion";
@@ -25,13 +25,6 @@ export default function MasterDashboard() {
       currentVis: report.defaultVis
     }))
   );
-
-  const workflowRef = useRef(null);
-  const invoiceRef = useRef(null);
-
-  const scrollToSection = (ref) => {
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   const handleUpdateWidgetMetadata = (id, updates) => setWidgetsMetadata(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   const handleRemoveWidget = (id) => setActiveWidgetIds(prev => prev.filter(wId => wId !== id));
@@ -112,16 +105,9 @@ export default function MasterDashboard() {
     );
   };
 
-  const sidebarMenuItems = [
-    { id: "canvas", label: "Overview Canvas", icon: FiLayout, onClick: null },
-    { id: "workflows", label: "Workflows", icon: FiActivity, onClick: () => scrollToSection(workflowRef) },
-    { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, onClick: () => scrollToSection(invoiceRef) },
-    { id: "settings", label: "Settings", icon: FiSettings, disabled: true }
-  ];
-
   return (
     <div className={styles.adminLayout}>
-      <Sidebar items={sidebarMenuItems} activeId="canvas" />
+      <Sidebar activeId="canvas" />
 
       <main className={styles.mainCanvas}>
         <div className={styles.pageMaxWidth}>
@@ -172,13 +158,13 @@ export default function MasterDashboard() {
           )}
 
           <div className={styles.pageContent}>
-            <div ref={workflowRef} className={styles.sectionScrollOffset}>
+            <div id="workflows" className={styles.sectionScrollOffset}>
               <Accordion title="Workflow Telemetry" icon={FiActivity}>
                 {renderBentoGrid("workflows")}
               </Accordion>
             </div>
 
-            <div ref={invoiceRef} className={styles.sectionScrollOffset}>
+            <div id="invoices" className={styles.sectionScrollOffset}>
               <Accordion title="Financial ERP Ledger (BBPS)" icon={FiCreditCard}>
                 {renderBentoGrid("invoices")}
               </Accordion>

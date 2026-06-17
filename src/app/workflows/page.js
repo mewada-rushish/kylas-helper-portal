@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  FiLayout, FiGitBranch, FiSettings, FiCreditCard, FiActivity,
-  FiPlus, FiEdit2, FiTrash2, FiMoreVertical, FiSearch, 
-  FiChevronLeft, FiChevronRight, FiPlay, FiPause, FiFileText
+  FiGitBranch, FiPlus, FiEdit2, FiTrash2, FiMoreVertical, FiSearch, 
+  FiChevronLeft, FiChevronRight, FiPlay, FiPause, FiFileText, FiActivity
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -43,13 +42,6 @@ export default function WorkflowsDirectory() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const sidebarMenuItems = [
-    { id: "canvas", label: "Overview Canvas", icon: FiLayout, onClick: () => router.push('/dashboard') },
-    { id: "workflows", label: "Workflows Builder", icon: FiGitBranch, onClick: null },
-    { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, onClick: () => router.push('/dashboard') },
-    { id: "settings", label: "Settings", icon: FiSettings, disabled: true }
-  ];
 
   const handleCreateNew = () => {
     const newDraftId = `wf_new_${Date.now()}`;
@@ -116,7 +108,7 @@ export default function WorkflowsDirectory() {
 
   return (
     <div className={styles.adminLayout}>
-      <Sidebar items={sidebarMenuItems} activeId="workflows" />
+      <Sidebar activeId="workflows" />
 
       <main className={styles.mainCanvas}>
         <div className={styles.pageMaxWidth}>

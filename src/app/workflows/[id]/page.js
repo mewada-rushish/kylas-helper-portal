@@ -6,18 +6,25 @@ import {
   FiZap, FiGitBranch, FiPlayCircle, FiSave, FiTrash2, 
   FiLayout, FiCreditCard, FiSettings, FiArrowLeft, FiClock, 
   FiMove, FiGrid, FiPlus, FiList, FiCheckCircle, FiAlertCircle,
-  FiCode, FiChevronDown, FiFileText
+  FiCode, FiChevronDown, FiFileText, FiMinus, FiSliders
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
 import styles from "./workflows.module.css";
 
+const TRIGGER_OPTIONS = [
+  { label: "Lead is Created", value: "lead.created" },
+  { label: "Lead is Updated", value: "lead.updated" },
+  { label: "Deal is Won", value: "deal.won" },
+  { label: "Contact is Updated", value: "contact.updated" }
+];
+
 const TRIGGER_FIELDS = [
-  { value: "payload.city", label: "Lead City" },
-  { value: "payload.source", label: "Lead Source" },
-  { value: "payload.estimatedValue", label: "Estimated Value (INR)" },
-  { value: "payload.status", label: "Lead Status" }
+  { value: "payload.stage", label: "Lead Pipeline Stage" },
+  { value: "payload.leadTemperature", label: "Lead Temperature" },
+  { value: "payload.interestedIn", label: "Interested In" },
+  { value: "payload.city", label: "Lead City" }
 ];
 
 const OPERATOR_OPTIONS = [
@@ -32,6 +39,27 @@ const ACTION_OPTIONS = [
   { value: "send_whatsapp", label: "WhatsApp: Broadcast Alert" }
 ];
 
+const DEFAULT_ACTION_PAYLOADS = {
+  update_owner: {
+    ownerId: "usr_default_01",
+    assignmentMode: "round_robin",
+    backupOwnerId: "usr_backup_99",
+    notifyTeam: true
+  },
+  create_task: {
+    taskTitle: "Follow up with client",
+    dueDateOffsetDays: 2,
+    priority: "high",
+    description: "Automated baseline task creation rule triggered downstream."
+  },
+  send_whatsapp: {
+    templateId: "default_welcome_alert",
+    languageCode: "en_IN",
+    fallbackChannel: "sms",
+    retryCount: 3
+  }
+};
+
 const MOCK_VERSIONS = [
   { versionId: "v3", timestamp: "2026-06-17T11:00:00Z", description: "Canvas Framework Migration - Free Form", Author: "Rushish Mewada" },
   { versionId: "v2", timestamp: "2026-06-17T10:15:00Z", description: "Auto-saved Blueprint State", Author: "System Engine" }
@@ -43,16 +71,8 @@ const INITIAL_LOGS = [
     timestamp: "2026-06-17T12:04:15Z",
     event: "lead.created",
     status: "success",
-    incomingPayload: { leadId: 54921, firstName: "Manoj", lastName: "Sharma", city: "Mumbai", phone: "+919876543210", source: "Website Landing Page" },
-    passedData: { action: "update_owner", assignedOwnerId: "usr_mumbai_01", apiResponseStatus: 200, assignedTeam: "Mumbai Prime Sales Team" }
-  },
-  {
-    logId: "log_9918",
-    timestamp: "2026-06-17T11:42:10Z",
-    event: "lead.created",
-    status: "failed",
-    incomingPayload: { leadId: 54918, firstName: "Amit", lastName: "Patel", city: "Unknown", phone: "+919999999999", source: "Offline Seminar" },
-    passedData: { action: "update_owner", error: "400 Bad Request - Missing valid routing parameter 'city'", failedNodeId: "router_1" }
+    incomingPayload: { leadId: 54921, stage: "Qualified", leadTemperature: "Hot", interestedIn: "Gym", city: "Mumbai" },
+    passedData: { action: "update_owner", assignedOwnerId: "usr_closers_99", apiResponseStatus: 200 }
   }
 ];
 
@@ -61,66 +81,131 @@ export default function WorkflowCanvasEngine() {
   const params = useParams();
 
   const [nodes, setNodes] = useState([
-    { id: "node_1", type: "trigger", title: "Workflow Trigger", x: 60, y: 180, event: "lead.created" },
-    { id: "node_2", type: "condition", title: "Hybrid Evaluation Switch", x: 420, y: 100, operator: "HYBRID", rules: [{ field: "payload.city", operator: "equals", value: "Mumbai" }] },
-    { id: "node_3", type: "action", title: "Kylas Action", x: 820, y: 120, actionType: "update_owner", targetKey: "ownerId", targetValue: "usr_mumbai_01" }
+    { 
+      id: "node_1", 
+      type: "trigger", 
+      title: "Workflow Trigger", 
+      x: 40, 
+      y: 220, 
+      event: "lead.created" 
+    },
+    { 
+      id: "node_2", 
+      type: "condition_router", 
+      title: "Hybrid Evaluation Router", 
+      x: 560, 
+      y: 100, 
+      branches: [
+        { 
+          branchId: "branch_hot_gym", 
+          name: "Path 1: Hot Gym Prospects", 
+          conditions: { 
+            operator: "AND", 
+            rules: [
+              { field: "payload.stage", operator: "equals", value: "Qualified" },
+              { field: "payload.leadTemperature", operator: "equals", value: "Hot" },
+              { field: "payload.interestedIn", operator: "equals", value: "Gym" }
+            ] 
+          } 
+        },
+        { 
+          branchId: "branch_fallback", 
+          name: "Path 2: Else (Fallback)", 
+          isFallback: true 
+        }
+      ] 
+    },
+    { 
+      id: "node_3", 
+      type: "action", 
+      title: "Assign Close Team", 
+      x: 1100, 
+      y: 60, 
+      actionType: "update_owner", 
+      payloadOverrides: [
+        { key: "ownerId", value: "usr_closers_99" }
+      ]
+    },
+    { 
+      id: "node_4", 
+      type: "action", 
+      title: "Send WhatsApp Alert", 
+      x: 1100, 
+      y: 420, 
+      actionType: "send_whatsapp", 
+      payloadOverrides: [
+        { key: "templateId", value: "unrouted_stage_notification" }
+      ]
+    }
   ]);
 
   const [edges, setEdges] = useState([
-    { id: "edge_1", from: "node_1", to: "node_2", label: "On Trigger Fired" },
-    { id: "edge_2", from: "node_2", to: "node_3", label: "Condition Passed" }
+    { id: "edge_1", from: "node_1", fromBranch: null, to: "node_2", label: "Evaluate Data" },
+    { id: "edge_2", from: "node_2", fromBranch: "branch_hot_gym", to: "node_3", label: "True Branch" },
+    { id: "edge_3", from: "node_2", fromBranch: "branch_fallback", to: "node_4", label: "Fallback Path" }
   ]);
 
   const [activeTab, setActiveTab] = useState("builder");
   const [saveStatus, setSaveStatus] = useState("All changes saved");
   const canvasRef = useRef(null);
 
-  // Lists Data States
   const [logs] = useState(INITIAL_LOGS);
   const [selectedLog, setSelectedLog] = useState(null);
 
-  // --- INTERACTION & VECTOR LINE STATES ---
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+
   const [draggingNodeId, setDraggingNodeId] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [connecting, setConnecting] = useState({ active: false, startNodeId: null, startPlugType: null, x: 0, y: 0 });
-  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
+  const [connecting, setConnecting] = useState({ active: false, startNodeId: null, startBranchId: null, startPlugType: null, x: 0, y: 0 });
+  const [contextMenu, setContextMenu] = useState({ visible: false, menuX: 0, menuY: 0, spawnX: 0, spawnY: 0 });
 
   useEffect(() => {
     if (nodes.length === 0) return;
     setSaveStatus("Compiling node modifications...");
     const debounceTimer = setTimeout(() => {
-      setSaveStatus("Auto-saved to draft");
+      setSaveStatus("Canvas modifications auto-saved to draft");
     }, 1500);
     return () => clearTimeout(debounceTimer);
   }, [nodes, edges]);
 
-  // --- GLOBAL MOUSE EVENT ENGINE FOR FLAWLESS DRAG & DROP ---
+  const transformClientToLocalCoords = (clientX, clientY) => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    const rect = canvasRef.current.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left - pan.x) / zoom,
+      y: (clientY - rect.top - pan.y) / zoom
+    };
+  };
+
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
       if (!canvasRef.current) return;
-      const canvasBounds = canvasRef.current.getBoundingClientRect();
-      const mouseXInCanvas = e.clientX - canvasBounds.left;
-      const mouseYInCanvas = e.clientY - canvasBounds.top;
 
       if (draggingNodeId) {
-        const newX = Math.max(0, Math.min(canvasBounds.width - 300, mouseXInCanvas - dragOffset.x));
-        const newY = Math.max(0, Math.min(canvasBounds.height - 150, mouseYInCanvas - dragOffset.y));
-        setNodes(prev => prev.map(n => n.id === draggingNodeId ? { ...n, x: newX, y: newY } : n));
+        const localMouse = transformClientToLocalCoords(e.clientX, e.clientY);
+        setNodes(prev => prev.map(n => n.id === draggingNodeId ? { 
+          ...n, 
+          x: localMouse.x - dragOffset.x, 
+          y: localMouse.y - dragOffset.y 
+        } : n));
       } else if (connecting.active) {
-        setConnecting(prev => ({
-          ...prev,
-          x: mouseXInCanvas,
-          y: mouseYInCanvas
-        }));
+        const localMouse = transformClientToLocalCoords(e.clientX, e.clientY);
+        setConnecting(prev => ({ ...prev, x: localMouse.x, y: localMouse.y }));
+      } else if (isPanning) {
+        setPan({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
       }
     };
 
     const handleGlobalMouseUp = () => {
       setDraggingNodeId(null);
-      setConnecting({ active: false, startNodeId: null, startPlugType: null, x: 0, y: 0 });
+      setConnecting({ active: false, startNodeId: null, startBranchId: null, startPlugType: null, x: 0, y: 0 });
+      setIsPanning(false);
     };
 
-    if (draggingNodeId || connecting.active) {
+    if (draggingNodeId || connecting.active || isPanning) {
       window.addEventListener('mousemove', handleGlobalMouseMove);
       window.addEventListener('mouseup', handleGlobalMouseUp);
     }
@@ -129,17 +214,20 @@ export default function WorkflowCanvasEngine() {
       window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [draggingNodeId, connecting.active, dragOffset]);
+  }, [draggingNodeId, connecting.active, isPanning, dragOffset, pan, zoom, panStart]);
 
-  // --- RIGHT CLICK MENU LOGIC ---
   const handleContextMenu = (e) => {
     e.preventDefault();
     if (!canvasRef.current) return;
     const canvasRect = canvasRef.current.getBoundingClientRect();
+    const localMouse = transformClientToLocalCoords(e.clientX, e.clientY);
+    
     setContextMenu({
       visible: true,
-      x: e.clientX - canvasRect.left,
-      y: e.clientY - canvasRect.top
+      menuX: e.clientX - canvasRect.left,
+      menuY: e.clientY - canvasRect.top,
+      spawnX: localMouse.x,
+      spawnY: localMouse.y
     });
   };
 
@@ -149,15 +237,27 @@ export default function WorkflowCanvasEngine() {
 
   const handleSpawnNodeFromMenu = (type) => {
     const nextId = `node_${Date.now()}`;
-    const spawnedNode = type === "condition" 
-      ? { id: nextId, type: "condition", title: "New Condition Node", x: contextMenu.x, y: contextMenu.y, operator: "AND", rules: [{ field: "payload.city", operator: "equals", value: "" }] }
-      : { id: nextId, type: "action", title: "New Action Step", x: contextMenu.x, y: contextMenu.y, actionType: "", targetKey: "", targetValue: "" };
+    const spawnedNode = type === "condition_router" 
+      ? { id: nextId, type: "condition_router", title: "Condition Router", x: contextMenu.spawnX, y: contextMenu.spawnY, branches: [{ branchId: `b_${Date.now()}`, name: "Path 1", conditions: { operator: "AND", rules: [{ field: "payload.stage", operator: "equals", value: "" }] } }, { branchId: `bf_${Date.now()}`, name: "Else", isFallback: true }] }
+      : { id: nextId, type: "action", title: "New Action Step", x: contextMenu.spawnX, y: contextMenu.spawnY, actionType: "update_owner", payloadOverrides: [] };
 
     setNodes(prev => [...prev, spawnedNode]);
     closeContextMenu();
   };
 
-  // --- PLUG CONNECTION LOGIC ---
+  const handleCanvasMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (
+      e.target.closest(`.${styles.canvasNodeBlockCard}`) || 
+      e.target.closest(`.${styles.contextMenuContainer}`) ||
+      e.target.closest(`.${styles.zoomControlsPanel}`)
+    ) return;
+
+    closeContextMenu();
+    setIsPanning(true);
+    setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
   const handleNodeDragStart = (e, id) => {
     if (
       e.target.closest('.dropdownContainerParent') || 
@@ -170,47 +270,158 @@ export default function WorkflowCanvasEngine() {
     closeContextMenu();
     setDraggingNodeId(id);
     const node = nodes.find(n => n.id === id);
-    if (node && canvasRef.current) {
-      const canvasBounds = canvasRef.current.getBoundingClientRect();
-      const mouseXInCanvas = e.clientX - canvasBounds.left;
-      const mouseYInCanvas = e.clientY - canvasBounds.top;
-      setDragOffset({ x: mouseXInCanvas - node.x, y: mouseYInCanvas - node.y });
+    if (node) {
+      const localMouse = transformClientToLocalCoords(e.clientX, e.clientY);
+      setDragOffset({ x: localMouse.x - node.x, y: localMouse.y - node.y });
     }
   };
 
-  const handlePlugMouseDown = (e, nodeId, plugType) => {
+  const getNodeSocketPosition = (node, branchId, isSource) => {
+    const CARD_WIDTH = 460;
+    if (isSource) {
+      if (node.type === "trigger") {
+        return { x: node.x + CARD_WIDTH, y: node.y + 76 };
+      }
+      if (node.type === "condition_router") {
+        let currentY = node.y + 54; 
+        for (let i = 0; i < node.branches.length; i++) {
+          const branch = node.branches[i];
+          const ruleCount = branch.conditions?.rules?.length || 0;
+          const boxHeight = branch.isFallback ? 73 : 100 + (ruleCount * 176) + (Math.max(0, ruleCount - 1) * 12);
+          
+          if (branch.branchId === branchId) {
+            return { x: node.x + CARD_WIDTH, y: currentY + (boxHeight / 2) };
+          }
+          currentY += boxHeight + 16; 
+        }
+      }
+      if (node.type === "action") {
+        let baseHeight = 120;
+        const overridesCount = node.payloadOverrides?.length || 0;
+        const computedHeight = baseHeight + (overridesCount * 176) + (Math.max(0, overridesCount - 1) * 12) + (overridesCount > 0 ? 30 : 0);
+        return { x: node.x + CARD_WIDTH, y: node.y + 54 + (computedHeight / 2) };
+      }
+      return { x: node.x + CARD_WIDTH, y: node.y + 65 };
+    } else {
+      return { x: node.x, y: node.y + 55 };
+    }
+  };
+
+  const handlePlugMouseDown = (e, nodeId, branchId, plugType) => {
+    closeContextMenu();
     e.stopPropagation();
     e.preventDefault();
-    closeContextMenu();
-    const canvasBounds = canvasRef.current.getBoundingClientRect();
-    setConnecting({
-      active: true,
-      startNodeId: nodeId,
-      startPlugType: plugType,
-      x: e.clientX - canvasBounds.left,
-      y: e.clientY - canvasBounds.top
-    });
+    const pos = getNodeSocketPosition(nodes.find(n => n.id === nodeId), branchId, plugType === 'source');
+    setConnecting({ active: true, startNodeId: nodeId, startBranchId: branchId, startPlugType: plugType, x: pos.x, y: pos.y });
   };
 
   const handlePlugMouseUp = (e, dropNodeId, dropPlugType) => {
     e.stopPropagation();
     if (connecting.active && connecting.startNodeId && connecting.startNodeId !== dropNodeId) {
       if (connecting.startPlugType !== dropPlugType) {
-         const sourceId = connecting.startPlugType === 'source' ? connecting.startNodeId : dropNodeId;
-         const targetId = connecting.startPlugType === 'target' ? connecting.startNodeId : dropNodeId;
+        const sourceId = connecting.startPlugType === 'source' ? connecting.startNodeId : dropNodeId;
+        const sourceBranchId = connecting.startPlugType === 'source' ? connecting.startBranchId : null;
+        const targetId = connecting.startPlugType === 'target' ? connecting.startNodeId : dropNodeId;
 
-         const exists = edges.find(edge => edge.from === sourceId && edge.to === targetId);
-         if (!exists) {
-           setEdges(prev => [...prev, { 
-             id: `edge_${Date.now()}`, 
-             from: sourceId, 
-             to: targetId, 
-             label: "Linked Path" 
-           }]);
-         }
+        const exists = edges.find(edge => edge.from === sourceId && edge.fromBranch === sourceBranchId && edge.to === targetId);
+        if (!exists) {
+          setEdges(prev => [...prev, { 
+            id: `edge_${Date.now()}`, 
+            from: sourceId, 
+            fromBranch: sourceBranchId,
+            to: targetId, 
+            label: sourceBranchId ? "Routed Path" : "Linked Data" 
+          }]);
+        }
       }
     }
-    setConnecting({ active: false, startNodeId: null, startPlugType: null, x: 0, y: 0 });
+    setConnecting({ active: false, startNodeId: null, startBranchId: null, startPlugType: null, x: 0, y: 0 });
+  };
+
+  const handleAddRuleClause = (nodeId, branchId) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      branches: n.branches.map(b => b.branchId === branchId ? {
+        ...b,
+        conditions: { ...b.conditions, rules: [...b.conditions.rules, { field: "payload.stage", operator: "equals", value: "" }] }
+      } : b)
+    } : n));
+  };
+
+  const handleDeleteRuleClause = (nodeId, branchId, ruleIdx) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      branches: n.branches.map(b => b.branchId === branchId ? {
+        ...b,
+        conditions: { ...b.conditions, rules: b.conditions.rules.filter((_, idx) => idx !== ruleIdx) }
+      } : b)
+    } : n));
+  };
+
+  const handleToggleJoinOperator = (nodeId, branchId) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      branches: n.branches.map(b => b.branchId === branchId ? {
+        ...b,
+        conditions: { ...b.conditions, operator: b.conditions.operator === "AND" ? "OR" : "AND" }
+      } : b)
+    } : n));
+  };
+
+  const handleAddCustomPath = (nodeId) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      branches: [
+        ...n.branches.filter(b => !b.isFallback),
+        { branchId: `branch_${Date.now()}`, name: `Path ${n.branches.length}: Rules Match`, conditions: { operator: "AND", rules: [{ field: "payload.stage", operator: "equals", value: "" }] } },
+        ...n.branches.filter(b => b.isFallback)
+      ]
+    } : n));
+  };
+
+  const handleDeleteCustomPath = (nodeId, branchId) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      branches: n.branches.filter(b => b.branchId !== branchId)
+    } : n));
+    setEdges(prev => prev.filter(e => !(e.from === nodeId && e.fromBranch === branchId)));
+  };
+
+  const handleAddActionOverride = (nodeId) => {
+    setNodes(prev => prev.map(n => {
+      if (n.id !== nodeId) return n;
+      const defaultPayload = DEFAULT_ACTION_PAYLOADS[n.actionType] || {};
+      const remainingKeys = Object.keys(defaultPayload).filter(
+        k => !n.payloadOverrides.some(o => o.key === k)
+      );
+      if (remainingKeys.length === 0) return n;
+      return {
+        ...n,
+        payloadOverrides: [...n.payloadOverrides, { key: remainingKeys[0], value: "" }]
+      };
+    }));
+  };
+
+  const handleUpdateActionOverride = (nodeId, index, key, value) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      payloadOverrides: n.payloadOverrides.map((o, idx) => idx === index ? { ...o, [key]: value } : o)
+    } : n));
+  };
+
+  const handleDeleteActionOverride = (nodeId, index) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      payloadOverrides: n.payloadOverrides.filter((_, idx) => idx !== index)
+    } : n));
+  };
+
+  const handleActionTypeChange = (nodeId, type) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      actionType: type,
+      payloadOverrides: []
+    } : n));
   };
 
   const handleDeleteNode = (id) => {
@@ -226,7 +437,6 @@ export default function WorkflowCanvasEngine() {
     }, 800);
   };
 
-  // --- SVG PATH CALCULATION ---
   const calculateBezierPath = (startX, startY, endX, endY) => {
     const controlPointOffset = Math.max(Math.abs(endX - startX) * 0.5, 60); 
     return `M ${startX} ${startY} C ${startX + controlPointOffset} ${startY}, ${endX - controlPointOffset} ${endY}, ${endX} ${endY}`;
@@ -251,7 +461,6 @@ export default function WorkflowCanvasEngine() {
 
       <main className={styles.mainCanvas}>
         <div className={styles.pageMaxWidth}>
-          
           <header className={styles.pageHeader}>
             <div className={styles.headerLeftBlock}>
               <button className={styles.backButton} onClick={() => router.push('/workflows')} title="Return to Workflows List">
@@ -291,192 +500,280 @@ export default function WorkflowCanvasEngine() {
             {activeTab === "builder" && (
               <div 
                 ref={canvasRef}
-                className={styles.graphWorkspaceFrame}
+                className={`${styles.graphWorkspaceFrame} ${isPanning ? styles.panningWorkspaceState : ""}`}
                 onContextMenu={handleContextMenu}
+                onMouseDown={handleCanvasMouseDown}
               >
-                {/* DYNAMIC SVG CONNECTOR LINES */}
-                <svg className={styles.svgOverlayLayer}>
-                  <defs>
-                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#27347B" />
-                    </marker>
-                    <marker id="arrow-temp" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#8c9196" />
-                    </marker>
-                  </defs>
+                <div 
+                  className={styles.canvasContentWrapper}
+                  style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+                >
+                  <svg className={styles.svgOverlayLayer}>
+                    <defs>
+                      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#27347B" />
+                      </marker>
+                      <marker id="arrow-temp" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#8c9196" />
+                      </marker>
+                    </defs>
 
-                  {/* Render Fixed Graph Edges */}
-                  {edges.map((edge) => {
-                    const sourceNode = nodes.find(n => n.id === edge.from);
-                    const targetNode = nodes.find(n => n.id === edge.to);
-                    if (!sourceNode || !targetNode) return null;
-                    
-                    const startX = sourceNode.x + 300;
-                    const startY = sourceNode.y + 52;
-                    const endX = targetNode.x;
-                    const endY = targetNode.y + 52;
+                    {edges.map((edge) => {
+                      const sourceNode = nodes.find(n => n.id === edge.from);
+                      const targetNode = nodes.find(n => n.id === edge.to);
+                      if (!sourceNode || !targetNode) return null;
+                      
+                      const startPos = getNodeSocketPosition(sourceNode, edge.fromBranch, true);
+                      const endPos = getNodeSocketPosition(targetNode, null, false);
 
-                    return (
-                      <g key={edge.id} onDoubleClick={() => setEdges(prev => prev.filter(e => e.id !== edge.id))}>
-                        <path 
-                          d={calculateBezierPath(startX, startY, endX, endY)} 
-                          className={styles.connectorVectorLine}
-                          markerEnd="url(#arrow)"
-                        />
-                        <foreignObject x={(startX + endX) / 2 - 60} y={(startY + endY) / 2 - 12} width="120" height="24">
-                          <div className={styles.edgeOverlayLabel} title="Double-click to delete path">{edge.label}</div>
-                        </foreignObject>
-                      </g>
-                    );
-                  })}
+                      return (
+                        <g key={edge.id} onDoubleClick={() => setEdges(prev => prev.filter(e => e.id !== edge.id))}>
+                          <path 
+                            d={calculateBezierPath(startPos.x, startPos.y, endPos.x, endPos.y)} 
+                            className={styles.connectorVectorLine}
+                            markerEnd="url(#arrow)"
+                          />
+                          <foreignObject x={(startPos.x + endPos.x) / 2 - 60} y={(startPos.y + endPos.y) / 2 - 12} width="120" height="24">
+                            <div className={styles.edgeOverlayLabel} title="Double-click to drop line">{edge.label}</div>
+                          </foreignObject>
+                        </g>
+                      );
+                    })}
 
-                  {/* Render Live Tracking Temp Line */}
-                  {connecting.active && connecting.startNodeId && (() => {
-                    const startNode = nodes.find(n => n.id === connecting.startNodeId);
-                    if (!startNode) return null;
-                    
-                    const sX = connecting.startPlugType === 'source' ? startNode.x + 300 : connecting.x;
-                    const sY = connecting.startPlugType === 'source' ? startNode.y + 52 : connecting.y;
-                    const eX = connecting.startPlugType === 'target' ? startNode.x : connecting.x;
-                    const eY = connecting.startPlugType === 'target' ? startNode.y + 52 : connecting.y;
+                    {connecting.active && connecting.startNodeId && (() => {
+                      const startNode = nodes.find(n => n.id === connecting.startNodeId);
+                      if (!startNode) return null;
+                      
+                      const startPos = getNodeSocketPosition(startNode, connecting.startBranchId, connecting.startPlugType === 'source');
+                      const sX = connecting.startPlugType === 'source' ? startPos.x : connecting.x;
+                      const sY = connecting.startPlugType === 'source' ? startPos.y : connecting.y;
+                      const eX = connecting.startPlugType === 'target' ? startPos.x : connecting.x;
+                      const eY = connecting.startPlugType === 'target' ? startPos.y : connecting.y;
 
-                    return (
-                      <path 
-                        d={calculateBezierPath(sX, sY, eX, eY)} 
-                        className={styles.tempConnectorLine}
-                        markerEnd="url(#arrow-temp)"
-                      />
-                    );
-                  })()}
-                </svg>
+                      return (
+                        <path d={calculateBezierPath(sX, sY, eX, eY)} className={styles.tempConnectorLine} markerEnd="url(#arrow-temp)" />
+                      );
+                    })()}
+                  </svg>
 
-                {/* DRAGGABLE NODE BLOCKS */}
-                {nodes.map((node) => (
-                  <div 
-                    key={node.id}
-                    className={`${styles.canvasNodeBlockCard} ${styles[`node_${node.type}`]} ${draggingNodeId === node.id ? styles.nodeActiveDraggingState : ""}`}
-                    style={{ transform: `translate(${node.x}px, ${node.y}px)` }}
-                    onMouseDown={(e) => handleNodeDragStart(e, node.id)}
-                  >
-                    <div className={styles.nodeCardDragHeader}>
-                      <div className={styles.nodeCardHeaderLeftTitle}>
-                        <FiMove className={styles.dragHandleIconVector} />
-                        <h4>{node.title}</h4>
-                      </div>
-                      {node.type !== "trigger" && (
-                        <button className={styles.deleteNodeBtn} onClick={() => handleDeleteNode(node.id)}>&times;</button>
-                      )}
-                    </div>
-
-                    <div className={styles.nodeCardInteriorWorkspace}>
-                      {node.type === "trigger" && (
-                        <div className={styles.blockFieldRowContent}>
-                          <label>Incoming Event Channel</label>
-                          <div className={styles.triggerEventBadgeDisplay}><FiZap /> Lead Created Event Stream</div>
-                          <p className={styles.nodeHelpText}>Drag from the right socket to connect downstream logic.</p>
+                  {nodes.map((node) => (
+                    <div 
+                      key={node.id}
+                      className={`${styles.canvasNodeBlockCard} ${styles[`node_${node.type}`]} ${draggingNodeId === node.id ? styles.nodeActiveDraggingState : ""}`}
+                      style={{ left: `${node.x}px`, top: `${node.y}px` }}
+                      onMouseDown={(e) => handleNodeDragStart(e, node.id)}
+                    >
+                      <div className={styles.nodeCardDragHeader}>
+                        <div className={styles.nodeCardHeaderLeftTitle}>
+                          <FiMove className={styles.dragHandleIconVector} />
+                          <h4>{node.title}</h4>
                         </div>
-                      )}
+                        {node.type !== "trigger" && (
+                          <button className={styles.deleteNodeBtn} onClick={() => handleDeleteNode(node.id)}>&times;</button>
+                        )}
+                      </div>
 
-                      {node.type === "condition" && (
-                        <div className={styles.blockFieldRowContent}>
-                          <div className={styles.conditionBlockSubHeadingRow}>
-                            <label>Evaluation Operator</label>
-                            <span className={styles.hybridOperatorBadge}>{node.operator}</span>
-                          </div>
-                          
-                          {node.rules.map((rule, idx) => (
-                            <div key={idx} className={styles.canvasInlineExpressionLine}>
-                              <div className="dropdownContainerParent">
-                                <Dropdown 
-                                  options={TRIGGER_FIELDS} 
-                                  selectedValue={rule.field}
-                                  onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, rules: n.rules.map((r, rIdx) => rIdx === idx ? { ...r, field: val } : r) }: n))}
-                                />
-                              </div>
-                              <div className="dropdownContainerParent" style={{ margin: "6px 0" }}>
-                                <Dropdown 
-                                  options={OPERATOR_OPTIONS} 
-                                  selectedValue={rule.operator}
-                                  onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, rules: n.rules.map((r, rIdx) => rIdx === idx ? { ...r, operator: val } : r) }: n))}
-                                />
-                              </div>
-                              <input 
-                                type="text" 
-                                className={styles.canvasBlockTextInput}
-                                placeholder="Value mapping..."
-                                value={rule.value}
-                                onChange={(e) => {
-                                  const targetVal = e.target.value;
-                                  setNodes(prev => prev.map(n => n.id === node.id ? { ...n, rules: n.rules.map((r, rIdx) => rIdx === idx ? { ...r, value: targetVal } : r) }: n));
-                                }}
+                      <div className={styles.nodeCardInteriorWorkspace}>
+                        {node.type === "trigger" && (
+                          <div className={styles.blockFieldRowContent}>
+                            <label>Incoming Event Channel</label>
+                            <div className="dropdownContainerParent">
+                              <Dropdown 
+                                options={TRIGGER_OPTIONS}
+                                selectedValue={node.event}
+                                onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, event: val } : n))}
                               />
                             </div>
-                          ))}
-                        </div>
-                      )}
+                            <div 
+                              className={styles.socketAnchorPlugSource} 
+                              onMouseDown={(e) => handlePlugMouseDown(e, node.id, null, 'source')}
+                            />
+                          </div>
+                        )}
 
-                      {node.type === "action" && (
-                        <div className={styles.blockFieldRowContent}>
-                          <label>Target Handler Action</label>
-                          <div className="dropdownContainerParent">
-                            <Dropdown 
-                              options={ACTION_OPTIONS}
-                              selectedValue={node.actionType}
-                              onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, actionType: val } : n))}
+                        {node.type === "condition_router" && (
+                          <div className={styles.blockFieldRowContent}>
+                            {node.branches.map((branch) => (
+                              <div key={branch.branchId} className={`${styles.branchConfigBox} ${branch.isFallback ? styles.fallbackBoxColor : ""}`}>
+                                <div className={styles.branchConfigBoxHeader}>
+                                  <span>{branch.name}</span>
+                                  {!branch.isFallback && (
+                                    <div className={styles.branchHeaderControls}>
+                                      <button 
+                                        className={styles.inlineOperatorToggleBtn}
+                                        onClick={() => handleToggleJoinOperator(node.id, branch.branchId)}
+                                      >
+                                        Join: {branch.conditions?.operator}
+                                      </button>
+                                      <button 
+                                        className={styles.deletePathBtn} 
+                                        onClick={() => handleDeleteCustomPath(node.id, branch.branchId)}
+                                        title="Remove Path"
+                                      >
+                                        <FiTrash2 />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {!branch.isFallback && (
+                                  <div className={styles.nestedRulesStack}>
+                                    {branch.conditions?.rules.map((rule, rIdx) => (
+                                      <div key={rIdx} className={styles.nestedRuleRow}>
+                                        <div className={styles.ruleRowHeader}>
+                                          <span className={styles.ruleLabel}>Condition {rIdx + 1}</span>
+                                          {branch.conditions.rules.length > 1 && (
+                                            <button 
+                                              className={styles.deleteClauseRuleMiniBtn} 
+                                              onClick={() => handleDeleteRuleClause(node.id, branch.branchId, rIdx)}
+                                              title="Remove condition"
+                                            >
+                                              &times;
+                                            </button>
+                                          )}
+                                        </div>
+                                        <div className={styles.flexInputsRow}>
+                                          <div className="dropdownContainerParent" style={{ flex: 7 }}>
+                                            <Dropdown 
+                                              options={TRIGGER_FIELDS} selectedValue={rule.field}
+                                              onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
+                                            />
+                                          </div>
+                                          <div className="dropdownContainerParent" style={{ flex: 3 }}>
+                                            <Dropdown 
+                                              options={OPERATOR_OPTIONS} selectedValue={rule.operator}
+                                              onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, operator: val } : r) } } : b) } : n))}
+                                            />
+                                          </div>
+                                        </div>
+                                        <input 
+                                          type="text" className={styles.canvasBlockTextInput} placeholder="Enter match value..." value={rule.value}
+                                          onChange={(e) => {
+                                            const v = e.target.value;
+                                            setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, value: v } : r) } } : b) } : n));
+                                          }}
+                                        />
+                                      </div>
+                                    ))}
+                                    <button className={styles.addClauseRuleTextLink} onClick={() => handleAddRuleClause(node.id, branch.branchId)}>
+                                      <FiPlus /> Add rule to this path
+                                    </button>
+                                  </div>
+                                )}
+
+                                {branch.isFallback && <p className={styles.fallbackHelpText}>Runs automatically if condition sets above return false.</p>}
+
+                                <div 
+                                  className={styles.socketAnchorPlugSource} 
+                                  style={{ top: '50%', transform: 'translateY(-50%)' }}
+                                  onMouseDown={(e) => handlePlugMouseDown(e, node.id, branch.branchId, 'source')}
+                                  onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'source')}
+                                />
+                              </div>
+                            ))}
+                            
+                            <button className={styles.addCustomPathOuterBtn} onClick={() => handleAddCustomPath(node.id)}>
+                              <FiPlus /> Add Path Branch
+                            </button>
+                          </div>
+                        )}
+
+                        {node.type === "action" && (
+                          <div className={styles.blockFieldRowContent}>
+                            <label>Target Handler Action</label>
+                            <div className="dropdownContainerParent">
+                              <Dropdown 
+                                options={ACTION_OPTIONS} 
+                                selectedValue={node.actionType}
+                                onSelect={(val) => handleActionTypeChange(node.id, val)}
+                              />
+                            </div>
+
+                            <div className={styles.actionPayloadBox}>
+                              <div className={styles.actionPayloadHeader}>
+                                <span>JSON Blueprint Mapping Layer</span>
+                              </div>
+                              
+                              <div className={styles.nestedRulesStack}>
+                                {node.payloadOverrides?.map((override, oIdx) => {
+                                  const blueprintKeys = Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).map(k => ({
+                                    label: `${k} (Blueprint Context)`,
+                                    value: k
+                                  }));
+                                  
+                                  return (
+                                    <div key={oIdx} className={styles.nestedRuleRow}>
+                                      <div className={styles.ruleRowHeader}>
+                                        <span className={styles.ruleLabel}>Override Schema Field {oIdx + 1}</span>
+                                        <button 
+                                          className={styles.deleteClauseRuleMiniBtn} 
+                                          onClick={() => handleDeleteActionOverride(node.id, oIdx)}
+                                        >
+                                          &times;
+                                        </button>
+                                      </div>
+                                      <div className="dropdownContainerParent">
+                                        <Dropdown 
+                                          options={blueprintKeys}
+                                          selectedValue={override.key}
+                                          onSelect={(val) => handleUpdateActionOverride(node.id, oIdx, "key", val)}
+                                        />
+                                      </div>
+                                      <input 
+                                        type="text"
+                                        className={styles.canvasBlockTextInput}
+                                        placeholder="Inject context or variable formula value..."
+                                        value={override.value}
+                                        onChange={(e) => handleUpdateActionOverride(node.id, oIdx, "value", e.target.value)}
+                                      />
+                                    </div>
+                                  );
+                                })}
+
+                                {Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).length > (node.payloadOverrides?.length || 0) && (
+                                  <button 
+                                    className={styles.addClauseRuleTextLink} 
+                                    onClick={() => handleAddActionOverride(node.id)}
+                                  >
+                                    <FiPlus /> Add mapping parameter
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            <div 
+                              className={styles.socketAnchorPlugSource}
+                              style={{ top: '50%', transform: 'translateY(-50%)' }}
+                              onMouseDown={(e) => handlePlugMouseDown(e, node.id, null, 'source')}
+                              onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'source')}
                             />
                           </div>
-                          
-                          <div className={styles.canvasBlockMiniFormStack}>
-                            <input 
-                              type="text" 
-                              placeholder="Context Map Key (e.g. ownerId)" 
-                              value={node.targetKey}
-                              onChange={(e) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, targetKey: e.target.value } : n))}
-                            />
-                            <input 
-                              type="text" 
-                              placeholder="Inject Value Formula" 
-                              value={node.targetValue}
-                              onChange={(e) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, targetValue: e.target.value } : n))}
-                            />
-                          </div>
-                        </div>
+                        )}
+                      </div>
+
+                      {node.type !== "trigger" && (
+                        <div 
+                          className={styles.socketAnchorPlugTarget} 
+                          onMouseDown={(e) => handlePlugMouseDown(e, node.id, null, 'target')}
+                          onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'target')}
+                        />
                       )}
                     </div>
+                  ))}
+                </div>
 
-                    {/* SOURCE OUTBOUND PLUG */}
-                    <div 
-                      className={styles.socketAnchorPlugSource} 
-                      title="Drag to connect to another node"
-                      onMouseDown={(e) => handlePlugMouseDown(e, node.id, 'source')}
-                      onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'source')}
-                    />
+                <div className={styles.zoomControlsPanel}>
+                  <span className={styles.zoomPercentage}>{Math.round(zoom * 100)}%</span>
+                  <button className={styles.zoomBtn} onClick={() => setZoom(z => Math.min(2, z + 0.1))}><FiPlus /></button>
+                  <button className={styles.zoomBtn} onClick={() => setZoom(z => Math.max(0.4, z - 0.1))}><FiMinus /></button>
+                  <button className={`${styles.zoomBtn} ${styles.zoomResetBtn}`} onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
+                </div>
 
-                    {/* TARGET INBOUND PLUG */}
-                    {node.type !== "trigger" && (
-                      <div 
-                        className={styles.socketAnchorPlugTarget} 
-                        title="Drag backwards or drop connection here"
-                        onMouseDown={(e) => handlePlugMouseDown(e, node.id, 'target')}
-                        onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'target')}
-                      />
-                    )}
-                  </div>
-                ))}
-
-                {/* RIGHT CLICK CONTEXT MENU PORTAL */}
                 {contextMenu.visible && (
-                  <ul 
-                    className={styles.contextMenuContainer}
-                    style={{ left: contextMenu.x, top: contextMenu.y }}
-                  >
-                    <li className={styles.contextMenuLabel}>Add Graph Element</li>
-                    <li onClick={(e) => { e.stopPropagation(); handleSpawnNodeFromMenu("condition"); }}>
-                      <FiGitBranch /> Conditional / If-Else Block
-                    </li>
-                    <li onClick={(e) => { e.stopPropagation(); handleSpawnNodeFromMenu("action"); }}>
-                      <FiPlayCircle /> Execution Action Step
-                    </li>
+                  <ul className={styles.contextMenuContainer} style={{ left: contextMenu.menuX, top: contextMenu.menuY }}>
+                    <li className={styles.contextMenuLabel}>Create Element</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("condition_router")}><FiGitBranch /> Hybrid Condition Router</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("action")}><FiPlayCircle /> Execution Action Block</li>
                   </ul>
                 )}
               </div>
@@ -490,10 +787,7 @@ export default function WorkflowCanvasEngine() {
                 <div className={styles.timelineContainer}>
                   {MOCK_VERSIONS.map((ver) => (
                     <div key={ver.versionId} className={styles.timelineItem}>
-                      <div className={styles.timelineMarker}>
-                        <div className={styles.markerCircle} />
-                        <div className={styles.markerLine} />
-                      </div>
+                      <div className={styles.timelineMarker}><div className={styles.markerCircle} /><div className={styles.markerLine} /></div>
                       <div className={styles.versionCard}>
                         <div className={styles.versionMetaRow}>
                           <span className={styles.versionBadgeName}>{ver.versionId.toUpperCase()}</span>
@@ -508,7 +802,6 @@ export default function WorkflowCanvasEngine() {
               </div>
             )}
 
-            {/* LOGS TAB RENDERING */}
             {activeTab === "logs" && (
               <div className={styles.logsDashboardSplitView}>
                 <div className={styles.logsListBlockColumn}>
@@ -521,11 +814,7 @@ export default function WorkflowCanvasEngine() {
                         onClick={() => setSelectedLog(log)}
                       >
                         <div className={styles.logLeftIndicatorMeta}>
-                          {log.status === "success" ? (
-                            <FiCheckCircle className={styles.logSuccessStatusIcon} />
-                          ) : (
-                            <FiAlertCircle className={styles.logFailStatusIcon} />
-                          )}
+                          {log.status === "success" ? <FiCheckCircle className={styles.logSuccessStatusIcon} /> : <FiAlertCircle className={styles.logFailStatusIcon} />}
                           <div className={styles.logTextLabelStack}>
                             <span className={styles.logEventTitle}>{log.event}</span>
                             <span className={styles.logIdHashSub}>{log.logId}</span>
