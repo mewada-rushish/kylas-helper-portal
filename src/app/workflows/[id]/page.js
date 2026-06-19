@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { 
   FiZap, FiGitBranch, FiPlayCircle, FiSave, FiTrash2, 
   FiLayout, FiCreditCard, FiSettings, FiArrowLeft, FiClock, 
   FiMove, FiGrid, FiPlus, FiList, FiCheckCircle, FiAlertCircle,
-  FiCode, FiChevronDown, FiFileText, FiMinus, FiSliders
+  FiCode, FiFileText, FiMinus, FiX
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -40,24 +40,9 @@ const ACTION_OPTIONS = [
 ];
 
 const DEFAULT_ACTION_PAYLOADS = {
-  update_owner: {
-    ownerId: "usr_default_01",
-    assignmentMode: "round_robin",
-    backupOwnerId: "usr_backup_99",
-    notifyTeam: true
-  },
-  create_task: {
-    taskTitle: "Follow up with client",
-    dueDateOffsetDays: 2,
-    priority: "high",
-    description: "Automated baseline task creation rule triggered downstream."
-  },
-  send_whatsapp: {
-    templateId: "default_welcome_alert",
-    languageCode: "en_IN",
-    fallbackChannel: "sms",
-    retryCount: 3
-  }
+  update_owner: { ownerId: "usr_default_01", assignmentMode: "round_robin", backupOwnerId: "usr_backup_99", notifyTeam: true },
+  create_task: { taskTitle: "Follow up with client", dueDateOffsetDays: 2, priority: "high", description: "Automated task setup rules." },
+  send_whatsapp: { templateId: "default_welcome_alert", languageCode: "en_IN", fallbackChannel: "sms", retryCount: 3 }
 };
 
 const MOCK_VERSIONS = [
@@ -76,73 +61,47 @@ const INITIAL_LOGS = [
   }
 ];
 
+const calculateBezierPath = (startX, startY, endX, endY) => {
+  const controlPointOffset = Math.max(Math.abs(endX - startX) * 0.5, 60); 
+  return `M ${startX} ${startY} C ${startX + controlPointOffset} ${startY}, ${endX - controlPointOffset} ${endY}, ${endX} ${endY}`;
+};
+
 export default function WorkflowCanvasEngine() {
   const router = useRouter();
   const params = useParams();
 
   const [nodes, setNodes] = useState([
-    { 
-      id: "node_1", 
-      type: "trigger", 
-      title: "Workflow Trigger", 
-      x: 40, 
-      y: 220, 
-      event: "lead.created" 
-    },
+    { id: "node_1", type: "trigger", title: "Workflow Trigger", x: 40, y: 220, event: "lead.created" },
     { 
       id: "node_2", 
       type: "condition_router", 
       title: "Hybrid Evaluation Router", 
       x: 560, 
-      y: 100, 
+      y: 60, 
       branches: [
         { 
           branchId: "branch_hot_gym", 
           name: "Path 1: Hot Gym Prospects", 
+          grouped: true,
           conditions: { 
-            operator: "AND", 
             rules: [
-              { field: "payload.stage", operator: "equals", value: "Qualified" },
-              { field: "payload.leadTemperature", operator: "equals", value: "Hot" },
-              { field: "payload.interestedIn", operator: "equals", value: "Gym" }
+              { field: "payload.stage", operator: "equals", value: "Qualified", joinOperator: "AND" },
+              { field: "payload.leadTemperature", operator: "equals", value: "Hot", joinOperator: "AND" },
+              { field: "payload.interestedIn", operator: "equals", value: "Gym", joinOperator: "AND" }
             ] 
           } 
         },
-        { 
-          branchId: "branch_fallback", 
-          name: "Path 2: Else (Fallback)", 
-          isFallback: true 
-        }
+        { branchId: "branch_fallback", name: "Path 2: Else (Fallback)", isFallback: true, grouped: true }
       ] 
     },
-    { 
-      id: "node_3", 
-      type: "action", 
-      title: "Assign Close Team", 
-      x: 1100, 
-      y: 60, 
-      actionType: "update_owner", 
-      payloadOverrides: [
-        { key: "ownerId", value: "usr_closers_99" }
-      ]
-    },
-    { 
-      id: "node_4", 
-      type: "action", 
-      title: "Send WhatsApp Alert", 
-      x: 1100, 
-      y: 420, 
-      actionType: "send_whatsapp", 
-      payloadOverrides: [
-        { key: "templateId", value: "unrouted_stage_notification" }
-      ]
-    }
+    { id: "node_3", type: "action", title: "Assign Close Team", x: 1160, y: 60, actionType: "update_owner", payloadOverrides: [{ key: "ownerId", value: "usr_closers_99" }] },
+    { id: "node_4", type: "action", title: "Send WhatsApp Alert", x: 1160, y: 420, actionType: "send_whatsapp", payloadOverrides: [{ key: "templateId", value: "unrouted_stage_notification" }] }
   ]);
 
   const [edges, setEdges] = useState([
-    { id: "edge_1", from: "node_1", fromBranch: null, to: "node_2", label: "Evaluate Data" },
-    { id: "edge_2", from: "node_2", fromBranch: "branch_hot_gym", to: "node_3", label: "True Branch" },
-    { id: "edge_3", from: "node_2", fromBranch: "branch_fallback", to: "node_4", label: "Fallback Path" }
+    { id: "edge_1", fromPlug: "source-node_1-main", toPlug: "target-node_2", label: "Evaluate Data" },
+    { id: "edge_2", fromPlug: "source-node_2-branch_hot_gym-grouped", toPlug: "target-node_3", label: "True Branch" },
+    { id: "edge_3", fromPlug: "source-node_2-branch_fallback-grouped", toPlug: "target-node_4", label: "Fallback Path" }
   ]);
 
   const [activeTab, setActiveTab] = useState("builder");
@@ -157,10 +116,49 @@ export default function WorkflowCanvasEngine() {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
+  const [plugPositions, setPlugPositions] = useState({});
   const [draggingNodeId, setDraggingNodeId] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [connecting, setConnecting] = useState({ active: false, startNodeId: null, startBranchId: null, startPlugType: null, x: 0, y: 0 });
+  const [connecting, setConnecting] = useState({ active: false, startPlugId: null, startPlugType: null, x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState({ visible: false, menuX: 0, menuY: 0, spawnX: 0, spawnY: 0 });
+
+  const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+  useIsomorphicLayoutEffect(() => {
+    const updatePlugPositions = () => {
+      if (!canvasRef.current) return;
+      const wrapperElement = canvasRef.current.querySelector(`.${styles.canvasContentWrapper}`);
+      if (!wrapperElement) return;
+      
+      const wrapperRect = wrapperElement.getBoundingClientRect();
+      const newPositions = {};
+      
+      const plugs = wrapperElement.querySelectorAll('[data-plug-id]');
+      plugs.forEach(plug => {
+        const rect = plug.getBoundingClientRect();
+        const localX = (rect.left + rect.width / 2 - wrapperRect.left) / zoom;
+        const localY = (rect.top + rect.height / 2 - wrapperRect.top) / zoom;
+        newPositions[plug.getAttribute('data-plug-id')] = { x: localX, y: localY };
+      });
+      
+      setPlugPositions(newPositions);
+    };
+
+    updatePlugPositions();
+
+    const wrapperElement = canvasRef.current?.querySelector(`.${styles.canvasContentWrapper}`);
+    if (!wrapperElement) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      updatePlugPositions();
+    });
+
+    resizeObserver.observe(wrapperElement);
+    const cards = wrapperElement.querySelectorAll(`.${styles.canvasNodeBlockCard}`);
+    cards.forEach(c => resizeObserver.observe(c));
+
+    return () => resizeObserver.disconnect();
+  }, [nodes, zoom, pan]);
 
   useEffect(() => {
     if (nodes.length === 0) return;
@@ -170,6 +168,28 @@ export default function WorkflowCanvasEngine() {
     }, 1500);
     return () => clearTimeout(debounceTimer);
   }, [nodes, edges]);
+
+  useEffect(() => {
+    const canvasElement = canvasRef.current;
+    if (!canvasElement) return;
+
+    const handleWindowWheel = (e) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const zoomFactor = 0.05;
+        if (e.deltaY < 0) {
+          setZoom(z => Math.min(2, z + zoomFactor));
+        } else {
+          setZoom(z => Math.max(0.4, z - zoomFactor));
+        }
+      }
+    };
+
+    canvasElement.addEventListener("wheel", handleWindowWheel, { passive: false });
+    return () => {
+      canvasElement.removeEventListener("wheel", handleWindowWheel);
+    };
+  }, []);
 
   const transformClientToLocalCoords = (clientX, clientY) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
@@ -201,7 +221,7 @@ export default function WorkflowCanvasEngine() {
 
     const handleGlobalMouseUp = () => {
       setDraggingNodeId(null);
-      setConnecting({ active: false, startNodeId: null, startBranchId: null, startPlugType: null, x: 0, y: 0 });
+      setConnecting({ active: false, startPlugId: null, startPlugType: null, x: 0, y: 0 });
       setIsPanning(false);
     };
 
@@ -238,7 +258,7 @@ export default function WorkflowCanvasEngine() {
   const handleSpawnNodeFromMenu = (type) => {
     const nextId = `node_${Date.now()}`;
     const spawnedNode = type === "condition_router" 
-      ? { id: nextId, type: "condition_router", title: "Condition Router", x: contextMenu.spawnX, y: contextMenu.spawnY, branches: [{ branchId: `b_${Date.now()}`, name: "Path 1", conditions: { operator: "AND", rules: [{ field: "payload.stage", operator: "equals", value: "" }] } }, { branchId: `bf_${Date.now()}`, name: "Else", isFallback: true }] }
+      ? { id: nextId, type: "condition_router", title: "Condition Router", x: contextMenu.spawnX, y: contextMenu.spawnY, branches: [{ branchId: `b_${Date.now()}`, name: "Path 1", grouped: true, conditions: { rules: [{ field: "payload.stage", operator: "equals", value: "", joinOperator: "AND" }] } }, { branchId: `bf_${Date.now()}`, name: "Else", isFallback: true, grouped: true }] }
       : { id: nextId, type: "action", title: "New Action Step", x: contextMenu.spawnX, y: contextMenu.spawnY, actionType: "update_owner", payloadOverrides: [] };
 
     setNodes(prev => [...prev, spawnedNode]);
@@ -263,8 +283,8 @@ export default function WorkflowCanvasEngine() {
       e.target.closest('.dropdownContainerParent') || 
       e.target.tagName.toLowerCase() === 'input' || 
       e.target.tagName.toLowerCase() === 'button' ||
-      e.target.closest(`.${styles.socketAnchorPlugSource}`) ||
-      e.target.closest(`.${styles.socketAnchorPlugTarget}`)
+      e.target.hasAttribute('data-plug-id') ||
+      e.target.closest(`.${styles.toggleSwitch}`)
     ) return;
     
     closeContextMenu();
@@ -276,66 +296,43 @@ export default function WorkflowCanvasEngine() {
     }
   };
 
-  const getNodeSocketPosition = (node, branchId, isSource) => {
-    const CARD_WIDTH = 460;
-    if (isSource) {
-      if (node.type === "trigger") {
-        return { x: node.x + CARD_WIDTH, y: node.y + 76 };
-      }
-      if (node.type === "condition_router") {
-        let currentY = node.y + 54; 
-        for (let i = 0; i < node.branches.length; i++) {
-          const branch = node.branches[i];
-          const ruleCount = branch.conditions?.rules?.length || 0;
-          const boxHeight = branch.isFallback ? 73 : 100 + (ruleCount * 176) + (Math.max(0, ruleCount - 1) * 12);
-          
-          if (branch.branchId === branchId) {
-            return { x: node.x + CARD_WIDTH, y: currentY + (boxHeight / 2) };
-          }
-          currentY += boxHeight + 16; 
-        }
-      }
-      if (node.type === "action") {
-        let baseHeight = 120;
-        const overridesCount = node.payloadOverrides?.length || 0;
-        const computedHeight = baseHeight + (overridesCount * 176) + (Math.max(0, overridesCount - 1) * 12) + (overridesCount > 0 ? 30 : 0);
-        return { x: node.x + CARD_WIDTH, y: node.y + 54 + (computedHeight / 2) };
-      }
-      return { x: node.x + CARD_WIDTH, y: node.y + 65 };
-    } else {
-      return { x: node.x, y: node.y + 55 };
-    }
-  };
-
-  const handlePlugMouseDown = (e, nodeId, branchId, plugType) => {
+  const handlePlugMouseDown = (e, plugId, plugType) => {
     closeContextMenu();
     e.stopPropagation();
     e.preventDefault();
-    const pos = getNodeSocketPosition(nodes.find(n => n.id === nodeId), branchId, plugType === 'source');
-    setConnecting({ active: true, startNodeId: nodeId, startBranchId: branchId, startPlugType: plugType, x: pos.x, y: pos.y });
+    const pos = plugPositions[plugId];
+    if (pos) {
+      setConnecting({ active: true, startPlugId: plugId, startPlugType: plugType, x: pos.x, y: pos.y });
+    }
   };
 
-  const handlePlugMouseUp = (e, dropNodeId, dropPlugType) => {
+  const handlePlugMouseUp = (e, dropPlugId, dropPlugType) => {
     e.stopPropagation();
-    if (connecting.active && connecting.startNodeId && connecting.startNodeId !== dropNodeId) {
+    if (connecting.active && connecting.startPlugId && connecting.startPlugId !== dropPlugId) {
       if (connecting.startPlugType !== dropPlugType) {
-        const sourceId = connecting.startPlugType === 'source' ? connecting.startNodeId : dropNodeId;
-        const sourceBranchId = connecting.startPlugType === 'source' ? connecting.startBranchId : null;
-        const targetId = connecting.startPlugType === 'target' ? connecting.startNodeId : dropNodeId;
+        const sourcePlugId = connecting.startPlugType === 'source' ? connecting.startPlugId : dropPlugId;
+        const targetPlugId = connecting.startPlugType === 'target' ? connecting.startPlugId : dropPlugId;
 
-        const exists = edges.find(edge => edge.from === sourceId && edge.fromBranch === sourceBranchId && edge.to === targetId);
+        const exists = edges.find(edge => edge.fromPlug === sourcePlugId && edge.toPlug === targetPlugId);
         if (!exists) {
           setEdges(prev => [...prev, { 
             id: `edge_${Date.now()}`, 
-            from: sourceId, 
-            fromBranch: sourceBranchId,
-            to: targetId, 
-            label: sourceBranchId ? "Routed Path" : "Linked Data" 
+            fromPlug: sourcePlugId,
+            toPlug: targetPlugId, 
+            label: "Linked Data" 
           }]);
         }
       }
     }
-    setConnecting({ active: false, startNodeId: null, startBranchId: null, startPlugType: null, x: 0, y: 0 });
+    setConnecting({ active: false, startPlugId: null, startPlugType: null, x: 0, y: 0 });
+  };
+
+  const handleToggleGrouped = (nodeId, branchId) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? {
+      ...n,
+      branches: n.branches.map(b => b.branchId === branchId ? { ...b, grouped: !b.grouped } : b)
+    } : n));
+    setEdges(prev => prev.filter(e => !e.fromPlug.includes(branchId)));
   };
 
   const handleAddRuleClause = (nodeId, branchId) => {
@@ -343,7 +340,7 @@ export default function WorkflowCanvasEngine() {
       ...n,
       branches: n.branches.map(b => b.branchId === branchId ? {
         ...b,
-        conditions: { ...b.conditions, rules: [...b.conditions.rules, { field: "payload.stage", operator: "equals", value: "" }] }
+        conditions: { ...b.conditions, rules: [...b.conditions.rules, { field: "payload.stage", operator: "equals", value: "", joinOperator: "AND" }] }
       } : b)
     } : n));
   };
@@ -356,14 +353,18 @@ export default function WorkflowCanvasEngine() {
         conditions: { ...b.conditions, rules: b.conditions.rules.filter((_, idx) => idx !== ruleIdx) }
       } : b)
     } : n));
+    setEdges(prev => prev.filter(e => !e.fromPlug.includes(`${branchId}-rule-${ruleIdx}`)));
   };
 
-  const handleToggleJoinOperator = (nodeId, branchId) => {
+  const handleUpdateRuleJoinOperator = (nodeId, branchId, ruleIdx, op) => {
     setNodes(prev => prev.map(n => n.id === nodeId ? {
       ...n,
       branches: n.branches.map(b => b.branchId === branchId ? {
         ...b,
-        conditions: { ...b.conditions, operator: b.conditions.operator === "AND" ? "OR" : "AND" }
+        conditions: {
+          ...b.conditions,
+          rules: b.conditions.rules.map((r, idx) => idx === ruleIdx ? { ...r, joinOperator: op } : r)
+        }
       } : b)
     } : n));
   };
@@ -373,7 +374,7 @@ export default function WorkflowCanvasEngine() {
       ...n,
       branches: [
         ...n.branches.filter(b => !b.isFallback),
-        { branchId: `branch_${Date.now()}`, name: `Path ${n.branches.length}: Rules Match`, conditions: { operator: "AND", rules: [{ field: "payload.stage", operator: "equals", value: "" }] } },
+        { branchId: `branch_${Date.now()}`, name: `Path ${n.branches.length}: Rules Match`, grouped: true, conditions: { rules: [{ field: "payload.stage", operator: "equals", value: "", joinOperator: "AND" }] } },
         ...n.branches.filter(b => b.isFallback)
       ]
     } : n));
@@ -384,21 +385,16 @@ export default function WorkflowCanvasEngine() {
       ...n,
       branches: n.branches.filter(b => b.branchId !== branchId)
     } : n));
-    setEdges(prev => prev.filter(e => !(e.from === nodeId && e.fromBranch === branchId)));
+    setEdges(prev => prev.filter(e => !e.fromPlug.includes(branchId)));
   };
 
   const handleAddActionOverride = (nodeId) => {
     setNodes(prev => prev.map(n => {
       if (n.id !== nodeId) return n;
       const defaultPayload = DEFAULT_ACTION_PAYLOADS[n.actionType] || {};
-      const remainingKeys = Object.keys(defaultPayload).filter(
-        k => !n.payloadOverrides.some(o => o.key === k)
-      );
+      const remainingKeys = Object.keys(defaultPayload).filter(k => !n.payloadOverrides.some(o => o.key === k));
       if (remainingKeys.length === 0) return n;
-      return {
-        ...n,
-        payloadOverrides: [...n.payloadOverrides, { key: remainingKeys[0], value: "" }]
-      };
+      return { ...n, payloadOverrides: [...n.payloadOverrides, { key: remainingKeys[0], value: "" }] };
     }));
   };
 
@@ -417,16 +413,12 @@ export default function WorkflowCanvasEngine() {
   };
 
   const handleActionTypeChange = (nodeId, type) => {
-    setNodes(prev => prev.map(n => n.id === nodeId ? {
-      ...n,
-      actionType: type,
-      payloadOverrides: []
-    } : n));
+    setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, actionType: type, payloadOverrides: [] } : n));
   };
 
   const handleDeleteNode = (id) => {
     setNodes(prev => prev.filter(n => n.id !== id));
-    setEdges(prev => prev.filter(e => e.from !== id && e.to !== id));
+    setEdges(prev => prev.filter(e => !e.fromPlug.includes(id) && !e.toPlug.includes(id)));
   };
 
   const handleManualSave = () => {
@@ -435,11 +427,6 @@ export default function WorkflowCanvasEngine() {
       setSaveStatus("Workflow successfully saved");
       alert("Workflow configuration has been fully saved and published.");
     }, 800);
-  };
-
-  const calculateBezierPath = (startX, startY, endX, endY) => {
-    const controlPointOffset = Math.max(Math.abs(endX - startX) * 0.5, 60); 
-    return `M ${startX} ${startY} C ${startX + controlPointOffset} ${startY}, ${endX - controlPointOffset} ${endY}, ${endX} ${endY}`;
   };
 
   const formatDate = (isoString) => {
@@ -519,13 +506,11 @@ export default function WorkflowCanvasEngine() {
                     </defs>
 
                     {edges.map((edge) => {
-                      const sourceNode = nodes.find(n => n.id === edge.from);
-                      const targetNode = nodes.find(n => n.id === edge.to);
-                      if (!sourceNode || !targetNode) return null;
-                      
-                      const startPos = getNodeSocketPosition(sourceNode, edge.fromBranch, true);
-                      const endPos = getNodeSocketPosition(targetNode, null, false);
+                      const startPos = plugPositions[edge.fromPlug];
+                      const endPos = plugPositions[edge.toPlug];
 
+                      if (!startPos || !endPos) return null;
+                      
                       return (
                         <g key={edge.id} onDoubleClick={() => setEdges(prev => prev.filter(e => e.id !== edge.id))}>
                           <path 
@@ -533,18 +518,23 @@ export default function WorkflowCanvasEngine() {
                             className={styles.connectorVectorLine}
                             markerEnd="url(#arrow)"
                           />
-                          <foreignObject x={(startPos.x + endPos.x) / 2 - 60} y={(startPos.y + endPos.y) / 2 - 12} width="120" height="24">
+                          <foreignObject 
+                            x={(startPos.x + endPos.x) / 2 - 60} 
+                            y={(startPos.y + endPos.y) / 2 - 16} 
+                            width="120" 
+                            height="32"
+                            style={{ overflow: 'visible' }}
+                          >
                             <div className={styles.edgeOverlayLabel} title="Double-click to drop line">{edge.label}</div>
                           </foreignObject>
                         </g>
                       );
                     })}
 
-                    {connecting.active && connecting.startNodeId && (() => {
-                      const startNode = nodes.find(n => n.id === connecting.startNodeId);
-                      if (!startNode) return null;
+                    {connecting.active && connecting.startPlugId && (() => {
+                      const startPos = plugPositions[connecting.startPlugId];
+                      if (!startPos) return null;
                       
-                      const startPos = getNodeSocketPosition(startNode, connecting.startBranchId, connecting.startPlugType === 'source');
                       const sX = connecting.startPlugType === 'source' ? startPos.x : connecting.x;
                       const sY = connecting.startPlugType === 'source' ? startPos.y : connecting.y;
                       const eX = connecting.startPlugType === 'target' ? startPos.x : connecting.x;
@@ -569,7 +559,7 @@ export default function WorkflowCanvasEngine() {
                           <h4>{node.title}</h4>
                         </div>
                         {node.type !== "trigger" && (
-                          <button className={styles.deleteNodeBtn} onClick={() => handleDeleteNode(node.id)}>&times;</button>
+                          <button className={styles.deleteNodeBtn} onClick={() => handleDeleteNode(node.id)}><FiX /></button>
                         )}
                       </div>
 
@@ -586,7 +576,9 @@ export default function WorkflowCanvasEngine() {
                             </div>
                             <div 
                               className={styles.socketAnchorPlugSource} 
-                              onMouseDown={(e) => handlePlugMouseDown(e, node.id, null, 'source')}
+                              data-plug-id={`source-${node.id}-main`}
+                              onMouseDown={(e) => handlePlugMouseDown(e, `source-${node.id}-main`, 'source')}
+                              onMouseUp={(e) => handlePlugMouseUp(e, `source-${node.id}-main`, 'source')}
                             />
                           </div>
                         )}
@@ -600,12 +592,6 @@ export default function WorkflowCanvasEngine() {
                                   {!branch.isFallback && (
                                     <div className={styles.branchHeaderControls}>
                                       <button 
-                                        className={styles.inlineOperatorToggleBtn}
-                                        onClick={() => handleToggleJoinOperator(node.id, branch.branchId)}
-                                      >
-                                        Join: {branch.conditions?.operator}
-                                      </button>
-                                      <button 
                                         className={styles.deletePathBtn} 
                                         onClick={() => handleDeleteCustomPath(node.id, branch.branchId)}
                                         title="Remove Path"
@@ -617,42 +603,82 @@ export default function WorkflowCanvasEngine() {
                                 </div>
 
                                 {!branch.isFallback && (
+                                  <div className={styles.groupedToggleWrapper}>
+                                    <span className={styles.groupedToggleLabel}>All checks passed</span>
+                                    <button 
+                                      className={`${styles.toggleSwitch} ${branch.grouped ? styles.toggleOn : ""}`}
+                                      onClick={() => handleToggleGrouped(node.id, branch.branchId)}
+                                    >
+                                      <div className={styles.toggleKnob} />
+                                    </button>
+                                  </div>
+                                )}
+
+                                {!branch.isFallback && (
                                   <div className={styles.nestedRulesStack}>
                                     {branch.conditions?.rules.map((rule, rIdx) => (
-                                      <div key={rIdx} className={styles.nestedRuleRow}>
-                                        <div className={styles.ruleRowHeader}>
-                                          <span className={styles.ruleLabel}>Condition {rIdx + 1}</span>
-                                          {branch.conditions.rules.length > 1 && (
+                                      <div key={rIdx} className={styles.nestedRuleRowWrapper}>
+                                        {rIdx > 0 && (
+                                          <div className={styles.interConditionJoinRow}>
                                             <button 
-                                              className={styles.deleteClauseRuleMiniBtn} 
-                                              onClick={() => handleDeleteRuleClause(node.id, branch.branchId, rIdx)}
-                                              title="Remove condition"
+                                              className={`${styles.joinOpToggleBtn} ${rule.joinOperator === "AND" ? styles.joinOpActive : ""}`}
+                                              onClick={() => handleUpdateRuleJoinOperator(node.id, branch.branchId, rIdx, "AND")}
                                             >
-                                              &times;
+                                              AND
                                             </button>
-                                          )}
-                                        </div>
-                                        <div className={styles.flexInputsRow}>
-                                          <div className="dropdownContainerParent" style={{ flex: 7 }}>
+                                            <button 
+                                              className={`${styles.joinOpToggleBtn} ${rule.joinOperator === "OR" ? styles.joinOpActive : ""}`}
+                                              onClick={() => handleUpdateRuleJoinOperator(node.id, branch.branchId, rIdx, "OR")}
+                                            >
+                                              OR
+                                            </button>
+                                          </div>
+                                        )}
+                                        
+                                        <div className={styles.nestedRuleRow}>
+                                          <div className={styles.ruleRowHeader}>
+                                            <span className={styles.ruleLabel}>Condition {rIdx + 1}</span>
+                                            {branch.conditions.rules.length > 1 && (
+                                              <button 
+                                                className={styles.deleteClauseRuleMiniBtn} 
+                                                onClick={() => handleDeleteRuleClause(node.id, branch.branchId, rIdx)}
+                                                title="Remove condition"
+                                              >
+                                                <FiX />
+                                              </button>
+                                            )}
+                                          </div>
+                                          <div className="dropdownContainerParent" style={{ marginBottom: '10px' }}>
                                             <Dropdown 
                                               options={TRIGGER_FIELDS} selectedValue={rule.field}
                                               onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
                                             />
                                           </div>
-                                          <div className="dropdownContainerParent" style={{ flex: 3 }}>
-                                            <Dropdown 
-                                              options={OPERATOR_OPTIONS} selectedValue={rule.operator}
-                                              onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, operator: val } : r) } } : b) } : n))}
+                                          <div className={styles.flexInputsRowCond}>
+                                            <div className="dropdownContainerParent">
+                                              <Dropdown 
+                                                options={OPERATOR_OPTIONS} selectedValue={rule.operator}
+                                                onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, operator: val } : r) } } : b) } : n))}
+                                              />
+                                            </div>
+                                            <input 
+                                              type="text" className={styles.canvasBlockTextInputCond} placeholder="Value..." value={rule.value}
+                                              onChange={(e) => {
+                                                const v = e.target.value;
+                                                setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, value: v } : r) } } : b) } : n));
+                                              }}
                                             />
                                           </div>
+                                          
+                                          {!branch.grouped && (
+                                            <div 
+                                              className={styles.ruleSocketPlug} 
+                                              data-plug-id={`source-${node.id}-${branch.branchId}-rule-${rIdx}`}
+                                              onMouseDown={(e) => handlePlugMouseDown(e, `source-${node.id}-${branch.branchId}-rule-${rIdx}`, 'source')}
+                                              onMouseUp={(e) => handlePlugMouseUp(e, `source-${node.id}-${branch.branchId}-rule-${rIdx}`, 'source')}
+                                            />
+                                          )}
                                         </div>
-                                        <input 
-                                          type="text" className={styles.canvasBlockTextInput} placeholder="Enter match value..." value={rule.value}
-                                          onChange={(e) => {
-                                            const v = e.target.value;
-                                            setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, value: v } : r) } } : b) } : n));
-                                          }}
-                                        />
                                       </div>
                                     ))}
                                     <button className={styles.addClauseRuleTextLink} onClick={() => handleAddRuleClause(node.id, branch.branchId)}>
@@ -663,12 +689,14 @@ export default function WorkflowCanvasEngine() {
 
                                 {branch.isFallback && <p className={styles.fallbackHelpText}>Runs automatically if condition sets above return false.</p>}
 
-                                <div 
-                                  className={styles.socketAnchorPlugSource} 
-                                  style={{ top: '50%', transform: 'translateY(-50%)' }}
-                                  onMouseDown={(e) => handlePlugMouseDown(e, node.id, branch.branchId, 'source')}
-                                  onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'source')}
-                                />
+                                {(branch.grouped || branch.isFallback) && (
+                                  <div 
+                                    className={styles.branchSocketPlug} 
+                                    data-plug-id={`source-${node.id}-${branch.branchId}-grouped`}
+                                    onMouseDown={(e) => handlePlugMouseDown(e, `source-${node.id}-${branch.branchId}-grouped`, 'source')}
+                                    onMouseUp={(e) => handlePlugMouseUp(e, `source-${node.id}-${branch.branchId}-grouped`, 'source')}
+                                  />
+                                )}
                               </div>
                             ))}
                             
@@ -697,35 +725,37 @@ export default function WorkflowCanvasEngine() {
                               <div className={styles.nestedRulesStack}>
                                 {node.payloadOverrides?.map((override, oIdx) => {
                                   const blueprintKeys = Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).map(k => ({
-                                    label: `${k} (Blueprint Context)`,
+                                    label: `${k}`,
                                     value: k
                                   }));
                                   
                                   return (
                                     <div key={oIdx} className={styles.nestedRuleRow}>
                                       <div className={styles.ruleRowHeader}>
-                                        <span className={styles.ruleLabel}>Override Schema Field {oIdx + 1}</span>
+                                        <span className={styles.ruleLabel}>Override Parameter {oIdx + 1}</span>
                                         <button 
                                           className={styles.deleteClauseRuleMiniBtn} 
                                           onClick={() => handleDeleteActionOverride(node.id, oIdx)}
                                         >
-                                          &times;
+                                          <FiX />
                                         </button>
                                       </div>
-                                      <div className="dropdownContainerParent">
-                                        <Dropdown 
-                                          options={blueprintKeys}
-                                          selectedValue={override.key}
-                                          onSelect={(val) => handleUpdateActionOverride(node.id, oIdx, "key", val)}
+                                      <div className={styles.flexInputsRowAction}>
+                                        <div className="dropdownContainerParent">
+                                          <Dropdown 
+                                            options={blueprintKeys}
+                                            selectedValue={override.key}
+                                            onSelect={(val) => handleUpdateActionOverride(node.id, oIdx, "key", val)}
+                                          />
+                                        </div>
+                                        <input 
+                                          type="text"
+                                          className={styles.canvasBlockTextInputAction}
+                                          placeholder="Value..."
+                                          value={override.value}
+                                          onChange={(e) => handleUpdateActionOverride(node.id, oIdx, "value", e.target.value)}
                                         />
                                       </div>
-                                      <input 
-                                        type="text"
-                                        className={styles.canvasBlockTextInput}
-                                        placeholder="Inject context or variable formula value..."
-                                        value={override.value}
-                                        onChange={(e) => handleUpdateActionOverride(node.id, oIdx, "value", e.target.value)}
-                                      />
                                     </div>
                                   );
                                 })}
@@ -743,9 +773,9 @@ export default function WorkflowCanvasEngine() {
 
                             <div 
                               className={styles.socketAnchorPlugSource}
-                              style={{ top: '50%', transform: 'translateY(-50%)' }}
-                              onMouseDown={(e) => handlePlugMouseDown(e, node.id, null, 'source')}
-                              onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'source')}
+                              data-plug-id={`source-${node.id}-main`}
+                              onMouseDown={(e) => handlePlugMouseDown(e, `source-${node.id}-main`, 'source')}
+                              onMouseUp={(e) => handlePlugMouseUp(e, `source-${node.id}-main`, 'source')}
                             />
                           </div>
                         )}
@@ -754,8 +784,9 @@ export default function WorkflowCanvasEngine() {
                       {node.type !== "trigger" && (
                         <div 
                           className={styles.socketAnchorPlugTarget} 
-                          onMouseDown={(e) => handlePlugMouseDown(e, node.id, null, 'target')}
-                          onMouseUp={(e) => handlePlugMouseUp(e, node.id, 'target')}
+                          data-plug-id={`target-${node.id}`}
+                          onMouseDown={(e) => handlePlugMouseDown(e, `target-${node.id}`, 'target')}
+                          onMouseUp={(e) => handlePlugMouseUp(e, `target-${node.id}`, 'target')}
                         />
                       )}
                     </div>
