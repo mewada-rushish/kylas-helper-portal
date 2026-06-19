@@ -6,11 +6,10 @@ import { FiLogOut, FiLayout, FiGitBranch, FiCreditCard, FiSettings } from "react
 import { signOut } from "next-auth/react";
 import styles from "./sidebar.module.css";
 
-// Centralized source of truth for dashboard navigation items
 const CENTRAL_NAVIGATION_ITEMS = [
   { id: "canvas", label: "Overview Canvas", icon: FiLayout, href: "/dashboard" },
   { id: "workflows", label: "Workflows", icon: FiGitBranch, href: "/workflows" },
-  { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, href: "/dashboard#invoices" },
+  { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, href: "/invoices" },
   { id: "settings", label: "Settings", icon: FiSettings, href: "/dashboard#settings", disabled: true }
 ];
 
@@ -33,7 +32,6 @@ export default function Sidebar({ activeId }) {
         {CENTRAL_NAVIGATION_ITEMS.map((item) => {
           const Icon = item.icon;
           
-          // Auto-detect active route fallback if an explicit activeId isn't provided
           const isActive = activeId 
             ? item.id === activeId 
             : pathname.startsWith(item.href.split("#")[0]);

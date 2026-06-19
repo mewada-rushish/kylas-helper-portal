@@ -1,0 +1,287 @@
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--system-bg, #F8F8FB);
+  font-family: var(--font-poppins), sans-serif;
+  color: #202223;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mainCanvas {
+  flex: 1;
+  margin-left: 240px;
+  padding: 40px 48px;
+  background-color: var(--system-bg, #F8F8FB);
+}
+
+.pageMaxWidth {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.headerTitle h1 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #202223;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.headerTitle p {
+  font-size: 14px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tabBar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #e1e3e5;
+  margin-bottom: 32px;
+  padding-bottom: 1px;
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.tabBtn:hover { color: #202223; background-color: rgba(0, 0, 0, 0.02); }
+.tabActive { color: var(--deep-navy, #27347B) !important; }
+.tabActive::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--deep-navy, #27347B);
+}
+
+.tabContentFrame { width: 100%; }
+
+.metricsStripSummary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.metricTile {
+  background-color: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.tileLeft { display: flex; flex-direction: column; gap: 6px; }
+.tileLabel { font-family: var(--font-montserrat), sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6d7175; letter-spacing: 0.3px; }
+.tileLeft h3 { font-family: var(--font-poppins), sans-serif; font-size: 24px; font-weight: 700; color: #202223; margin: 0; }
+.tileIcon { font-size: 26px; }
+
+.tileCollected .tileIcon { color: #008060; }
+.tilePending .tileIcon { color: #f57c00; }
+.tileOverdue .tileIcon { color: var(--action-red, #E21F26); }
+
+.toolbarActionBlockRow {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tableCardFrame {
+  background-color: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  overflow-x: auto;
+}
+
+.invoiceTableGrid {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 14px;
+}
+
+.invoiceTableGrid th {
+  background-color: #fafafa;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6d7175;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.invoiceTableGrid td {
+  padding: 16px;
+  border-bottom: 1px solid #e1e3e5;
+  color: #202223;
+  vertical-align: middle;
+}
+
+.invoiceTableGrid tr:last-child td { border-bottom: none; }
+
+.emptyState {
+  text-align: center;
+  padding: 40px !important;
+  color: #6d7175;
+}
+
+.fontCodeIdentity { font-family: monospace; font-weight: 700; color: var(--deep-navy, #27347B); }
+.customerStackCell { display: flex; flex-direction: column; }
+.custPrimaryName { font-weight: 600; }
+.custSubEmail { font-size: 12px; color: #6d7175; }
+.dateStampCell { color: #6d7175 !important; }
+.valueTotalBoldCell { font-weight: 700; color: #202223; }
+
+.statusLabelBadge {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.status_paid { background-color: #e2f9f0; color: #008060; }
+.status_unpaid { background-color: rgba(245, 124, 0, 0.08); color: #f57c00; }
+.status_overdue { background-color: #fff4f4; color: var(--action-red, #E21F26); }
+
+.modalViewportOverlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modalContentCardSheet {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 680px;
+  max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modalHeaderTitleArea {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e1e3e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fafafa;
+}
+
+.modalHeaderTitleArea h3 { font-family: var(--font-montserrat), sans-serif; font-size: 14px; font-weight: 700; color: #202223; margin: 0; text-transform: uppercase; letter-spacing: 0.3px; }
+.modalCloseBtnCross { background: transparent; border: none; font-size: 20px; color: #6d7175; cursor: pointer; display: flex; align-items: center; }
+.modalCloseBtnCross:hover { color: var(--action-red, #E21F26); }
+
+.invoiceInteractiveFormStack { padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; max-height: calc(80vh - 100px); }
+.formRowTwoColumnGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.inputFieldGroupBlock { display: flex; flex-direction: column; gap: 6px; }
+.inputFieldGroupBlock label { font-family: var(--font-montserrat), sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6d7175; }
+
+.invoiceInteractiveFormStack input[type="text"],
+.invoiceInteractiveFormStack input[type="email"],
+.invoiceInteractiveFormStack input[type="number"],
+.invoiceInteractiveFormStack input[type="date"] {
+  height: 40px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13.5px;
+  outline: none;
+  background-color: #ffffff;
+  transition: border-color 0.15s ease;
+}
+.invoiceInteractiveFormStack input:focus { border-color: var(--deep-navy, #27347B); }
+
+.repeaterSectionBlock { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.repeaterOuterSectionHeadingLabel { font-family: var(--font-montserrat), sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #202223 !important; }
+.repeaterItemsContainerStack { display: flex; flex-direction: column; gap: 10px; }
+.repeaterRowItemFlexLine { display: flex; align-items: center; gap: 12px; }
+
+.repeaterDeleteLineBtn {
+  background-color: #ffffff;
+  border: 1px solid #e1e3e5;
+  color: #8c9196;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.repeaterDeleteLineBtn:hover:not(:disabled) { color: var(--action-red, #E21F26); border-color: var(--action-red, #E21F26); background-color: #fff4f4; }
+.repeaterDeleteLineBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.repeaterAddNewRowTextBtnLink {
+  background: transparent;
+  border: none;
+  color: var(--deep-navy, #27347B);
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 0;
+  width: max-content;
+}
+.repeaterAddNewRowTextBtnLink:hover { opacity: 0.8; }
+
+.modalFooterActionsBlockRow { display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #e1e3e5; padding-top: 20px; margin-top: 10px; }
