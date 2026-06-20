@@ -1,10 +1,21 @@
 "use client";
 
-import { FiLogOut } from "react-icons/fi";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FiLogOut, FiLayout, FiGitBranch, FiCreditCard, FiSettings } from "react-icons/fi";
 import { signOut } from "next-auth/react";
 import styles from "./sidebar.module.css";
 
-export default function Sidebar({ items = [], activeId }) {
+const CENTRAL_NAVIGATION_ITEMS = [
+  { id: "canvas", label: "Overview Canvas", icon: FiLayout, href: "/dashboard" },
+  { id: "workflows", label: "Workflows", icon: FiGitBranch, href: "/workflows" },
+  { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, href: "/invoices" },
+  { id: "settings", label: "Settings", icon: FiSettings, href: "/dashboard#settings", disabled: true }
+];
+
+export default function Sidebar({ activeId }) {
+  const pathname = usePathname();
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
@@ -18,20 +29,36 @@ export default function Sidebar({ items = [], activeId }) {
       </div>
 
       <nav className={styles.navigation}>
-        {items.map((item) => {
+        {CENTRAL_NAVIGATION_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = item.id === activeId;
+          
+          const isActive = activeId 
+            ? item.id === activeId 
+            : pathname.startsWith(item.href.split("#")[0]);
+
+          if (item.disabled) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.navItem}
+                disabled
+              >
+                {Icon && <Icon className={styles.navIcon} />}
+                <span>{item.label}</span>
+              </button>
+            );
+          }
+
           return (
-            <button
+            <Link
               key={item.id}
-              type="button"
+              href={item.href}
               className={`${styles.navItem} ${isActive ? styles.activeNav : ""}`}
-              disabled={item.disabled}
-              onClick={item.onClick}
             >
               {Icon && <Icon className={styles.navIcon} />}
               <span>{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>

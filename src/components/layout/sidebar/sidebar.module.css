@@ -27,7 +27,7 @@
 
 .storeAvatar {
   width: 36px;
-  height: 36px;
+ height: 36px;
   background-color: var(--deep-navy, #27347B);
   color: #ffffff;
   border-radius: 6px;
@@ -83,6 +83,7 @@
   transition: all 0.1s ease;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
 }
 
 .navItem:hover:not(:disabled) {
