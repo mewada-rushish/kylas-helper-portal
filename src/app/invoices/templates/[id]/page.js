@@ -1,16 +1,21 @@
+// src/app/invoices/templates/[id]/page.js
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { 
-  FiPlus, FiTrash2, FiCheck, FiArrowLeft, FiPrinter, FiFileText, FiSliders, 
-  FiVideo, FiList, FiImage, FiGrid, FiCode, FiType, FiSearch, FiSettings, 
-  FiMove, FiBold, FiItalic, FiUnderline
+  FiPlus, FiTrash2, FiCheck, FiArrowLeft, FiPrinter, FiSearch, 
+  FiMove, FiBold, FiItalic, FiUnderline, FiAlignLeft, FiAlignCenter, FiAlignRight,
+  FiLock, FiUnlock
 } from "react-icons/fi";
+import DOMPurify from "isomorphic-dompurify";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
 import styles from "./editor.module.css";
+import { ELEMENT_REGISTRY, AVAILABLE_ASSETS } from "@/components/elements/registry";
+
+const generateId = (prefix) => `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
 
 const KYLAS_PRODUCTS = [
   { value: "prod_crm_ent", label: "Kylas CRM Premium Enterprise License" },
@@ -39,73 +44,142 @@ const DOC_DIMENSIONS = {
 const DEFAULT_ADVANCED_STYLE = {
   marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0,
   paddingTop: 12, paddingRight: 12, paddingBottom: 12, paddingLeft: 12,
-  borderType: "none", borderWidth: 0, borderColor: "#e1e3e5", borderRadius: 0, zIndex: 1
-};
-
-const DEFAULT_TYPOGRAPHY = {
-  fontFamily: "Poppins", fontSize: 13, fontWeight: "400", textTransform: "none", 
-  textDecoration: "none", lineHeight: 1.5, letterSpacing: 0
+  borderType: "none", borderWidth: 0, borderColor: "#e2e8f0", borderRadius: 0, zIndex: 1
 };
 
 const INITIAL_DEFAULT_LAYOUT = [
   {
-    sectionId: "sec_header",
+    sectionId: "sec_global_header",
     type: "header",
-    style: { backgroundColor: "#27347B", backgroundImage: "", paddingTop: "15px", paddingBottom: "15px" },
+    style: { backgroundColor: "#27347B", backgroundImage: "", paddingTop: "20px", paddingBottom: "20px" },
     columns: [
       {
-        columnId: "col_h1",
+        columnId: generateId("col"),
         width: 100,
+        advanced: { ...DEFAULT_ADVANCED_STYLE },
         widgets: [
-          { widgetId: "w_h1", type: "header", text: "TAX INVOICE STATEMENT", textAlign: "center", fontSize: 22, textColor: "#ffffff", htmlTag: "h2", advanced: { ...DEFAULT_ADVANCED_STYLE } }
+          { widgetId: generateId("wid"), type: "header", text: "ASMITA OPERATIONS ACCOUNTS STATEMENT", textAlign: "center", fontSize: 20, textColor: "#ffffff", htmlTag: "h2", advanced: { ...DEFAULT_ADVANCED_STYLE } }
         ]
       }
     ]
   },
   {
-    sectionId: "sec_table",
+    sectionId: generateId("sec"),
     type: "standard",
     style: { backgroundColor: "#ffffff", backgroundImage: "", paddingTop: "12px", paddingBottom: "12px" },
     columns: [
       {
-        columnId: "col_t1",
+        columnId: generateId("col"),
         width: 100,
+        advanced: { ...DEFAULT_ADVANCED_STYLE },
         widgets: [
-          { widgetId: "w_tbl1", type: "table", headerBg: "#fafbfc", headerText: "#6d7175", headerAlign: "left", contentAlign: "left", headerPadding: 12, contentPadding: 12, borderColor: "#e1e3e5", zebra: true, advanced: { ...DEFAULT_ADVANCED_STYLE } }
+          { widgetId: generateId("wid"), type: "pricing_table", headerBg: "#f8fafc", headerText: "#475569", headerAlign: "left", contentAlign: "left", headerPadding: 12, contentPadding: 12, borderColor: "#e2e8f0", col1Name: "Product Name", col2Name: "Qty", col3Name: "Total Amount", advanced: { ...DEFAULT_ADVANCED_STYLE } }
+        ]
+      }
+    ]
+  },
+  {
+    sectionId: "sec_global_footer",
+    type: "footer",
+    style: { backgroundColor: "#f8fafc", backgroundImage: "", paddingTop: "16px", paddingBottom: "16px" },
+    columns: [
+      {
+        columnId: generateId("col"),
+        width: 100,
+        advanced: { ...DEFAULT_ADVANCED_STYLE },
+        widgets: [
+          { widgetId: generateId("wid"), type: "subtitle", text: "Generated securely via AsmitA Core ERP Infrastructure Stack. All rights reserved.", textAlign: "center", fontSize: 11, textColor: "#64748b", htmlTag: "p", advanced: { ...DEFAULT_ADVANCED_STYLE } }
         ]
       }
     ]
   }
 ];
 
-const parseTemplateVariables = (rawString, invoiceContext = null) => {
-  if (!rawString) return "";
-  const ctx = invoiceContext || { id: "INV-DEMO-99", customer: "Alpha Society Test Corp", email: "finance@alphacorp.in", productId: "prod_crm_ent", qty: 1, rate: 45000, total: 53100, date: new Date().toISOString().split("T")[0] };
-  const prodObj = KYLAS_PRODUCTS.find(p => p.value === ctx.productId);
-  return rawString
-    .replace(/{{invoice\.id}}/g, ctx.id)
-    .replace(/{{customer\.name}}/g, ctx.customer)
-    .replace(/{{customer\.email}}/g, ctx.email)
-    .replace(/{{product\.name}}/g, prodObj?.label || ctx.productId)
-    .replace(/{{product\.rate}}/g, `₹${ctx.rate.toLocaleString("en-IN")}`)
-    .replace(/{{product\.qty}}/g, ctx.qty)
-    .replace(/{{invoice\.total}}/g, `₹${ctx.total.toLocaleString("en-IN")}`)
-    .replace(/{{current\.date}}/g, ctx.date || new Date().toISOString().split("T")[0]);
+const isValidUrl = (string) => {
+  try {
+    const url = new URL(string);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (_) {
+    return false;
+  }
 };
 
-const buildAdvancedStyles = (adv) => ({
-  margin: `${adv?.marginTop || 0}px ${adv?.marginRight || 0}px ${adv?.marginBottom || 0}px ${adv?.marginLeft || 0}px`,
-  padding: `${adv?.paddingTop || 0}px ${adv?.paddingRight || 0}px ${adv?.paddingBottom || 0}px ${adv?.paddingLeft || 0}px`,
-  backgroundColor: adv?.backgroundColor || "transparent", backgroundImage: adv?.backgroundImage ? `url(${adv.backgroundImage})` : "none", backgroundSize: adv?.backgroundSize || "cover",
-  border: adv?.borderType && adv.borderType !== "none" ? `${adv.borderWidth}px ${adv.borderType} ${adv.borderColor}` : "none",
-  borderRadius: `${adv?.borderRadius || 0}px`, zIndex: adv?.zIndex || 1
-});
+const parseTemplateVariables = (rawString, invoiceContext = null) => {
+  if (!rawString) return "";
+  const ctx = invoiceContext || { 
+    id: "INV-DEMO-99", customer: "Alpha Society Test Corp", email: "finance@alphacorp.in", 
+    productId: "prod_crm_ent", qty: 1, rate: 45000, total: 53100, date: new Date().toISOString().split("T")[0] 
+  };
+  
+  const prodObj = KYLAS_PRODUCTS.find(p => p.value === ctx.productId);
+  const escapeHtml = (unsafe) => String(unsafe)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 
-const buildTypographyStyles = (w) => ({
-  fontFamily: `var(--font-${w.fontFamily?.toLowerCase() || "poppins"}), sans-serif`, fontSize: `${w.fontSize || 13}px`,
-  fontWeight: w.fontWeight || "400", textTransform: w.textTransform || "none", textDecoration: w.textDecoration || "none",
-  lineHeight: w.lineHeight || 1.5, letterSpacing: `${w.letterSpacing || 0}px`, color: w.textColor || "inherit"
-});
+  const interpolated = rawString
+    .replace(/{{invoice\.id}}/g, escapeHtml(ctx.id))
+    .replace(/{{customer\.name}}/g, escapeHtml(ctx.customer))
+    .replace(/{{customer\.email}}/g, escapeHtml(ctx.email))
+    .replace(/{{product\.name}}/g, escapeHtml(prodObj?.label || ctx.productId))
+    .replace(/{{product\.rate}}/g, escapeHtml(`₹${ctx.rate.toLocaleString("en-IN")}`))
+    .replace(/{{product\.qty}}/g, escapeHtml(ctx.qty))
+    .replace(/{{invoice\.total}}/g, escapeHtml(`₹${ctx.total.toLocaleString("en-IN")}`))
+    .replace(/{{current\.date}}/g, escapeHtml(ctx.date || new Date().toISOString().split("T")[0]));
+
+  return DOMPurify.sanitize(interpolated, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    ALLOWED_ATTR: ['href', 'target', 'style', 'class'],
+  });
+};
+
+const buildAdvancedStyles = (adv) => {
+  const safeBgImage = (adv?.backgroundImage && isValidUrl(adv.backgroundImage)) 
+    ? `url('${typeof window !== "undefined" && window.CSS && window.CSS.escape ? window.CSS.escape(adv.backgroundImage) : adv.backgroundImage.replace(/'/g, "\\'")}')` 
+    : "none";
+
+  return {
+    margin: `${adv?.marginTop ?? 0}px ${adv?.marginRight ?? 0}px ${adv?.marginBottom ?? 0}px ${adv?.marginLeft ?? 0}px`,
+    padding: `${adv?.paddingTop ?? 0}px ${adv?.paddingRight ?? 0}px ${adv?.paddingBottom ?? 0}px ${adv?.paddingLeft ?? 0}px`,
+    backgroundColor: adv?.backgroundColor ?? "transparent", 
+    backgroundImage: safeBgImage, 
+    backgroundSize: adv?.backgroundSize ?? "cover",
+    border: adv?.borderType && adv.borderType !== "none" ? `${adv?.borderWidth ?? 0}px ${adv.borderType} ${adv?.borderColor ?? "#e2e8f0"}` : "none",
+    borderRadius: `${adv?.borderRadius ?? 0}px`, 
+    zIndex: adv?.zIndex ?? 1
+  };
+};
+
+const SpacingControl = ({ label, data, prefix, updaterFn }) => {
+  const [locked, setLocked] = useState(false);
+  
+  const handleUpdate = (side, val) => {
+    if (locked) {
+      updaterFn(`${prefix}Top`, val);
+      updaterFn(`${prefix}Right`, val);
+      updaterFn(`${prefix}Bottom`, val);
+      updaterFn(`${prefix}Left`, val);
+    } else {
+      updaterFn(`${prefix}${side}`, val);
+    }
+  };
+
+  return (
+    <div className={styles.inspectorSectionGroup}>
+      <div className={styles.spacingControlHeader}>
+        <label className={styles.controlMetaLabel}>{label} (px)</label>
+        <button type="button" className={styles.lockIconButton} onClick={() => setLocked(!locked)}>
+          {locked ? <FiLock size={12} /> : <FiUnlock size={12} />}
+        </button>
+      </div>
+      <div className={styles.quadInputGrid}>
+        <input type="number" placeholder="Top" value={data[`${prefix}Top`] ?? 0} onChange={e => handleUpdate("Top", Number(e.target.value))} />
+        <input type="number" placeholder="Right" value={data[`${prefix}Right`] ?? 0} onChange={e => handleUpdate("Right", Number(e.target.value))} />
+        <input type="number" placeholder="Bot" value={data[`${prefix}Bottom`] ?? 0} onChange={e => handleUpdate("Bottom", Number(e.target.value))} />
+        <input type="number" placeholder="Left" value={data[`${prefix}Left`] ?? 0} onChange={e => handleUpdate("Left", Number(e.target.value))} />
+      </div>
+    </div>
+  );
+};
 
 export default function TemplateEditorWorkspace() {
   const router = useRouter();
@@ -128,18 +202,29 @@ export default function TemplateEditorWorkspace() {
 
   const wysiwygRef = useRef(null);
 
+  const currentContext = {
+    id: "INV-DEMO-99", 
+    customer: "Alpha Society Test Corp", 
+    email: "finance@alphacorp.in", 
+    productId: tmplProduct !== "none" ? tmplProduct : "prod_crm_ent", 
+    qty: 1, 
+    rate: tmplProduct === "prod_iot_node" ? 15000 : 45000, 
+    total: tmplProduct === "prod_iot_node" ? 17700 : 53100, 
+    date: new Date().toISOString().split("T")[0] 
+  };
+
   useEffect(() => {
     setAutoSaveBadge("Autosaving layout architecture...");
     const saveTimer = setTimeout(() => {
       setAutoSaveBadge("Layout state autosaved");
     }, 1200);
-    return () => setTimeout(saveTimer);
+    return () => clearTimeout(saveTimer);
   }, [tmplName, tmplProduct, tmplFormat, tmplOrientation, tmplSections, tmplTheme]);
 
   const copyToClipboard = (text) => {
     if (typeof window !== "undefined" && navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(() => {
-        alert(`Copied variable to clipboard: ${text}`);
+        alert(`Copied variable: ${text}`);
       }).catch(() => fallbackCopyToClipboard(text));
     } else {
       fallbackCopyToClipboard(text);
@@ -155,30 +240,41 @@ export default function TemplateEditorWorkspace() {
     textArea.select();
     try {
       document.execCommand("copy");
-      alert(`Copied variable to clipboard: ${text}`);
-    } catch (err) {
-      console.error("Fallback clipboard loop failed", err);
-    }
+      alert(`Copied variable: ${text}`);
+    } catch (err) {}
     document.body.removeChild(textArea);
   };
 
   const execWysiwygCommand = (command) => {
+    if (typeof window === "undefined") return;
     document.execCommand(command, false, null);
-    if (wysiwygRef.current && selectedWidgetId) {
-      handleUpdateWidgetField(selectedWidgetId, "htmlContent", wysiwygRef.current.innerHTML);
+    if (selectedWidgetId) {
+      const activeEl = document.getElementById(`wysiwyg-${selectedWidgetId}`);
+      if (activeEl) {
+        handleUpdateWidgetField(selectedWidgetId, "htmlContent", DOMPurify.sanitize(activeEl.innerHTML));
+      }
     }
   };
 
   const handleAddSectionRow = (type = "standard") => {
     const newSection = {
-      sectionId: `sec_${Date.now()}`,
+      sectionId: generateId("sec"),
       type,
       style: { backgroundColor: "transparent", backgroundImage: "", paddingTop: "10px", paddingBottom: "10px" },
       columns: [
-        { columnId: `col_${Date.now()}_1`, width: 100, widgets: [] }
+        { columnId: generateId("col"), width: 100, advanced: { ...DEFAULT_ADVANCED_STYLE }, widgets: [] }
       ]
     };
-    setTmplSections([...tmplSections, newSection]);
+    
+    const footerIdx = tmplSections.findIndex(s => s.sectionId === "sec_global_footer");
+    if (footerIdx !== -1) {
+      const updated = [...tmplSections];
+      updated.splice(footerIdx, 0, newSection);
+      setTmplSections(updated);
+    } else {
+      setTmplSections([...tmplSections, newSection]);
+    }
+    
     setSelectedSectionId(newSection.sectionId);
     setSelectedColumnId(null);
     setSelectedWidgetId(null);
@@ -204,7 +300,7 @@ export default function TemplateEditorWorkspace() {
       const equalWidth = Math.floor(100 / colCount);
       return {
         ...sec,
-        columns: [...sec.columns, { columnId: `col_${Date.now()}`, width: equalWidth, advanced: { ...DEFAULT_ADVANCED_STYLE }, widgets: [] }].map(c => ({ ...c, width: equalWidth }))
+        columns: [...sec.columns, { columnId: generateId("col"), width: equalWidth, advanced: { ...DEFAULT_ADVANCED_STYLE }, widgets: [] }].map(c => ({ ...c, width: equalWidth }))
       };
     }));
   };
@@ -237,7 +333,7 @@ export default function TemplateEditorWorkspace() {
       const targetIdx = colIdx + 1 < sec.columns.length ? colIdx + 1 : colIdx - 1;
       const targetCol = sec.columns[targetIdx];
 
-      if (targetCol.width - diff < 10 || nextWidth < 10) return sec; 
+      if (targetCol.width - diff < 10 || nextWidth < 10 || nextWidth > 90) return sec; 
 
       const newColumns = [...sec.columns];
       newColumns[colIdx] = { ...newColumns[colIdx], width: nextWidth };
@@ -248,22 +344,14 @@ export default function TemplateEditorWorkspace() {
   };
 
   const handleAddWidgetToColumn = (sectionId, columnId, widgetType) => {
-    const baselineConfigs = {
-      header: { text: "INVOICE DISPATCH", htmlTag: "h2", textAlign: "center", fontSize: 24, textColor: "#27347B", ...DEFAULT_TYPOGRAPHY, fontFamily: "Montserrat", fontWeight: "700", advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      subtitle: { text: "Document Subheading Context Row", htmlTag: "h4", textAlign: "left", fontSize: 14, textColor: "#454f5b", ...DEFAULT_TYPOGRAPHY, fontFamily: "Montserrat", fontWeight: "600", advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      text: { htmlContent: "<div>Add copy writing strings natively here.</div>", alignment: "left", textColor: "#202223", ...DEFAULT_TYPOGRAPHY, advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      list: { text: "First Item Leaf Row\nSecond Sequenced Row Element", listType: "bullet", fontSize: 12, textColor: "", markerColor: "", iconSpacing: 8, itemSpacing: 6, advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      image: { imageUrl: "", widthMode: "%", widthValue: 30, borderRadius: 0, borderSize: 0, borderColor: "#e1e3e5", alignment: "left", opacity: 1, objectFit: "contain", advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      video: { videoUrl: "", widthValue: 100, advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      table: { headerBg: "#fafbfc", headerText: "#6d7175", headerAlign: "center", contentAlign: "left", headerPadding: 10, contentPadding: 12, borderColor: "#e1e3e5", zebra: true, advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      metadata: { text: "Variable Node Key: Value", labelColor: "#6d7175", valueColor: "#202223", backgroundColor: "#fafbfc", borderColor: "#e1e3e5", layoutStyle: "vertical", advanced: { ...DEFAULT_ADVANCED_STYLE } },
-      signoff: { text: "Authorized Sign-off Strip Block", name: "Authorized Signatory", title: "AsmitA Operations", signatureUrl: "", stampUrl: "", lineWidth: 1, lineColor: "#202223", lineStyle: "solid", marginTop: 40, alignment: "right", advanced: { ...DEFAULT_ADVANCED_STYLE } }
-    };
+    const registryEntry = ELEMENT_REGISTRY[widgetType];
+    if (!registryEntry) return;
 
     const newWidget = {
-      widgetId: `wid_${Date.now()}`,
+      widgetId: generateId("wid"),
       type: widgetType,
-      ...baselineConfigs[widgetType]
+      ...registryEntry.config.baselineConfig,
+      advanced: { ...DEFAULT_ADVANCED_STYLE }
     };
 
     setTmplSections(tmplSections.map(sec => {
@@ -296,6 +384,78 @@ export default function TemplateEditorWorkspace() {
     })));
   };
 
+  const handleUpdateBasicTableCell = (widgetId, rIndex, cIndex, value) => {
+    setTmplSections(tmplSections.map(sec => ({
+      ...sec,
+      columns: sec.columns.map(col => ({
+        ...col,
+        widgets: col.widgets.map(w => {
+          if (w.widgetId !== widgetId || w.type !== "basic_table") return w;
+          const newData = w.tableData.map((row, r) => 
+            r === rIndex ? row.map((cell, c) => c === cIndex ? value : cell) : row
+          );
+          return { ...w, tableData: newData };
+        })
+      }))
+    })));
+  };
+
+  const handleAddBasicTableRow = (widgetId) => {
+    setTmplSections(tmplSections.map(sec => ({
+      ...sec,
+      columns: sec.columns.map(col => ({
+        ...col,
+        widgets: col.widgets.map(w => {
+          if (w.widgetId !== widgetId || w.type !== "basic_table") return w;
+          const colCount = w.tableData[0]?.length || 1;
+          const newRow = Array(colCount).fill("New Cell");
+          return { ...w, tableData: [...w.tableData, newRow] };
+        })
+      }))
+    })));
+  };
+
+  const handleRemoveBasicTableRow = (widgetId, rIndex) => {
+    setTmplSections(tmplSections.map(sec => ({
+      ...sec,
+      columns: sec.columns.map(col => ({
+        ...col,
+        widgets: col.widgets.map(w => {
+          if (w.widgetId !== widgetId || w.type !== "basic_table") return w;
+          if (w.tableData.length <= 1) return w;
+          return { ...w, tableData: w.tableData.filter((_, i) => i !== rIndex) };
+        })
+      }))
+    })));
+  };
+
+  const handleAddBasicTableCol = (widgetId) => {
+    setTmplSections(tmplSections.map(sec => ({
+      ...sec,
+      columns: sec.columns.map(col => ({
+        ...col,
+        widgets: col.widgets.map(w => {
+          if (w.widgetId !== widgetId || w.type !== "basic_table") return w;
+          return { ...w, tableData: w.tableData.map(row => [...row, "New Col"]) };
+        })
+      }))
+    })));
+  };
+
+  const handleRemoveBasicTableCol = (widgetId, cIndex) => {
+    setTmplSections(tmplSections.map(sec => ({
+      ...sec,
+      columns: sec.columns.map(col => ({
+        ...col,
+        widgets: col.widgets.map(w => {
+          if (w.widgetId !== widgetId || w.type !== "basic_table") return w;
+          if (w.tableData[0]?.length <= 1) return w;
+          return { ...w, tableData: w.tableData.map(row => row.filter((_, i) => i !== cIndex)) };
+        })
+      }))
+    })));
+  };
+
   const handleRemoveWidget = (widgetId) => {
     setTmplSections(tmplSections.map(sec => ({
       ...sec,
@@ -308,6 +468,7 @@ export default function TemplateEditorWorkspace() {
   };
 
   const handleRemoveSectionRow = (sectionId) => {
+    if (sectionId === "sec_global_header" || sectionId === "sec_global_footer") return;
     setTmplSections(tmplSections.filter(sec => sec.sectionId !== sectionId));
     if (selectedSectionId === sectionId) {
       setSelectedSectionId(null);
@@ -344,62 +505,136 @@ export default function TemplateEditorWorkspace() {
     });
   };
 
-  const renderAdvancedInspector = (advData, updaterFn) => {
-    const data = advData || DEFAULT_ADVANCED_STYLE;
-    return (
-      <div className={styles.inspectorTabBody}>
-        <div className={styles.inspectorSectionGroup}>
-          <label className={styles.controlMetaLabel}>Margin Parameters (px)</label>
-          <div className={styles.quadInputGrid}>
-            <input type="number" placeholder="Top" value={data.marginTop || 0} onChange={e => updaterFn("marginTop", Number(e.target.value))} />
-            <input type="number" placeholder="Right" value={data.marginRight || 0} onChange={e => updaterFn("marginRight", Number(e.target.value))} />
-            <input type="number" placeholder="Bot" value={data.marginBottom || 0} onChange={e => updaterFn("marginBottom", Number(e.target.value))} />
-            <input type="number" placeholder="Left" value={data.marginLeft || 0} onChange={e => updaterFn("marginLeft", Number(e.target.value))} />
+  const renderDynamicControlField = (field, widget) => {
+    switch (field.type) {
+      case "text":
+      case "number":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+            <label className={styles.controlMetaLabel}>{field.label}</label>
+            <input 
+              type={field.type} 
+              className={styles.builderTextInputField} 
+              value={widget[field.id] ?? ""} 
+              onChange={(e) => handleUpdateWidgetField(widget.widgetId, field.id, field.type === "number" ? Number(e.target.value) : e.target.value)} 
+            />
           </div>
-        </div>
-        <div className={styles.inspectorSectionGroup}>
-          <label className={styles.controlMetaLabel}>Padding Parameters (px)</label>
-          <div className={styles.quadInputGrid}>
-            <input type="number" placeholder="Top" value={data.paddingTop || 0} onChange={e => updaterFn("paddingTop", Number(e.target.value))} />
-            <input type="number" placeholder="Right" value={data.paddingRight || 0} onChange={e => updaterFn("paddingRight", Number(e.target.value))} />
-            <input type="number" placeholder="Bot" value={data.paddingBottom || 0} onChange={e => updaterFn("paddingBottom", Number(e.target.value))} />
-            <input type="number" placeholder="Left" value={data.paddingLeft || 0} onChange={e => updaterFn("paddingLeft", Number(e.target.value))} />
+        );
+      case "textarea":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+            <label className={styles.controlMetaLabel}>{field.label}</label>
+            <textarea 
+              className={styles.builderTextareaInputField} 
+              rows={field.rows ?? 3} 
+              value={widget[field.id] ?? ""} 
+              onChange={(e) => handleUpdateWidgetField(widget.widgetId, field.id, e.target.value)} 
+            />
           </div>
-        </div>
-        <div className={styles.inspectorSectionGroup}>
-          <label className={styles.controlMetaLabel}>Border Edge Controls</label>
-          <div className={styles.formRowTwoColumnGrid}>
-            <input type="color" className={styles.colorInputElementNode} value={data.borderColor || "#e1e3e5"} onChange={e => updaterFn("borderColor", e.target.value)} />
-            <input type="number" placeholder="Radius px" className={styles.builderTextInputField} value={data.borderRadius || 0} onChange={e => updaterFn("borderRadius", Number(e.target.value))} />
+        );
+      case "select":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+            <label className={styles.controlMetaLabel}>{field.label}</label>
+            <select 
+              className={styles.builderSelectField} 
+              value={widget[field.id] ?? ""} 
+              onChange={(e) => handleUpdateWidgetField(widget.widgetId, field.id, e.target.value)}
+            >
+              {field.options.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
-        </div>
-        <div className={styles.inspectorSectionGroup}>
-          <label className={styles.controlMetaLabel}>Z-Index Depth Layer</label>
-          <input type="number" className={styles.builderTextInputField} value={data.zIndex || 1} onChange={e => updaterFn("zIndex", Number(e.target.value))} />
-        </div>
-      </div>
-    );
+        );
+      case "color":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+            <label className={styles.controlMetaLabel}>{field.label}</label>
+            <input 
+              type="color" 
+              className={styles.colorInputElementNode} 
+              value={widget[field.id] ?? "#000000"} 
+              onChange={(e) => handleUpdateWidgetField(widget.widgetId, field.id, e.target.value)} 
+            />
+          </div>
+        );
+      case "alignment_picker":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+            <label className={styles.controlMetaLabel}>{field.label}</label>
+            {renderAlignmentControl(widget[field.id] ?? "left", (k, v) => handleUpdateWidgetField(widget.widgetId, field.id, v), field.id)}
+          </div>
+        );
+      case "wysiwyg":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+            <label className={styles.controlMetaLabel}>{field.label}</label>
+            <div className={styles.wysiwygToolbarActionButtonsStripRow}>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); execWysiwygCommand("bold"); }}><FiBold /></button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); execWysiwygCommand("italic"); }}><FiItalic /></button>
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); execWysiwygCommand("underline"); }}><FiUnderline /></button>
+            </div>
+            <div 
+              id={`wysiwyg-${widget.widgetId}`}
+              className={styles.wysiwygContentEditableContainerBodyArea} 
+              contentEditable 
+              suppressContentEditableWarning 
+              onInput={(e) => handleUpdateWidgetField(widget.widgetId, field.id, DOMPurify.sanitize(e.currentTarget.innerHTML))} 
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(widget[field.id] ?? "") }} 
+            />
+          </div>
+        );
+      case "basic_table_matrix":
+        return (
+          <div key={field.id} className={styles.inspectorSectionGroup}>
+            <div className={styles.settingsCardHeaderBlockRow} style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: "8px" }}>
+              <label className={styles.controlMetaLabel}>{field.label}</label>
+              <div className={styles.flexRowControls}>
+                 <button type="button" className={styles.miniGridActionBtn} onClick={() => handleAddBasicTableRow(widget.widgetId)}>+ Row</button>
+                 <button type="button" className={styles.miniGridActionBtn} onClick={() => handleAddBasicTableCol(widget.widgetId)}>+ Col</button>
+              </div>
+            </div>
+            <div className={styles.dataGridEditorContainer}>
+               {widget.tableData?.map((row, rIdx) => (
+                 <div key={rIdx} className={styles.dataGridEditorRow}>
+                   {row.map((cell, cIdx) => (
+                     <div key={cIdx} className={styles.dataGridCellWrapper}>
+                       <input 
+                         type="text" 
+                         className={styles.builderTextInputField} 
+                         style={{ height: '30px', fontSize: '11px', padding: '0 6px' }}
+                         value={cell} 
+                         onChange={(e) => handleUpdateBasicTableCell(widget.widgetId, rIdx, cIdx, e.target.value)} 
+                       />
+                       {rIdx === 0 && <button type="button" className={styles.miniGridDeleteColBtn} onClick={() => handleRemoveBasicTableCol(widget.widgetId, cIdx)}>&times;</button>}
+                     </div>
+                   ))}
+                   <button type="button" className={styles.miniGridDeleteRowBtn} onClick={() => handleRemoveBasicTableRow(widget.widgetId, rIdx)}>&times;</button>
+                 </div>
+               ))}
+            </div>
+          </div>
+        );
+      case "checkbox":
+        return (
+          <div key={field.id} className={styles.controlGroupBlock}>
+             <label className={styles.checkboxLabelWrapper}>
+               <input type="checkbox" checked={widget[field.id] ?? false} onChange={(e) => handleUpdateWidgetField(widget.widgetId, field.id, e.target.checked)} />
+               <span className={styles.controlMetaLabel} style={{margin:0, marginLeft:'8px'}}>{field.label}</span>
+             </label>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
-
-  const renderTypographyInspector = (dataObj, updaterFn) => (
-    <div className={styles.inspectorSectionGroup}>
-      <label className={styles.controlMetaLabel}>Typography Module</label>
-      <div className={styles.typoGridRow}>
-        <select className={styles.builderSelectField} value={dataObj.fontFamily || "Poppins"} onChange={e => updaterFn("fontFamily", e.target.value)}><option value="Montserrat">Montserrat</option><option value="Poppins">Poppins</option><option value="Arial">Arial</option><option value="Times New Roman">Serif</option></select>
-        <input type="number" className={styles.builderTextInputField} placeholder="Size" value={dataObj.fontSize || 13} onChange={e => updaterFn("fontSize", Number(e.target.value))} />
-        <select className={styles.builderSelectField} value={dataObj.fontWeight || "400"} onChange={e => updaterFn("fontWeight", e.target.value)}><option value="400">Normal (400)</option><option value="500">Medium (500)</option><option value="600">Semi-Bold (600)</option><option value="700">Bold (700)</option></select>
-        <select className={styles.builderSelectField} value={dataObj.textTransform || "none"} onChange={e => updaterFn("textTransform", e.target.value)}><option value="none">Normal</option><option value="uppercase">UPPERCASE</option><option value="lowercase">lowercase</option><option value="capitalize">Capitalize</option></select>
-        <select className={styles.builderSelectField} value={dataObj.textDecoration || "none"} onChange={e => updaterFn("textDecoration", e.target.value)}><option value="none">None</option><option value="underline">Underline</option><option value="line-through">Strikethrough</option></select>
-        <input type="number" className={styles.builderTextInputField} placeholder="Line Height" step="0.1" value={dataObj.lineHeight || 1.5} onChange={e => updaterFn("lineHeight", Number(e.target.value))} />
-        <input type="number" className={styles.builderTextInputField} placeholder="Letter Spacing" value={dataObj.letterSpacing || 0} onChange={e => updaterFn("letterSpacing", Number(e.target.value))} />
-      </div>
-    </div>
-  );
 
   const activeWidget = tmplSections.flatMap(s => s.columns.flatMap(c => c.widgets)).find(w => w.widgetId === selectedWidgetId);
   const activeSelectedColumn = tmplSections.flatMap(s => s.columns.map(c => ({ ...c, sectionId: s.sectionId }))).find(c => c.columnId === selectedColumnId);
   const activeSelectedSection = tmplSections.find(s => s.sectionId === selectedSectionId);
   const filteredVariables = VARIABLE_DICTIONARY.filter(v => v.token.toLowerCase().includes(variableSearch.toLowerCase()) || v.description.toLowerCase().includes(variableSearch.toLowerCase()));
+  const activeWidgetSchema = activeWidget ? ELEMENT_REGISTRY[activeWidget.type]?.config : null;
 
   return (
     <div className={styles.adminLayout}>
@@ -414,7 +649,7 @@ export default function TemplateEditorWorkspace() {
                   <h1>PDF Section Blueprint Studio</h1>
                   <span className={styles.autoSaveStatusBadge}>{autoSaveBadge}</span>
                 </div>
-                <p>Drag elements straight into drop target zones or configure structural padding matrices</p>
+                <p>Configure advanced structural parameters and map billing parameters down to granular table coordinates</p>
               </div>
             </div>
             <div className={styles.headerActions}>
@@ -434,7 +669,7 @@ export default function TemplateEditorWorkspace() {
                     <Dropdown 
                       options={[{ value: "none", label: "General template (No trigger override)" }, ...KYLAS_PRODUCTS]} 
                       selected={tmplProduct} 
-                      onChange={(val) => setTmplProduct(val)} 
+                      onSelect={(val) => setTmplProduct(val)} 
                     />
                   </div>
 
@@ -444,7 +679,7 @@ export default function TemplateEditorWorkspace() {
                       <Dropdown 
                         options={[{ value: "a4", label: "DIN A4 Standard" }, { value: "letter", label: "US Letter Sheet" }, { value: "legal", label: "US Legal Size" }]} 
                         selected={tmplFormat} 
-                        onChange={(val) => setTmplFormat(val)} 
+                        onSelect={(val) => setTmplFormat(val)} 
                       />
                     </div>
                     <div className={styles.controlGroupBlock}>
@@ -452,7 +687,7 @@ export default function TemplateEditorWorkspace() {
                       <Dropdown 
                         options={[{ value: "portrait", label: "Portrait Vertical" }, { value: "landscape", label: "Landscape Horiz" }]} 
                         selected={tmplOrientation} 
-                        onChange={(val) => setTmplOrientation(val)} 
+                        onSelect={(val) => setTmplOrientation(val)} 
                       />
                     </div>
                   </div>
@@ -460,10 +695,25 @@ export default function TemplateEditorWorkspace() {
                   <div className={styles.themeCustomizationWidgetBoxContainer}>
                     <label className={styles.controlMetaLabel}>Global Token Colors Map</label>
                     <div className={styles.themeFormInputsDualGridInlineRow}>
-                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Brand Accent</span><input type="color" value={tmplTheme.primaryColor} onChange={(e) => setTmplTheme({ ...tmplTheme, primaryColor: e.target.value })} /></div>
-                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Font Text</span><input type="color" value={tmplTheme.textColor} onChange={(e) => setTmplTheme({ ...tmplTheme, textColor: e.target.value })} /></div>
-                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Sheet BG</span><input type="color" value={tmplTheme.backgroundColor} onChange={(e) => setTmplTheme({ ...tmplTheme, backgroundColor: e.target.value })} /></div>
-                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Grid Border</span><input type="color" value={tmplTheme.borderColor} onChange={(e) => setTmplTheme({ ...tmplTheme, borderColor: e.target.value })} /></div>
+                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Brand Accent</span><input type="color" className={styles.colorInputElementNode} value={tmplTheme.primaryColor} onChange={(e) => setTmplTheme({ ...tmplTheme, primaryColor: e.target.value })} /></div>
+                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Font Text</span><input type="color" className={styles.colorInputElementNode} value={tmplTheme.textColor} onChange={(e) => setTmplTheme({ ...tmplTheme, textColor: e.target.value })} /></div>
+                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Sheet BG</span><input type="color" className={styles.colorInputElementNode} value={tmplTheme.backgroundColor} onChange={(e) => setTmplTheme({ ...tmplTheme, backgroundColor: e.target.value })} /></div>
+                      <div className={styles.controlGroupBlock}><span className={styles.inlineColorLabelMini}>Grid Border</span><input type="color" className={styles.colorInputElementNode} value={tmplTheme.borderColor} onChange={(e) => setTmplTheme({ ...tmplTheme, borderColor: e.target.value })} /></div>
+                    </div>
+                  </div>
+
+                  <div className={styles.componentAssetLibraryCardTrayBlock} style={{ borderTop: "1px solid #e2e8f0", paddingTop: "20px" }}>
+                    <label className={styles.controlMetaLabel}>Available Grid Elements</label>
+                    <div className={styles.globalAssetListInstructionalText}>Select a column on the canvas layout sheet to inject these modules:</div>
+                    <div className={styles.componentAssetIconsGridMatrixItemsStack}>
+                      {AVAILABLE_ASSETS.map(asset => {
+                        const Icon = asset.icon;
+                        return (
+                          <div key={asset.type} className={styles.disabledPaletteAssetItemCard}>
+                            <Icon /> <span>{asset.label}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -474,31 +724,60 @@ export default function TemplateEditorWorkspace() {
               {activeSelectedSection && !selectedColumnId && !selectedWidgetId && (
                 <div className={styles.inlineComponentSettingsEditorCard}>
                   <div className={styles.settingsCardHeaderBlockRow}><h6>Section Layer Attributes</h6><button className={styles.dismissSettingsBtn} onClick={() => setSelectedSectionId(null)}>&times;</button></div>
-                  <div className={styles.inspectorTabsStrip}><button className={styles.tabActive}>Advanced Properties</button></div>
-                  <div className={styles.controlGroupBlock} style={{marginTop: "12px"}}>
-                    <label className={styles.controlMetaLabel}>Background Fill</label>
-                    <input type="color" className={styles.colorInputElementNode} value={activeSelectedSection.style?.backgroundColor || "#ffffff"} onChange={(e) => handleUpdateSectionStyle(selectedSectionId, "backgroundColor", e.target.value)} />
+                  <div className={styles.inspectorTabsStrip}>
+                    <button className={inspectorTab === "content" ? styles.tabActive : ""} onClick={() => setInspectorTab("content")}>Content</button>
+                    <button className={inspectorTab === "advanced" ? styles.tabActive : ""} onClick={() => setInspectorTab("advanced")}>Advanced</button>
                   </div>
-                  {renderAdvancedInspector(activeSelectedSection.style, (k, v) => handleUpdateSectionStyle(selectedSectionId, k, v))}
+                  {inspectorTab === "content" && (
+                    <div className={styles.controlGroupBlock} style={{marginTop: "12px"}}>
+                      <label className={styles.controlMetaLabel}>Background Fill</label>
+                      <input type="color" className={styles.colorInputElementNode} value={activeSelectedSection.style?.backgroundColor ?? "#ffffff"} onChange={(e) => handleUpdateSectionStyle(selectedSectionId, "backgroundColor", e.target.value)} />
+                    </div>
+                  )}
+                  {inspectorTab === "advanced" && renderAdvancedInspector(activeSelectedSection.style, (k, v) => handleUpdateSectionStyle(selectedSectionId, k, v))}
                 </div>
               )}
 
               {activeSelectedColumn && !activeWidget && (
                 <div className={styles.sidebarColumnManagerBoxPanel}>
                   <div className={styles.sidebarColumnMetaLabelRow}><span>Active Grid Column Layout</span><button className={styles.dismissSettingsBtnMini} onClick={() => setSelectedColumnId(null)}>&times;</button></div>
-                  <div className={styles.sidebarColumnSliderControlRow}>
-                    <label>Flex Grid Width: {activeSelectedColumn.width}%</label>
-                    <input type="range" min="10" max="100" value={activeSelectedColumn.width} onChange={(e) => handleResizeColumnWidth(activeSelectedColumn.sectionId, activeSelectedColumn.columnId, Number(e.target.value))} />
+                  <div className={styles.inspectorTabsStrip}>
+                    <button className={inspectorTab === "content" ? styles.tabActive : ""} onClick={() => setInspectorTab("content")}>Content</button>
+                    <button className={inspectorTab === "advanced" ? styles.tabActive : ""} onClick={() => setInspectorTab("advanced")}>Advanced</button>
                   </div>
-                  <button type="button" className={styles.sidebarDeleteColumnBtnLine} onClick={() => handleRemoveColumnFromSection(activeSelectedColumn.sectionId, activeSelectedColumn.columnId)}><FiTrash2 /> Remove Selected Column Node</button>
-                  <div className={styles.inspectorTabsStrip} style={{marginTop: "16px"}}><button className={styles.tabActive}>Advanced Properties</button></div>
-                  {renderAdvancedInspector(activeSelectedColumn.advanced, (k, v) => handleUpdateColumnStyle(activeSelectedColumn.sectionId, activeSelectedColumn.columnId, k, v))}
+                  
+                  {inspectorTab === "content" && (
+                    <>
+                      <div className={styles.sidebarColumnSliderControlRow} style={{ marginTop: "12px" }}>
+                        <label>Flex Grid Width: {activeSelectedColumn.width}%</label>
+                        <input type="range" min="10" max="90" value={activeSelectedColumn.width} onChange={(e) => handleResizeColumnWidth(activeSelectedColumn.sectionId, activeSelectedColumn.columnId, Number(e.target.value))} />
+                      </div>
+                      
+                      <div className={styles.componentAssetLibraryCardTrayBlock} style={{ borderTop: "1px solid #e2e8f0", paddingTop: "14px", marginTop: "10px" }}>
+                        <label className={styles.controlMetaLabel}>Components Deck Shelf</label>
+                        <div className={styles.componentAssetIconsGridMatrixItemsStack}>
+                          {AVAILABLE_ASSETS.map(asset => {
+                            const Icon = asset.icon;
+                            return (
+                              <button key={asset.type} onClick={() => handleAddWidgetToColumn(selectedSectionId, selectedColumnId, asset.type)} draggable onDragStart={e => { e.dataTransfer.setData("new_widget", asset.type); setIsDragging(true); }} onDragEnd={() => setIsDragging(false)}>
+                                <Icon /> <span>{asset.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <button type="button" className={styles.sidebarDeleteColumnBtnLine} style={{ marginTop: "12px" }} onClick={() => handleRemoveColumnFromSection(activeSelectedColumn.sectionId, activeSelectedColumn.columnId)}><FiTrash2 /> Remove Selected Column Node</button>
+                    </>
+                  )}
+                  
+                  {inspectorTab === "advanced" && renderAdvancedInspector(activeSelectedColumn.advanced, (k, v) => handleUpdateColumnStyle(activeSelectedColumn.sectionId, activeSelectedColumn.columnId, k, v))}
                 </div>
               )}
 
               {activeWidget && (
                 <div className={styles.inlineComponentSettingsEditorCard}>
-                  <div className={styles.settingsCardHeaderBlockRow}><h6>{activeWidget.type.toUpperCase()} Node Property</h6><button className={styles.dismissSettingsBtn} onClick={() => setSelectedWidgetId(null)}>&times;</button></div>
+                  <div className={styles.settingsCardHeaderBlockRow}><h6>{activeWidget.type.toUpperCase().replace("_", " ")} Node Property</h6><button className={styles.dismissSettingsBtn} onClick={() => setSelectedWidgetId(null)}>&times;</button></div>
                   <div className={styles.inspectorTabsStrip}>
                     <button className={inspectorTab === "content" ? styles.tabActive : ""} onClick={() => setInspectorTab("content")}>Content</button>
                     <button className={inspectorTab === "style" ? styles.tabActive : ""} onClick={() => setInspectorTab("style")}>Style</button>
@@ -507,167 +786,11 @@ export default function TemplateEditorWorkspace() {
 
                   {inspectorTab === "advanced" && renderAdvancedInspector(activeWidget.advanced, (k, v) => handleUpdateWidgetAdvanced(activeWidget.widgetId, k, v))}
 
-                  {inspectorTab === "content" && (
+                  {(inspectorTab === "content" || inspectorTab === "style") && (
                     <div className={styles.inspectorTabBody}>
-                      {(activeWidget.type === "header" || activeWidget.type === "subtitle") && (
-                        <>
-                          <div className={styles.controlGroupBlock}>
-                            <label className={styles.controlMetaLabel}>HTML Element Tag</label>
-                            <Dropdown 
-                              options={[{ value: "h1", label: "Heading H1 Layer" }, { value: "h2", label: "Heading H2 Layer" }, { value: "h3", label: "Heading H3 Layer" }, { value: "h4", label: "Subheading H4" }, { value: "p", label: "Paragraph Standard" }]} 
-                              selected={activeWidget.htmlTag || "h2"} 
-                              onChange={(val) => handleUpdateWidgetField(activeWidget.widgetId, "htmlTag", val)} 
-                            />
-                          </div>
-                          <div className={styles.controlGroupBlock}>
-                            <label className={styles.controlMetaLabel}>Display Copy Text</label>
-                            <textarea className={styles.builderTextareaInputField} rows={3} value={activeWidget.text || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "text", e.target.value)} />
-                          </div>
-                        </>
-                      )}
-
-                      {activeWidget.type === "text" && (
-                        <div className={styles.controlGroupBlock}>
-                          <label className={styles.controlMetaLabel}>WYSIWYG Rich Editor Canvas</label>
-                          <div className={styles.wysiwygToolbarActionButtonsStripRow}>
-                            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => execWysiwygCommand("bold")}><FiBold /></button>
-                            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => execWysiwygCommand("italic")}><FiItalic /></button>
-                            <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => execWysiwygCommand("underline")}><FiUnderline /></button>
-                          </div>
-                          <div ref={wysiwygRef} className={styles.wysiwygContentEditableContainerBodyArea} contentEditable suppressContentEditableWarning onBlur={(e) => handleUpdateWidgetField(activeWidget.widgetId, "htmlContent", e.target.innerHTML)} dangerouslySetInnerHTML={{ __html: activeWidget.htmlContent }} />
-                        </div>
-                      )}
-
-                      {activeWidget.type === "list" && (
-                        <div className={styles.controlGroupBlock}>
-                          <label className={styles.controlMetaLabel}>Multi-Line Record Lists Row Data</label>
-                          <textarea className={styles.builderTextareaInputField} rows={4} value={activeWidget.text || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "text", e.target.value)} />
-                        </div>
-                      )}
-
-                      {activeWidget.type === "image" && (
-                        <div className={styles.controlGroupBlock}>
-                          <label className={styles.controlMetaLabel}>Source Image Resource URL Address</label>
-                          <input type="text" className={styles.builderTextInputField} placeholder="https://domain.com/asset.png" value={activeWidget.imageUrl || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "imageUrl", e.target.value)} />
-                        </div>
-                      )}
-
-                      {activeWidget.type === "signoff" && (
-                        <div className={styles.signoffInspectorFieldsStackPanel}>
-                          <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Signature Heading Label</label><input type="text" className={styles.builderTextInputField} value={activeWidget.text || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "text", e.target.value)} /></div>
-                          <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Signatory Representative Legal Full Name</label><input type="text" className={styles.builderTextInputField} value={activeWidget.name || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "name", e.target.value)} /></div>
-                          <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Signatory Official Designation Title Descriptor</label><input type="text" className={styles.builderTextInputField} value={activeWidget.title || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "title", e.target.value)} /></div>
-                          <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Transparent E-Signature PNG Asset URL Path</label><input type="text" className={styles.builderTextInputField} value={activeWidget.signatureUrl || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "signatureUrl", e.target.value)} /></div>
-                          <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Official Corporate Seal Stamp Validation Overlay URL</label><input type="text" className={styles.builderTextInputField} value={activeWidget.stampUrl || ""} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "stampUrl", e.target.value)} /></div>
-                        </div>
-                      )}
+                      {activeWidgetSchema?.fields[inspectorTab]?.map(field => renderDynamicControlField(field, activeWidget))}
                     </div>
                   )}
-
-                  {inspectorTab === "style" && (
-                    <div className={styles.inspectorTabBody}>
-                      {activeWidget.type !== "image" && activeWidget.type !== "table" && (
-                        <div className={styles.formRowTwoColumnGrid}>
-                          <div className={styles.controlGroupBlock}>
-                            <label className={styles.controlMetaLabel}>Font Hex Color</label>
-                            <input type="color" className={styles.colorInputElementNode} value={activeWidget.textColor || "#202223"} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "textColor", e.target.value)} />
-                          </div>
-                          <div className={styles.controlGroupBlock}>
-                            <label className={styles.controlMetaLabel}>Aesthetic Alignment</label>
-                            <Dropdown 
-                              options={[{ value: "left", label: "Left Alignment" }, { value: "center", label: "Centered Axis" }, { value: "right", label: "Right Alignment" }]} 
-                              selected={activeWidget.textAlign || activeWidget.alignment || "left"} 
-                              onChange={(val) => handleUpdateWidgetField(activeWidget.widgetId, activeWidget.type === "signoff" ? "alignment" : "textAlign", val)} 
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {(activeWidget.type === "header" || activeWidget.type === "subtitle") && (
-                        <div className={styles.formRowTwoColumnGrid}>
-                          <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Size em/px</label><input type="number" className={styles.builderTextInputField} value={activeWidget.fontSize || 14} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "fontSize", Number(e.target.value))} /></div>
-                          <div className={styles.controlGroupBlock}>
-                            <label className={styles.controlMetaLabel}>Font Weights</label>
-                            <Dropdown 
-                              options={[{ value: "400", label: "Regular Weight" }, { value: "600", label: "Semi Bold" }, { value: "700", label: "Bold Weight" }]} 
-                              selected={String(activeWidget.fontWeight || "400")} 
-                              onChange={(val) => handleUpdateWidgetField(activeWidget.widgetId, "fontWeight", val)} 
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {activeWidget.type === "header" || activeWidget.type === "subtitle" || activeWidget.type === "text" || activeWidget.type === "list" || activeWidget.type === "metadata" || activeWidget.type === "signoff" ? (
-                        renderTypographyInspector(activeWidget, (k, v) => handleUpdateWidgetField(activeWidget.widgetId, k, v))
-                      ) : null}
-
-                      {activeWidget.type === "list" && (
-                        <div className={styles.listSpecificControlsStackPanel}>
-                          <div className={styles.controlGroupBlock}>
-                            <label className={styles.controlMetaLabel}>Vector Marker Protocol</label>
-                            <Dropdown 
-                              options={[{ value: "bullet", label: "Circular Dots Layer" }, { value: "number", label: "Sequential Numeric" }, { value: "icon", label: "Custom Validation ✓ Icons" }]} 
-                              selected={activeWidget.listType || "bullet"} 
-                              onChange={(val) => handleUpdateWidgetField(activeWidget.widgetId, "listType", val)} 
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {activeWidget.type === "table" && (
-                        <div className={styles.tablePropertyInspectorStackDeck}>
-                          <div className={styles.formRowTwoColumnGrid}>
-                            <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Header Pad</label><input type="number" className={styles.builderTextInputField} value={activeWidget.headerPadding || 10} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "headerPadding", Number(e.target.value))} /></div>
-                            <div className={styles.controlGroupBlock}><label className={styles.controlMetaLabel}>Cell Gutter Pad</label><input type="number" className={styles.builderTextInputField} value={activeWidget.contentPadding || 12} onChange={(e) => handleUpdateWidgetField(activeWidget.widgetId, "contentPadding", Number(e.target.value))} /></div>
-                          </div>
-                          <div className={styles.formRowTwoColumnGrid}>
-                            <div className={styles.controlGroupBlock}>
-                              <label className={styles.controlMetaLabel}>Header Alignment</label>
-                              <Dropdown 
-                                options={[{ value: "left", label: "Left" }, { value: "center", label: "Center" }, { value: "right", label: "Right" }]} 
-                                selected={activeWidget.headerAlign || "center"} 
-                                onChange={(val) => handleUpdateWidgetField(activeWidget.widgetId, "headerAlign", val)} 
-                              />
-                            </div>
-                            <div className={styles.controlGroupBlock}>
-                              <label className={styles.controlMetaLabel}>Content Alignment</label>
-                              <Dropdown 
-                                options={[{ value: "left", label: "Left" }, { value: "center", label: "Center" }, { value: "right", label: "Right" }]} 
-                                selected={activeWidget.contentAlign || "left"} 
-                                onChange={(val) => handleUpdateWidgetField(activeWidget.widgetId, "contentAlign", val)} 
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {selectedColumnId && !selectedWidgetId && (
-                <div className={styles.componentAssetLibraryCardTrayBlock}>
-                  <label className={styles.controlMetaLabel}>Components Deck Shelf</label>
-                  <div className={styles.componentAssetIconsGridMatrixItemsStack}>
-                    {[
-                      { type: "header", label: "Title Banner", icon: FiType },
-                      { type: "subtitle", label: "Section Label", icon: FiSliders },
-                      { type: "text", label: "Paragraph Doc", icon: FiFileText },
-                      { type: "list", label: "Lists Engine", icon: FiList },
-                      { type: "image", label: "Branding Box", icon: FiImage },
-                      { type: "video", label: "Media Stream", icon: FiVideo },
-                      { type: "table", label: "Items Matrix", icon: FiGrid },
-                      { type: "metadata", label: "Variables Card", icon: FiCode },
-                      { type: "signoff", label: "Legal Stamp", icon: FiCheck }
-                    ].map(asset => {
-                      const Icon = asset.icon;
-                      return (
-                        <button key={asset.type} onClick={() => handleAddWidgetToColumn(selectedSectionId, selectedColumnId, asset.type)} draggable onDragStart={e => { e.dataTransfer.setData("new_widget", asset.type); setIsDragging(true); }} onDragEnd={() => setIsDragging(false)}>
-                          <Icon /> <span>{asset.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
               )}
 
@@ -694,149 +817,88 @@ export default function TemplateEditorWorkspace() {
               </div>
               <div className={styles.canvasPreviewViewportFrameA4AestheticSheet}>
                 <div className={styles.pdfInvoiceLayoutContainerMock} style={{ width: DOC_DIMENSIONS[tmplFormat][tmplOrientation].width, minHeight: DOC_DIMENSIONS[tmplFormat][tmplOrientation].height, backgroundColor: tmplTheme.backgroundColor, borderColor: tmplTheme.borderColor }}>
-                  {tmplSections.map((sec) => (
-                    <div 
-                      key={sec.sectionId} 
-                      className={`${styles.renderedCanvasSectionRow} ${selectedSectionId === sec.sectionId ? styles.sectionRowActiveSelected : ""}`}
-                      style={buildAdvancedStyles(sec.style)}
-                      onClick={(e) => { e.stopPropagation(); setSelectedSectionId(sec.sectionId); setSelectedColumnId(null); setSelectedWidgetId(null); }}
-                    >
-                      <div className={styles.sectionRowActionFloatingOverlay}>
-                        <button className={styles.actionBtnMiniPurge} onClick={(e) => { e.stopPropagation(); handleRemoveSectionRow(sec.sectionId); }}>&times;</button>
-                        <button className={styles.actionBtnMiniAdd} onClick={(e) => { e.stopPropagation(); handleAddColumnToSection(sec.sectionId); }}>+ Grid Col</button>
-                      </div>
+                  {tmplSections.map((sec) => {
+                    const isSystemSec = sec.sectionId === "sec_global_header" || sec.sectionId === "sec_global_footer";
+                    return (
+                      <div 
+                        key={sec.sectionId} 
+                        className={`${styles.renderedCanvasSectionRow} ${selectedSectionId === sec.sectionId ? styles.sectionRowActiveSelected : ""}`}
+                        style={{
+                          margin: `${sec.style?.marginTop ?? 0}px ${sec.style?.marginRight ?? 0}px ${sec.style?.marginBottom ?? 0}px ${sec.style?.marginLeft ?? 0}px`,
+                          padding: `${sec.style?.paddingTop ?? 0}px ${sec.style?.paddingRight ?? 0}px ${sec.style?.paddingBottom ?? 0}px ${sec.style?.paddingLeft ?? 0}px`,
+                          backgroundColor: sec.style?.backgroundColor ?? "transparent"
+                        }}
+                        onClick={(e) => { e.stopPropagation(); setSelectedSectionId(sec.sectionId); setSelectedColumnId(null); setSelectedWidgetId(null); }}
+                      >
+                        <div className={styles.sectionRowActionFloatingOverlay}>
+                          {!isSystemSec && <button type="button" className={styles.actionBtnMiniPurge} onClick={(e) => { e.stopPropagation(); handleRemoveSectionRow(sec.sectionId); }}>&times;</button>}
+                          <button type="button" className={styles.actionBtnMiniAdd} onClick={(e) => { e.stopPropagation(); handleAddColumnToSection(sec.sectionId); }}>+ Grid Col</button>
+                        </div>
 
-                      <div className={styles.flexGridColumnsContainerRow}>
-                        {sec.columns.map((col) => (
-                          <div 
-                            key={col.columnId}
-                            className={`${styles.renderedCanvasColumnNode} ${selectedColumnId === col.columnId ? styles.columnNodeActiveSelected : ""} ${isDragging ? styles.dropZoneCandidateHighlight : ""}`}
-                            style={{ flex: `0 0 ${col.width}%`, width: `${col.width}%`, ...buildAdvancedStyles(col.advanced) }}
-                            onClick={(e) => { e.stopPropagation(); setSelectedSectionId(sec.sectionId); setSelectedColumnId(col.columnId); setSelectedWidgetId(null); }}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => {
-                              e.preventDefault(); e.stopPropagation(); setIsDragging(false);
-                              const newWidgetType = e.dataTransfer.getData("new_widget");
-                              if (newWidgetType) { handleAddWidgetToColumn(sec.sectionId, col.columnId, newWidgetType); return; }
-                              const moveDataStr = e.dataTransfer.getData("move_widget");
-                              if (moveDataStr) {
-                                 const moveData = JSON.parse(moveDataStr);
-                                 handleMoveWidgetAcrossColumns(moveData.sectionId, moveData.columnId, moveData.widgetId, sec.sectionId, col.columnId);
-                              }
-                            }}
-                          >
-                            <div className={styles.columnWidgetsVerticalStackList}>
-                              {col.widgets.map((widget) => {
-                                const isSelected = selectedWidgetId === widget.widgetId;
-                                const tStyles = buildTypographyStyles(widget);
-                                return (
-                                  <div 
-                                    key={widget.widgetId}
-                                    draggable
-                                    onDragStart={(e) => { e.dataTransfer.setData("move_widget", JSON.stringify({ sectionId: sec.sectionId, columnId: col.columnId, widgetId: widget.widgetId })); setIsDragging(true); e.stopPropagation(); }}
-                                    onDragEnd={() => setIsDragging(false)}
-                                    className={`${styles.canvasWidgetRenderLeafNode} ${isSelected ? styles.widgetLeafActiveSelected : ""}`}
-                                    style={buildAdvancedStyles(widget.advanced)}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedSectionId(sec.sectionId); setSelectedColumnId(col.columnId); setSelectedWidgetId(widget.widgetId); setInspectorTab("content"); }}
-                                  >
-                                    {isSelected && (
-                                      <div className={styles.widgetOverlayToolbarTopRight}>
-                                        <button className={styles.widgetPurgeMiniBtnFloating} onClick={(e) => { e.stopPropagation(); handleRemoveWidget(widget.widgetId); }}>&times;</button>
-                                        <span className={styles.widgetDragHandleIndicator}><FiMove /></span>
-                                      </div>
-                                    )}
-
-                                    {widget.type === "header" && (
-                                      <h2 className={styles.renderedHeaderTitleNode} style={{ ...tStyles, textAlign: widget.textAlign || "center" }}>
-                                        {parseTemplateVariables(widget.text)}
-                                      </h2>
-                                    )}
-
-                                    {widget.type === "subtitle" && (
-                                      <h4 className={styles.renderedSubtitleNode} style={{ ...tStyles, textAlign: widget.textAlign || "left" }}>
-                                        {parseTemplateVariables(widget.text)}
-                                      </h4>
-                                    )}
-
-                                    {widget.type === "text" && (
-                                      <div className={styles.renderedParagraphBodyText} style={{ ...tStyles, textAlign: widget.textAlign || "left" }} dangerouslySetInnerHTML={{ __html: parseTemplateVariables(widget.htmlContent) }} />
-                                    )}
-
-                                    {widget.type === "list" && (
-                                      <div className={styles.renderedListWrapperEngine} style={tStyles}>
-                                        <ul className={styles.pdfTemplateUnorderedListBlock} style={{ gap: `${widget.itemSpacing || 6}px` }}>
-                                          {(widget.text || "").split("\n").map((item, idx) => item.trim() && (
-                                            <li key={idx} className={styles.customIconBulletLineItem}>
-                                              <span style={{ color: widget.markerColor || tmplTheme.primaryColor, marginRight: `${widget.iconSpacing || 8}px` }}>✓</span>
-                                              {parseTemplateVariables(item)}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-
-                                    {widget.type === "image" && (
-                                      <div style={{ display: "flex", justifyContent: widget.alignment || "center" }}>
-                                        <img src={widget.imageUrl || "https://via.placeholder.com/150x50.png?text=Branding+Asset"} style={{ width: widget.widthMode === "%" ? `${widget.widthValue || 30}%` : `${widget.widthValue || 150}px`, opacity: widget.opacity || 1, objectFit: widget.objectFit || "contain" }} alt="Canvas Graphic Node" />
-                                      </div>
-                                    )}
-
-                                    {widget.type === "video" && (
-                                      <div style={{ width: `${widget.widthValue || 100}%`, background: "#1e1e1e", padding: 20, textAlign: "center", color: "#fff", borderRadius: 6, margin: "0 auto" }}><FiVideo size={24} color="#E21F26" /><div style={{ fontSize: 10, marginTop: 8 }}>{widget.videoUrl || "Video Link Placeholder"}</div></div>
-                                    )}
-
-                                    {widget.type === "table" && (
-                                      <table width="100%" className={styles.canvasRenderedInvoiceItemsGridTable} style={{ ...tStyles, borderColor: widget.borderColor || tmplTheme.borderColor }}>
-                                        <thead>
-                                          <tr style={{ backgroundColor: widget.headerBg || "#fafafa", color: widget.headerText || "#6d7175" }}>
-                                            <th style={{ textAlign: widget.headerAlign || "left", padding: `${widget.headerPadding || 10}px` }}>Sync catalog description item</th>
-                                            <th style={{ textAlign: "center", padding: `${widget.headerPadding || 10}px`, width: "60px" }}>Qty</th>
-                                            <th style={{ textAlign: "right", padding: `${widget.headerPadding || 10}px`, width: "120px" }}>Net Value</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          <tr>
-                                            <td style={{ padding: `${widget.contentPadding || 12}px` }}>Standard Smart Home IoT Sensor Node Override Layout Module</td>
-                                            <td style={{ textAlign: "center", padding: `${widget.contentPadding || 12}px` }}>1</td>
-                                            <td style={{ textAlign: "right", padding: `${widget.contentPadding || 12}px`, fontWeight: "600" }}>₹45,000.00</td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
-                                    )}
-
-                                    {widget.type === "metadata" && (
-                                      <div className={styles.renderedMetadataPanelBoxGrid} style={{ ...tStyles, backgroundColor: widget.backgroundColor || "#fafbfc", borderColor: widget.borderColor || tmplTheme.borderColor }}>
-                                        {(widget.text || "Key: Value").split("\n").map((line, idx) => {
-                                          const tokens = line.split(":");
-                                          return (
-                                            <div key={idx} className={styles.metadataPanelBoxStringLine}>
-                                              <span style={{ color: widget.labelColor || "#6d7175", fontWeight: "600" }}>{tokens[0]}:</span>
-                                              <span>{parseTemplateVariables(tokens.slice(1).join(":"))}</span>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-
-                                    {widget.type === "signoff" && (
-                                      <div className={styles.renderedCorporateSignoffStripZone} style={{ ...tStyles, marginTop: `${widget.marginTop || 40}px`, textAlign: widget.alignment || "right" }}>
-                                        <div style={{ display: "inline-block", borderTop: `${widget.lineWidth || 1}px ${widget.lineStyle || "solid"} ${widget.lineColor || "#202223"}`, paddingTop: "8px", minWidth: "200px" }}>
-                                          <div style={{ fontStyle: "italic", fontSize: "11px", color: widget.textColor || "#6d7175", marginBottom: "4px" }}>{widget.text}</div>
-                                          <div style={{ fontWeight: "700" }}>{widget.name}</div>
-                                          <div style={{ fontSize: "12px" }}>{widget.title}</div>
+                        <div className={styles.flexGridColumnsContainerRow}>
+                          {sec.columns.map((col) => (
+                            <div 
+                              key={col.columnId}
+                              className={`${styles.renderedCanvasColumnNode} ${selectedColumnId === col.columnId ? styles.columnNodeActiveSelected : ""} ${isDragging ? styles.dropZoneCandidateHighlight : ""}`}
+                              style={{ flex: `0 0 ${col.width}%`, width: `${col.width}%`, ...buildAdvancedStyles(col.advanced) }}
+                              onClick={(e) => { e.stopPropagation(); setSelectedSectionId(sec.sectionId); setSelectedColumnId(col.columnId); setSelectedWidgetId(null); }}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => {
+                                e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+                                const newWidgetType = e.dataTransfer.getData("new_widget");
+                                if (newWidgetType) { handleAddWidgetToColumn(sec.sectionId, col.columnId, newWidgetType); return; }
+                                const moveDataStr = e.dataTransfer.getData("move_widget");
+                                if (moveDataStr) {
+                                   try {
+                                     const moveData = JSON.parse(moveDataStr);
+                                     handleMoveWidgetAcrossColumns(moveData.sectionId, moveData.columnId, moveData.widgetId, sec.sectionId, col.columnId);
+                                   } catch (err) {}
+                                }
+                              }}
+                            >
+                              <button type="button" className={styles.actionBtnColumnMiniPurge} onClick={(e) => { e.stopPropagation(); handleRemoveColumnFromSection(sec.sectionId, col.columnId); }} title="Remove Column Node">&times;</button>
+                              
+                              <div className={styles.columnWidgetsVerticalStackList}>
+                                {col.widgets.map((widget) => {
+                                  const isSelected = selectedWidgetId === widget.widgetId;
+                                  const RegistryEntry = ELEMENT_REGISTRY[widget.type];
+                                  const ComponentToRender = RegistryEntry?.component;
+                                  return (
+                                    <div 
+                                      key={widget.widgetId}
+                                      draggable
+                                      onDragStart={(e) => { e.dataTransfer.setData("move_widget", JSON.stringify({ sectionId: sec.sectionId, columnId: col.columnId, widgetId: widget.widgetId })); setIsDragging(true); e.stopPropagation(); }}
+                                      onDragEnd={() => setIsDragging(false)}
+                                      className={`${styles.canvasWidgetRenderLeafNode} ${isSelected ? styles.widgetLeafActiveSelected : ""}`}
+                                      style={{ ...buildAdvancedStyles(widget.advanced) }}
+                                      onClick={(e) => { e.stopPropagation(); setSelectedSectionId(sec.sectionId); setSelectedColumnId(col.columnId); setSelectedWidgetId(widget.widgetId); setInspectorTab("content"); }}
+                                    >
+                                      {isSelected && (
+                                        <div className={styles.widgetOverlayToolbarTopRight}>
+                                          <button type="button" className={styles.widgetPurgeMiniBtnFloating} onClick={(e) => { e.stopPropagation(); handleRemoveWidget(widget.widgetId); }}>&times;</button>
+                                          <span className={styles.widgetDragHandleIndicator}><FiMove /></span>
                                         </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                              {col.widgets.length === 0 && <div className={styles.emptyColumnDropzone}>Empty Column Content</div>}
+                                      )}
+
+                                      {ComponentToRender && (
+                                        <ComponentToRender 
+                                          widget={widget} 
+                                          parseFn={parseTemplateVariables} 
+                                          context={currentContext} 
+                                          styles={styles} 
+                                        />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                                {col.widgets.length === 0 && <div className={styles.emptyColumnDropzone}>Empty Column Content</div>}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

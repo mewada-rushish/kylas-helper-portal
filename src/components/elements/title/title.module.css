@@ -1,0 +1,11 @@
+.box {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.heading {
+  margin: 0;
+  padding: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
