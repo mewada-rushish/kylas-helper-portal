@@ -1,23 +1,18 @@
-import { HeaderElement } from "./header/header";
-import { HeaderControls } from "./header/header_controls";
-import { FooterElement } from "./footer/footer";
-import { FooterControls } from "./footer/footer_controls";
-import { TitleElement } from "./title/title";
-import { TitleControls } from "./title/title_controls";
+// src/components/elements/registry.js
+import { LayoutContainerElement } from "./layout_container";
+import { HeaderElement } from "./header";
+import { TextBlockElement } from "./text_block";
+import { ImageBlockElement } from "./image_block";
+import { VideoBlockElement } from "./video_block";
+import { PricingTableProElement } from "./pricing_table_pro";
 
 export const ELEMENT_REGISTRY = {
-  [HeaderControls.type]: {
-    component: HeaderElement,
-    config: HeaderControls
-  },
-  [FooterControls.type]: {
-    component: FooterElement,
-    config: FooterControls
-  },
-  [TitleControls.type]: {
-    component: TitleElement,
-    config: TitleControls
-  }
+  layout_container: LayoutContainerElement,
+  header: HeaderElement,
+  text_block: TextBlockElement,
+  image_block: ImageBlockElement,
+  video_block: VideoBlockElement,
+  pricing_table_pro: PricingTableProElement
 };
 
 export const AVAILABLE_ASSETS = Object.values(ELEMENT_REGISTRY).map(entry => entry.config);
