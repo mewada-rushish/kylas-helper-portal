@@ -1,0 +1,245 @@
+/* src/app/settings/components/SystemLogs/SystemLogs.module.css */
+
+.logsConsoleContainerFlexEngine {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  background: #FFFFFF;
+}
+
+.logsFiltersStripControlPanel {
+  background: #F8FAFC;
+  padding: 14px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.searchFilterInputBoxWrapper {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.searchInnerDecorativeIcon {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  color: #64748B;
+  z-index: 2;
+}
+
+.logSearchInputField {
+  width: 100%;
+  height: 38px;
+  padding-left: 36px;
+  padding-right: 12px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #0F172A;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.logSearchInputField:focus {
+  border-color: #27347B;
+  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.08);
+}
+
+.selectFilterControlBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filterControlTitleText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.dropdownWrapperOverride {
+  width: 180px;
+}
+
+.logsTerminalScrollCanvasTable {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.logsGridTableHeaderRow {
+  display: flex;
+  background: #F1F5F9;
+  border-bottom: 1px solid #CBD5E1;
+  padding: 12px 20px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.colLogTimestamp { flex: 0 0 160px; width: 160px; }
+.colLogSource { flex: 0 0 130px; width: 130px; padding-left: 8px; }
+.colLogSeverity { flex: 0 0 110px; width: 110px; }
+.colLogMessage { flex: 1; padding-right: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.colLogActions { flex: 0 0 90px; width: 90px; text-align: right; }
+
+.logsGridTableBodyDataScroller {
+  flex: 1;
+  overflow-y: auto;
+  background: #FFFFFF;
+}
+
+.logsGridDataRowWrapper {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.logsGridDataRowWrapper:hover {
+  background: #F8FAFC;
+}
+
+.activeInspectedRowHighlight {
+  background: rgba(39, 52, 123, 0.04) !important;
+  border-left: 4px solid #E21F26;
+  padding-left: 16px !important;
+}
+
+.codeSnippetTagBadge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-weight: 600;
+  color: #27347B;
+  background: rgba(39, 52, 123, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.severityBadgePill {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  display: inline-block;
+}
+
+.severityBadgePill:global(.success) { background: #E6F4EA; color: #137333; }
+.severityBadgePill:global(.warning) { background: #FEF7E0; color: #B06000; }
+.severityBadgePill:global(.error) { background: #FCE8E6; color: #C5221F; }
+
+.tableRowReplayActionBtn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #27347B;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: uppercase;
+}
+
+.tableRowReplayActionBtn:hover {
+  border-color: #27347B;
+  background-color: rgba(39, 52, 123, 0.02);
+}
+
+.emptyLogsFallbackCenterRow {
+  padding: 64px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+/* --- TRACE DRAWER SLIDEOUT LIGHT THEME SPEC --- */
+.inspectedJsonSummarySlideDrawerWindow {
+  height: 260px;
+  background: #F8FAFC;
+  border-top: 1px solid #CBD5E1;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.drawerHeaderFlexLine {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawerHeaderFlexLine h3 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #27347B;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.closeDrawerActionBtn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748B;
+  cursor: pointer;
+}
+
+.closeDrawerActionBtn:hover {
+  color: #E21F26;
+}
+
+.drawerCodeBlockTerminalBox {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+  background: #FFFFFF;
+  margin: 12px 20px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+}
+
+.drawerCodeBlockTerminalBox pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 12px;
+  color: #0F172A; 
+  line-height: 1.6;
+}

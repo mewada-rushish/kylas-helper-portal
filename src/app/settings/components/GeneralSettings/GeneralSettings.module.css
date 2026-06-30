@@ -1,0 +1,246 @@
+.settingsFormViewNode {
+  flex: 1;
+  width: 100%;
+  padding: 40px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 180px; 
+}
+
+.sectionBrandingHeaderLine {
+  flex-shrink: 0;
+}
+
+.settingsFormViewNode h2 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #27347B;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sectionSubtitleText {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #64748B;
+  margin: 6px 0 0 0;
+  line-height: 1.6;
+}
+
+.sectionDivider {
+  border: 0;
+  border-top: 1px solid #E2E8F0;
+  margin: 16px 0 24px 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.premiumDashboardFormGridCanvas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formSectionGridBlockCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+}
+
+.formSectionGridBlockCard h3 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #27347B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px 0;
+  border-bottom: 1px dashed #E2E8F0;
+  padding-bottom: 8px;
+}
+
+.formInputGroupField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formFieldsInlineDoubleGridRow {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.fieldLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.logoFlexUploadContainer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #F8FAFC;
+  padding: 12px;
+  border: 1px dashed #CBD5E1;
+  border-radius: 8px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.logoFramePreviewBox {
+  width: 90px;
+  height: 48px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.renderedLogoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.fallbackLogoPlaceholderIcon {
+  color: #94A3B8;
+}
+
+.uploadActionWrapperInteractiveArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fileUploadCustomTriggerBtn {
+  height: 30px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #27347B;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.fileUploadCustomTriggerBtn:hover {
+  border-color: #27347B;
+  background: rgba(39, 52, 123, 0.02);
+}
+
+.hiddenNativeFileInput {
+  display: none;
+}
+
+.uploadGuidelinesSubtext {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 11px;
+  color: #64748B;
+  margin: 0;
+}
+
+.inputIconWrapperFrame {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldInputIconAddon {
+  position: absolute;
+  left: 12px;
+  top: 13px;
+  color: #64748B;
+  pointer-events: none;
+}
+
+.primaryTextInputWithIcon {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 34px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #0F172A;
+  outline: none;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.primaryTextareaInputWithIcon {
+  width: 100%;
+  padding: 10px 12px 10px 34px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #0F172A;
+  outline: none;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  resize: none;
+  line-height: 1.5;
+  transition: all 0.15s ease;
+}
+
+.primaryTextInputWithIcon:focus, .primaryTextareaInputWithIcon:focus {
+  border-color: #27347B;
+  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.06);
+}
+
+.prefixPreviewLegend {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 11px;
+  color: #64748B;
+  margin: 6px 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.previewCodeBadge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-weight: 700;
+  color: #E21F26;
+  background: rgba(226, 31, 38, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(226, 31, 38, 0.1);
+}
+
+@media (max-width: 1200px) {
+  .premiumDashboardFormGridCanvas {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,394 @@
+.settingsFormViewNode {
+  flex: 1;
+  width: 100%;
+  padding: 40px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 180px; 
+}
+
+.sectionBrandingHeaderLine {
+  flex-shrink: 0;
+}
+
+.settingsFormViewNode h2 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #27347B;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sectionSubtitleText {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #64748B;
+  margin: 6px 0 0 0;
+  line-height: 1.6;
+}
+
+.sectionDivider {
+  border: 0;
+  border-top: 1px solid #E2E8F0;
+  margin: 16px 0 24px 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.premiumDashboardFormGridCanvas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formSectionGridBlockCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+}
+
+.fullWidthGridSpanCard {
+  grid-column: span 2;
+}
+
+.formSectionGridBlockCard h3 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #27347B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.matrixHeadingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #E2E8F0;
+  padding-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.activeHookBadge {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #E21F26;
+  background: rgba(226, 31, 38, 0.06);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(226, 31, 38, 0.1);
+}
+
+.canvasConfigRow {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.canvasDropdownColumn {
+  flex: 1;
+}
+
+.paddingInputColumn {
+  flex: 0 0 15%;
+  min-width: 90px;
+}
+
+.formInputGroupField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fieldLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flexRadioSelectionContainerRow {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  height: 38px;
+}
+
+.radioElementOptionLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+.radioElementOptionLabel input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.radioCustomCircle {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #CBD5E1;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.radioElementOptionLabel input[type="radio"]:checked ~ .radioCustomCircle {
+  border-color: #27347B;
+  background: #27347B;
+}
+
+.radioCustomCircle::after {
+  content: "";
+  position: absolute;
+  display: none;
+  top: 4px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+.radioElementOptionLabel input[type="radio"]:checked ~ .radioCustomCircle::after {
+  display: block;
+}
+
+.radioTextLabel {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.inputIconWrapperFrame {
+  position: relative;
+  width: 100%;
+  display: flex;
+}
+
+.fieldInputIconAddon {
+  position: absolute;
+  left: 12px;
+  top: 13px;
+  color: #64748B;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.primaryTextInputWithIcon {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 34px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #0F172A;
+  outline: none;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.primaryTextInputWithIcon:focus {
+  border-color: #27347B;
+  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.06);
+}
+
+.informationalNoticeAlertRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #F0F4F8;
+  border: 1px solid #D0DFEE;
+  border-radius: 8px;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.noticeIcon {
+  color: #27347B;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.informationalNoticeAlertRow p {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tableInstructionalBody {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #64748B;
+  margin: 6px 0 16px 0;
+}
+
+/* Outer frame enclosing both the header row and data stack to ensure structural uniformity */
+.matrixContainerFrameWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* FIX: Refactored header height variables, layouts, and paddings to align with the visual matrix rows */
+.variableMappingStructuredGridHeader {
+  display: flex;
+  align-items: center;
+  background: #F8FAFC;
+  padding: 0 16px;
+  height: 40px;
+  border: 1px solid #E2E8F0;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-sizing: border-box;
+}
+
+.headerColTokenKey {
+  flex: 0 0 35%;
+  width: 35%;
+}
+
+.headerColDirectionIcon {
+  flex: 0 0 50px;
+  width: 50px;
+}
+
+.headerColJsonExpressionPath {
+  flex: 1;
+}
+
+/* FIX: Cleared top padding bounds to drop elements precisely directly beneath the grid banner */
+.variableMappingRowsStackList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #E2E8F0;
+  border-radius: 0 0 6px 6px;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.variableMappingRecordInteractionRow {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  box-sizing: border-box;
+}
+
+.variableMappingRecordInteractionRow:last-child {
+  border-bottom: none;
+}
+
+.templateTokenIdentifierMetadataBlock {
+  flex: 0 0 35%;
+  width: 35%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tokenTagDecorativeIcon {
+  color: #27347B;
+  flex-shrink: 0;
+}
+
+.tokenTextLiteralLabel {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-weight: 600;
+  font-size: 13px;
+  color: #0F172A;
+}
+
+.connectorDirectionalIndicatorColumn {
+  flex: 0 0 50px;
+  width: 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.connectorLinkChainIcon {
+  color: #94A3B8;
+}
+
+.jsonExpressionInputTrackingFlexWrapper {
+  flex: 1;
+}
+
+.monospaceJsonPathFieldInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 12px;
+  color: #334155;
+  background: #FFFFFF;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.monospaceJsonPathFieldInput:focus {
+  border-color: #27347B;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.05);
+}
+
+@media (max-width: 1200px) {
+  .premiumDashboardFormGridCanvas {
+    grid-template-columns: 1fr;
+  }
+  .fullWidthGridSpanCard {
+    grid-column: span 1;
+  }
+  .canvasConfigRow {
+    flex-direction: column;
+    gap: 0;
+  }
+  .paddingInputColumn {
+    flex: 1;
+    width: 100%;
+  }
+}
