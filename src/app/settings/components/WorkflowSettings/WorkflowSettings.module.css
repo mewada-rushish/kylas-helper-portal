@@ -1,15 +1,25 @@
+/* ==================== 1. BASE WORKSPACE STRUCTURE ==================== */
 .workflowsMainWorkspaceNode {
   flex: 1;
   width: 100%;
   padding: 40px;
+  padding-bottom: 120px;
   overflow-y: auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding-bottom: 120px;
+  font-family: var(--font-poppins), sans-serif;
+}
+
+.fullWidthListContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .topControlDeckStripStrip {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -18,38 +28,36 @@
   border: 1px solid #E2E8F0;
   border-radius: 12px;
   margin-bottom: 24px;
-  flex-shrink: 0;
-  width: 100%;
   box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .searchFilterInputBoxWrapper {
-  position: relative;
   flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
   max-width: 360px;
 }
 
 .searchInnerDecorativeIcon {
   position: absolute;
-  left: 12px;
-  top: 12px;
+  left: 14px;
   color: #64748B;
   z-index: 2;
 }
 
 .webhookSearchFieldInput {
   width: 100%;
-  height: 38px;
-  padding-left: 36px;
-  padding-right: 12px;
-  background: #FFFFFF;
+  height: 40px;
+  padding-left: 40px;
+  padding-right: 16px;
+  font-size: 13px;
+  color: #0F172A;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 12px;
-  color: #0F172A;
   outline: none;
+  background-color: #FFFFFF;
   box-sizing: border-box;
   transition: all 0.15s ease;
 }
@@ -64,14 +72,14 @@
 }
 
 .globalAddWebhookActionBtn {
-  height: 38px;
-  padding: 0 16px;
-  background: #27347B;
+  height: 40px;
+  padding: 0 20px;
+  background-color: #27347B;
+  color: #FFFFFF;
   border: 1px solid #27347B;
   border-radius: 8px;
-  color: #FFFFFF;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -89,211 +97,178 @@
   border-color: #1E2963;
 }
 
-.accordionVerticalScrollTrackCanvas {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
+.centeredRegistryHeader {
+  margin-bottom: 24px;
 }
 
-.accordionShellCardWrapperFrame {
+.centeredRegistryHeader h4 {
+  font-family: var(--font-montserrat), sans-serif;
+  color: #27347B;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.centeredRegistryHeader p {
+  color: #64748B;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ==================== 2. GRID CARDS DISPLAY ==================== */
+.fullWidthCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.accordionShellCardWrapperFrame :global([class*="wrapper"]) {
-  border-radius: 8px !important;
-  border: 1px solid #E1E3E5 !important;
-  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04) !important;
-  overflow: hidden !important; 
-  margin-bottom: 0 !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
-}
-
-.accordionShellCardWrapperFrame :global([class*="header"]) {
-  padding: 14px 20px !important;
-  border-bottom: 1px solid #E1E3E5 !important;
-}
-
-.accordionShellCardWrapperFrame :global([class*="header"]):hover {
-  background-color: #F8FAFC !important;
-}
-
-.accordionShellCardWrapperFrame :global([class*="header"]):hover h2,
-.accordionShellCardWrapperFrame :global([class*="header"]):hover :global([class*="chevron"]) {
-  color: var(--deep-navy, #27347B) !important;
-}
-
-.accordionShellCardWrapperFrame:hover :global([class*="wrapper"]) {
-  border-color: #27347B !important;
-  box-shadow: 0 4px 16px rgba(39, 52, 123, 0.08) !important;
-}
-
-.accordionInteriorFlexColumnContainer {
+.largeWebhookDisplayCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  width: calc(100% + 48px) !important;
-  margin: -24px -24px -24px -24px !important;
-  background: #FFFFFF;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
-.postmanAccordionHeaderRowLayout {
+.largeWebhookDisplayCard:hover {
+  border-color: #27347B;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(39, 52, 123, 0.06);
+}
+
+.cardHeaderTopMeta {
   display: flex;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
   width: 100%;
 }
 
-.httpMethodPillBadge {
+.webhookDisplayTitleName {
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 700;
-  color: #FFFFFF;
-  padding: 3px 0;
-  border-radius: 4px;
-  letter-spacing: 0.03em;
-  width: 54px;
-  text-align: center;
-  flex-shrink: 0;
+  color: #0F172A;
+  margin: 0 0 8px 0;
   line-height: 1.4;
 }
 
-.method_POST { background: #10B981; }
-.method_PUT { background: #0EA5E9; }
-.method_GET { background: #6366F1; }
-.method_PATCH { background: #F59E0B; }
-.method_DELETE { background: #EF4444; }
-
-.generatedUrlEndpointSlugReadout {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 13px;
-  color: #475569;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  margin-left: 12px;
-}
-
-.codeTokenText {
+.webhookCardTruncatedUrlCode {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-weight: 700;
-  color: #27347B;
-  background: rgba(39, 52, 123, 0.05);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 4px;
+  font-size: 12px;
+  color: #475569;
+  background-color: #F8FAFC;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
-.categoryPillTagLabel {
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  height: 18px;
-  padding: 0 8px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  margin-left: 12px;
-}
-
-.categoryPillTagLabel.Kylas { background: rgba(226, 31, 38, 0.08); color: #E21F26; }
-.categoryPillTagLabel.CRM { background: #E0F2FE; color: #0369A1; }
-.categoryPillTagLabel.Payment { background: #FEF3C7; color: #D97706; }
-.categoryPillTagLabel.Custom { background: #F1F5F9; color: #475569; }
-
-.headerRightToggleWrapper {
-  margin-left: auto;
+.cardMetaFooterInfoRow {
+  margin-top: auto;
   display: flex;
   align-items: center;
-  padding-right: 48px; 
+  justify-content: space-between;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 14px;
+  width: 100%;
 }
 
-.nativeSwitchToggleTrackLabel {
-  position: relative;
-  display: inline-block;
-  width: 34px;
-  height: 18px;
+/* ==================== 3. WORKBENCH EDITOR PANELS ==================== */
+.fullWidthWorkbenchEditorPane {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
+  box-sizing: border-box;
+}
+
+.editorTopNavigationBarStripLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.workbenchBackToListBtnLink {
+  background: none;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
 }
 
-/* 
-  FIX 1: Strictly reset native checkbox layout box. 
-  This kills the baseline artifact rendering underneath the toggle slider.
-*/
-.nativeSwitchToggleTrackLabel input {
-  opacity: 0 !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  outline: none !important;
-  appearance: none !important;
-  position: absolute;
+.workbenchBackToListBtnLink:hover {
+  background-color: #F1F5F9;
+  border-color: #94A3B8;
+  color: #27347B;
 }
 
-.nativeSwitchToggleSliderNode {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #CBD5E1;
-  transition: .15s ease;
-  border-radius: 20px;
+.editingContextTitleBreadcrumb {
+  font-size: 13px;
+  color: #64748B;
 }
 
-.nativeSwitchToggleSliderNode:before {
-  position: absolute;
-  content: "";
-  height: 14px;
-  width: 14px;
-  left: 2px;
-  bottom: 2px;
-  background-color: #FFFFFF;
-  transition: .15s ease;
-  border-radius: 50%;
+.activeLabelItemText {
+  color: #27347B;
+  font-weight: 600;
 }
 
-.nativeSwitchToggleTrackLabel input:checked + .nativeSwitchToggleSliderNode {
-  background-color: #10B981;
-}
-
-.nativeSwitchToggleTrackLabel input:checked + .nativeSwitchToggleSliderNode:before {
-  transform: translateX(16px);
-}
-
-.postmanWorkspaceSplitLayoutGrid {
+.splitWorkbenchFormAndControlsLayout {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
   width: 100%;
   box-sizing: border-box;
-  background: #FFFFFF;
 }
 
-.leftPaneConfigurationCriteriaBox {
-  border-right: 1px solid #E2E8F0;
-  padding: 24px 20px 24px 24px; 
+.workbenchLeftSidebarConfigurationForm {
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
 }
 
-.leftPaneConfigurationCriteriaBox h4 {
+.workbenchLeftSidebarConfigurationForm h4 {
   font-family: var(--font-montserrat), sans-serif;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
   color: #27347B;
-  letter-spacing: 0.05em;
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .formInputGroupFieldElement {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
 }
 
@@ -308,78 +283,52 @@
 
 .standardWorkspaceTextFieldInput {
   width: 100%;
-  height: 36px;
-  padding: 0 10px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #0F172A;
   border: 1px solid #CBD5E1;
   border-radius: 6px;
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 12px;
-  color: #0F172A;
-  background: #FFFFFF;
   outline: none;
+  background-color: #FFFFFF;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
-.inputPrefixIconWrapperNode {
-  position: relative;
-  width: 100%;
-  display: flex;
-}
-
-.fieldInputIconAddonElement {
-  position: absolute;
-  left: 10px;
-  top: 12px;
-  color: #64748B;
-}
-
-.standardWorkspaceTextFieldInputWithIcon {
-  width: 100%;
-  height: 36px;
-  padding: 0 10px 0 32px;
-  border: 1px solid #CBD5E1;
-  border-radius: 6px;
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 12px;
-  color: #0F172A;
-  background: #FFFFFF;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.standardWorkspaceTextFieldInput:focus, .standardWorkspaceTextFieldInputWithIcon:focus {
+.standardWorkspaceTextFieldInput:focus {
   border-color: #27347B;
 }
 
+/* ==================== 4. POSTMAN ENGINES WORKSPACE ==================== */
 .rightPanePostmanWorkbenchConsoleBox {
-  padding: 24px 24px 24px 20px; 
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  min-height: 0;
 }
 
 .postmanTargetUrlInterfaceBlockBar {
   display: flex;
   align-items: center;
-  background: #F1F5F9;
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
-  height: 38px;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 42px;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 20px;
-  overflow: hidden;
+  margin-bottom: 24px;
 }
 
 .methodSelectionPillReadOnly {
+  background-color: #F1F5F9;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
   font-weight: 700;
-  color: #10B981;
-  background: #FFFFFF;
+  font-size: 12px;
+  padding: 0 20px;
   height: 100%;
-  padding: 0 16px;
   display: flex;
   align-items: center;
   border-right: 1px solid #CBD5E1;
@@ -391,28 +340,28 @@
   height: 100%;
   border: none;
   outline: none;
-  background: transparent;
-  padding: 0 14px;
+  padding: 0 16px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: #0F172A;
+  background: transparent;
 }
 
 .postmanSubTabBarNavigationStrip {
   display: flex;
   gap: 4px;
   border-bottom: 1px solid #E2E8F0;
-  flex-shrink: 0;
+  margin-bottom: 24px;
+  width: 100%;
 }
 
 .postmanTabLinkBtnPrimes {
-  height: 36px;
-  background: transparent;
+  background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: 0 16px;
+  padding: 10px 18px;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
@@ -422,7 +371,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: -1px;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .postmanTabLinkBtnPrimes:hover {
@@ -430,31 +379,33 @@
 }
 
 .tabActiveStatePrime {
+  border-bottom-color: #E21F26;
   color: #E21F26 !important;
-  border-bottom-color: #E21F26 !important;
 }
 
 .tabNumericBadgeIndicatorCount {
   font-family: var(--font-poppins), sans-serif;
   font-size: 10px;
   font-weight: 700;
-  background: #E2E8F0;
+  background-color: #E2E8F0;
   color: #475569;
-  padding: 1px 5px;
+  padding: 2px 6px;
   border-radius: 10px;
 }
 
 .postmanTabViewportWorkspaceInteriorBox {
-  flex: 1;
-  padding-top: 20px;
-  min-height: 0;
+  min-height: 300px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* ==================== 5. PARAMETERS KEY-VALUE GRID ==================== */
 .headersPaneWorkbenchTableGridLayout {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: #F8FAFC;
+  background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 8px;
   overflow: hidden;
@@ -464,12 +415,11 @@
 .headersTableBannerRowTrack {
   display: flex;
   align-items: center;
-  background: #FFFFFF;
-  height: 40px;
-  padding: 0 16px;
+  padding: 12px 16px;
+  background-color: #F8FAFC;
   border-bottom: 1px solid #E2E8F0;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
@@ -477,269 +427,284 @@
   box-sizing: border-box;
 }
 
-.colHeaderKeyFieldText { flex: 0 0 42%; width: 42%; }
-.colHeaderValueFieldText { flex: 0 0 48%; width: 43%; padding-left: 8px; }
-.colHeaderUtilityFieldText { flex: 1; text-align: right; padding-right: 4px; }
+.colHeaderKeyFieldText { flex: 0 0 38%; width: 38%; }
+.colHeaderValueFieldText { flex: 1; padding-left: 4px; }
+.colHeaderUtilityFieldText { width: 90px; text-align: center; }
 
 .headersDataScrollTrackContainerRowsStack {
   display: flex;
   flex-direction: column;
-  background: #FFFFFF;
 }
 
 .headerRecordInteractionRowFlexLine {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid #E2E8F0;
   gap: 14px;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .headerRecordInteractionRowFlexLine:last-child {
   border-bottom: none;
 }
 
-/*
-  FIX 2: Isolated border parameters enforcing input box locking.
-  Forces inputs to retain full structural borders, overpowering global underline CSS
-*/
 .headerTableMonospaceInputField {
-  height: 36px !important;
-  border: 1px solid #CBD5E1 !important;
-  border-radius: 6px !important;
-  padding: 0 12px !important;
+  height: 38px;
+  padding: 0 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: #0F172A;
-  background: #FFFFFF !important;
-  outline: none !important;
-  box-sizing: border-box !important;
-  box-shadow: none !important;
-  margin: 0 !important;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  outline: none;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
 
-.headerTableMonospaceInputField:focus {
-  border-color: #27347B !important;
+.headerRecordInteractionRowFlexLine > input:first-child {
+  flex: 0 0 38%;
+  width: 38%;
 }
 
-.headerRecordInteractionRowFlexLine > input:first-child {
-  flex: 0 0 42%;
-  width: 42%;
+.headerTableMonospaceInputField:focus {
+  border-color: #27347B;
 }
 
 .headerTablePasswordMaskInputWrapper {
-  flex: 0 0 48%;
-  width: 48%;
+  flex: 1;
   position: relative;
   display: flex;
   align-items: center;
 }
 
-/* Disables automatic ::after global pseudo-element borders mapped to flex wrappers */
-.headerTablePasswordMaskInputWrapper::before,
-.headerTablePasswordMaskInputWrapper::after {
-  display: none !important;
-}
-
-.headerTablePasswordMaskInputWrapper input {
+.headerTablePasswordMaskInputWrapper .headerTableMonospaceInputField {
   width: 100%;
-  padding-right: 36px !important; 
+  padding-right: 40px;
 }
 
-/* 
-  FIX 3: Strict button isolation overrides 
-  Nullifies all global <button> paddings/margins/backgrounds clipping into inputs.
-*/
 .inlineHeaderValuePasswordEyeToggleIndicatorBtn {
-  position: absolute !important;
-  right: 12px !important;
-  background: transparent !important;
-  border: none !important;
-  color: #94A3B8 !important;
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94A3B8;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 !important;
-  margin: 0 !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
+  padding: 0;
 }
 
 .inlineHeaderValuePasswordEyeToggleIndicatorBtn:hover {
-  color: #27347B !important;
+  color: #27347B;
+}
+
+.inlineCheckboxContainerItemWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748B;
+  cursor: pointer;
+  user-select: none;
+  width: 65px;
+  justify-content: center;
 }
 
 .headerRowDeleteTrashActionBtnElement {
-  background: transparent !important;
-  border: none !important;
-  color: #94A3B8 !important;
+  background: none;
+  border: none;
+  color: #94A3B8;
   cursor: pointer;
-  margin-left: auto;
+  padding: 6px;
   display: flex;
-  padding: 4px !important;
-  min-width: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
+  align-items: center;
   transition: color 0.1s ease;
 }
 
 .headerRowDeleteTrashActionBtnElement:hover {
-  color: #E21F26 !important;
+  color: #E21F26;
 }
 
 .addNewHeaderParameterMatrixRowBtnLink {
-  height: 40px;
-  border: none;
+  height: 44px;
   background: #F8FAFC;
+  border: none;
   border-top: 1px solid #E2E8F0;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   color: #27347B;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
-  transition: background-color 0.1s ease;
+  transition: background-color 0.15s ease;
 }
 
 .addNewHeaderParameterMatrixRowBtnLink:hover {
   background-color: #F1F5F9;
 }
 
+/* ==================== 6. CODE TEXTAREAS & RESPONSE TREES ==================== */
 .bodyJSONPaneWorkbenchLayout {
   display: flex;
   flex-direction: column;
   width: 100%;
   border: 1px solid #E2E8F0;
-  border-radius: 6px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .postmanSubHeaderContextControlsStrip {
   display: flex;
-  gap: 16px;
   background: #F8FAFC;
-  height: 32px;
+  height: 36px;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 16px;
   border-bottom: 1px solid #E2E8F0;
-  border-radius: 6px 6px 0 0;
 }
 
 .activePostmanRadioIndicatorDot {
   font-family: var(--font-poppins), sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #E21F26;
-  position: relative;
-  padding-left: 12px;
-}
-
-.activePostmanRadioIndicatorDot::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 5px;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #E21F26;
 }
 
 .monospaceRawJsonWorkspaceTextareaField {
   width: 100%;
-  border: none;
-  outline: none;
-  padding: 14px;
+  padding: 16px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: #0F172A;
   line-height: 1.6;
-  box-sizing: border-box;
+  border: none;
+  outline: none;
+  background-color: #FFFFFF;
   resize: vertical;
+  box-sizing: border-box;
+}
+
+.unverifiedPayloadBlockingCalloutCard {
+  display: flex;
+  gap: 16px;
+  background-color: #FFFBEB;
+  border: 1px solid #FDE68A;
+  padding: 16px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.unverifiedIconNoticeColor {
+  color: #D97706;
+  flex-shrink: 0;
+}
+
+.unverifiedTextWrapColumn h5 {
+  margin: 0 0 4px 0;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #92400E;
+  font-weight: 700;
+}
+
+.unverifiedTextWrapColumn p {
+  margin: 0;
+  font-size: 12px;
+  color: #B45309;
+  line-height: 1.6;
 }
 
 .fetchResponsePaneWorkbenchLayout {
   display: flex;
   flex-direction: column;
+  gap: 16px;
   width: 100%;
 }
 
 .postmanResponseActionBarStripLine {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .postmanRequestSendExecuteBtnLink {
-  height: 34px;
-  padding: 0 14px;
-  background: #10B981;
+  height: 38px;
+  padding: 0 18px;
+  background-color: #10B981;
   color: #FFFFFF;
-  border: 1px solid #10B981;
+  border: none;
   border-radius: 6px;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.postmanRequestSendExecuteBtnLink:hover {
+  opacity: 0.9;
 }
 
 .postmanResponseStatusReadoutFlexLine {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
+  color: #475569;
 }
 
 .statusOkIndicatorBadge {
-  color: #10B981;
+  background-color: #DCFCE7;
+  color: #15803D;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-right: 8px;
 }
 
 .statusTimeMetricText {
-  color: #64748B;
+  color: #15803D;
 }
 
 .hierarchicalInteractiveTreeTerminalWindowBoxFrame {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
+  background-color: #1E293B;
+  color: #E2E8F0;
+  padding: 24px;
   border-radius: 8px;
-  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  max-height: 450px;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
 .treeNodeStructuralRowItemLine {
   display: flex;
   align-items: center;
-  height: 28px;
+  min-height: 32px;
 }
 
 .objectEnclosureFolderLabelTextCode {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-weight: 700;
-  color: #27347B;
-}
-
-.treeNodeNestedIndentationTrackSubgroupContainerStack {
-  display: flex;
-  flex-direction: column;
+  color: #38BDF8;
+  font-weight: 600;
 }
 
 .treeNodeLeafParameterRowFlexRowLayout {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 32px;
-  padding-left: 12px;
+  width: 100%;
 }
 
 .treeLeafKeyNameReadoutFlexRowLayout {
@@ -749,130 +714,248 @@
 }
 
 .treeLeafConnectorLinesLayoutGuideSpan {
-  color: #CBD5E1;
-  font-family: ui-monospace, monospace;
+  color: #475569;
 }
 
 .primitiveKeyNameTextCode {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  color: #0F172A;
+  color: #A7F3D0;
   font-weight: 500;
 }
 
 .primitiveTypeNameTextBadge {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  color: #64748B;
-  background: #E2E8F0;
-  padding: 1px 4px;
-  border-radius: 3px;
+  background-color: #334155;
+  color: #94A3B8;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
   text-transform: uppercase;
 }
 
 .checkboxInteractiveTreeGateToggleButtonLink {
-  background: transparent;
+  background: none;
   border: none;
-  outline: none;
+  color: #94A3B8;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #94A3B8;
   cursor: pointer;
-}
-
-.checkboxIconActiveColor {
-  color: #E21F26;
-}
-
-.gateActiveStateTextCode {
-  color: #E21F26 !important;
-}
-
-.unverifiedPayloadBlockingCalloutCard {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
-  border-radius: 8px;
-  padding: 16px;
-  box-sizing: border-box;
-}
-
-.unverifiedIconNoticeColor {
-  color: #D97706;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.unverifiedTextWrapColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.unverifiedTextWrapColumn h5 {
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  color: #92400E;
-  margin: 0;
-}
-
-.unverifiedTextWrapColumn p {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 12px;
-  color: #B45309;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.postmanWorkspaceFooterRow {
-  display: flex;
-  justify-content: flex-end;
-  padding: 14px 24px;
-  background: #F8FAFC;
-  border-top: 1px solid #E2E8F0;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.saveWebhookChangesBtn {
-  height: 36px;
-  padding: 0 16px;
-  background: #27347B;
-  color: #FFFFFF;
-  border: 1px solid #27347B;
-  border-radius: 6px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.checkboxIconActiveColor {
+  color: #38BDF8;
+}
+
+.gateActiveStateTextCode {
+  color: #38BDF8 !important;
+}
+
+/* ==================== 7. DESIGN SYSTEM PILLS & UTILITIES ==================== */
+.httpMethodPillBadge {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-align: center;
   letter-spacing: 0.03em;
+}
+
+.method_POST { background-color: #DCFCE7; color: #16A34A; }
+.method_PUT { background-color: #DBEAFE; color: #2563EB; }
+.method_GET { background-color: #FEF9C3; color: #CA8A04; }
+.method_DELETE { background-color: #FEE2E2; color: #DC2626; }
+
+.categoryPillTagLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.categoryPillTagLabel.Kylas { background-color: #E0F2FE; color: #0369A1; }
+.categoryPillTagLabel.Payment { background-color: #F3E8FF; color: #6B21A8; }
+.categoryPillTagLabel.Custom { background-color: #F1F5F9; color: #475569; }
+
+.codeTokenText {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #27347B;
+  background: rgba(39, 52, 123, 0.06);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.variablesCounterSummaryPill {
+  font-size: 12px;
+  color: #64748B;
+  background-color: #F1F5F9;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.nativeSwitchToggleTrackLabel {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.nativeSwitchToggleTrackLabel input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.nativeSwitchToggleSliderNode {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #CBD5E1;
+  transition: .2s ease;
+  border-radius: 20px;
+}
+
+.nativeSwitchToggleSliderNode:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s ease;
+  border-radius: 50%;
+}
+
+input:checked + .nativeSwitchToggleSliderNode {
+  background-color: #10B981;
+}
+
+input:checked + .nativeSwitchToggleSliderNode:before {
+  transform: translateX(18px);
+}
+
+.postmanWorkspaceFooterRow {
+  margin-top: 24px;
+  border-top: 1px solid #E2E8F0;
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.saveWebhookChangesBtn {
+  height: 42px;
+  padding: 0 24px;
+  background-color: #27347B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 4px rgba(39, 52, 123, 0.1);
+  gap: 8px;
+  transition: opacity 0.15s ease;
 }
 
 .saveWebhookChangesBtn:hover {
-  background: #1E2963;
-  border-color: #1E2963;
+  opacity: 0.9;
 }
 
-@media (max-width: 1200px) {
-  .postmanWorkspaceSplitLayoutGrid {
-    grid-template-columns: 1fr;
-  }
-  .leftPaneConfigurationCriteriaBox {
-    border-right: none;
-    border-bottom: 1px solid #E2E8F0;
-  }
+.emptyStateFallbackNoticeBlock {
+  padding: 40px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+.linkedBindingConfirmationLabelBadge {
+  font-size: 12px;
+  color: #10B981;
+  font-weight: 600;
+}
+
+.testEngineLoaderBoxWrapperFrame {
+  padding: 48px;
+  text-align: center;
+  color: #475569;
+  font-size: 13px;
+}
+
+.spinningGlobalGlobeLoaderIcon {
+  animation: spin 2s linear infinite;
+  color: #E21F26;
+  margin-bottom: 12px;
+}
+
+.topCardActionsUnifiedCluster {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topRightCardDeleteTriggerButton {
+  background: transparent !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  color: #94A3B8 !important;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.topRightCardDeleteTriggerButton:hover {
+  color: #E21F26 !important;
+  border-color: #FCA5A5 !important;
+  background-color: #FEF2F2 !important;
+}
+
+/* ==================== 8. HIGH-ASSURANCE VERIFICATION MODAL ==================== */
+.modalDeletionSafetyBodyScopeBox {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 8px;
+}
+
+.modalVerificationTargetCodeBadgeReadout {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  user-select: all;
+  text-align: left;
+  letter-spacing: 0.2px;
+  display: inline-block;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

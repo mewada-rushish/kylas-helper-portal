@@ -71,8 +71,9 @@ export default function CentralizedModal({
 
   const modalComponent = (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      {/* FIX: Removed the accidental styles[variant] collision on the wrapper */}
       <div 
-        className={`${styles.modalCard} ${styles[size]} ${styles[type]} ${type === "alert" ? styles[variant] : ""}`}
+        className={`${styles.modalCard} ${styles[size]} ${styles[type]}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.modalHeader}>
