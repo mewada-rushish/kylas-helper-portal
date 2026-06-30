@@ -303,7 +303,7 @@ export default function TemplateEditorWorkspace() {
                 <Editor
                   height="100%"
                   language="html"
-                  theme="vs" // Native VS Code Light clean color syntax theme
+                  theme="vs" 
                   value={htmlContent}
                   onChange={(val) => setHtmlContent(val ?? "")}
                   onMount={handleEditorOnMount}
@@ -315,10 +315,17 @@ export default function TemplateEditorWorkspace() {
                     lineHeight: 1.6,
                     automaticLayout: true,
                     tabSize: 2,
-                    suggestOnTriggerCharacters: true, // Pops suggestion lists up instantly when typing symbols
+                    suggestOnTriggerCharacters: true, 
                     autoClosingTags: true,
                     autoClosingBrackets: "always",
-                    formatOnType: true
+                    formatOnType: true,
+                    scrollBeyondLastLine: false, // FIX: Completely removes the extra empty spacing below the code
+                    scrollbar: {
+                      vertical: "auto",
+                      horizontal: "auto",
+                      verticalScrollbarSize: 10,
+                      horizontalScrollbarSize: 10
+                    }
                   }}
                 />
               </div>

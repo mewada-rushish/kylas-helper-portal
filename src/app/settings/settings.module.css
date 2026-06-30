@@ -1,0 +1,126 @@
+/* src/app/settings/settings.module.css */
+
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #F8F8FB;
+  font-family: var(--font-poppins), sans-serif;
+  color: #27347B;
+  overflow: hidden;
+}
+
+.mainCanvas {
+  flex: 1;
+  margin-left: 240px;
+  width: calc(100% - 240px);
+  padding: 32px;
+  box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageMaxWidth {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- PANEL NAVIGATION HEADERS CONTAINER --- */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+}
+
+.headerLeftBlock h1 {
+  font-family: var(--font-montserrat), sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 22px;
+  color: #27347B;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.headerLeftBlock p {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #64748B;
+  margin: 6px 0 0 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+}
+
+/* --- HORIZONTAL SEGMENTED TOP SUB-NAV BAR PRIMITIVES --- */
+.horizontalTopTabNavigationBarRail {
+  display: flex;
+  gap: 6px;
+  margin-top: 24px;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  width: fit-content;
+}
+
+.horizontalTabLinkBtn {
+  height: 36px;
+  background: transparent;
+  border: none;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.horizontalTabLinkBtn:hover {
+  color: #27347B;
+  background: rgba(39, 52, 123, 0.04);
+}
+
+.tabActiveState {
+  color: #FFFFFF !important;
+  background: #27347B !important;
+  box-shadow: 0 2px 8px rgba(39, 52, 123, 0.15);
+}
+
+.tabCounterNotificationBadge {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  background-color: rgba(226, 31, 38, 0.1);
+  color: #E21F26;
+  padding: 2px 6px;
+  border-radius: 20px;
+  margin-left: 4px;
+}
+
+/* --- CORE WORKSPACE WRAPPER VIEWPORT INTERIOR --- */
+.rightContentWorkspaceWrapperViewport {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  margin-top: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  display: flex;
+  min-height: 0;
+}
