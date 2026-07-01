@@ -110,6 +110,7 @@ export default function WorkflowSettings() {
   
   const [webhookToDelete, setWebhookToDelete] = useState(null);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [hasTested, setHasTested] = useState(false);
@@ -711,24 +712,31 @@ export default function WorkflowSettings() {
         onClose={() => {
           setWebhookToDelete(null);
           setDeleteConfirmationText("");
+          setIsDeleting(false);
         }}
-        type="alert"
         variant="destructive"
         size="md"
-        title="Confirm Irreversible Deletion"
-        description="Type the exact configuration name string value below to securely confirm this drop cycle. Once purged, any associated real-time execution pipelines running over this integration node will fail instantly."
+        icon={<FiAlertTriangle size={20} />}
+        title="Confirm Deletion"
         primaryAction={{
-          label: "Permanently Destroy Integration",
+          label: isDeleting ? (
+            <>
+              <span className={styles.buttonLoader}></span>
+              Deleting...
+            </>
+          ) : "Delete Webhook",
           variant: "destructive",
-          disabled: deleteConfirmationText !== webhookToDelete?.name,
+          disabled: deleteConfirmationText !== webhookToDelete?.name || isDeleting,
           onClick: () => {
-            setWebhooks(prev => prev.filter(h => h.id !== webhookToDelete.id));
-            setWebhookToDelete(null);
-            setDeleteConfirmationText("");
+            setIsDeleting(true);
+            setTimeout(() => {
+              setWebhooks(prev => prev.filter(h => h.id !== webhookToDelete.id));
+              setWebhookToDelete(null);
+            }, 1200);
           }
         }}
         secondaryAction={{
-          label: "Cancel, Keep Intact",
+          label: "Cancel",
           onClick: () => {
             setWebhookToDelete(null);
             setDeleteConfirmationText("");
@@ -736,18 +744,21 @@ export default function WorkflowSettings() {
         }}
       >
         <div className={styles.modalDeletionSafetyBodyScopeBox}>
+          <p className={styles.modalDeletionSafetyDescription}>
+            This action is irreversible. To confirm, type the webhook name below.
+          </p>
           <div className={styles.modalVerificationTargetCodeBadgeReadout}>
             {webhookToDelete?.name}
           </div>
           <div className={styles.formInputGroupFieldElement} style={{ gap: "6px" }}>
             <span className={styles.fieldLabelTextPrimitive} style={{ color: "#475569" }}>
-              Verify Webhook Target Name
+              Webhook Name
             </span>
             <input
               type="text"
               className={styles.standardWorkspaceTextFieldInput}
               style={{ borderColor: deleteConfirmationText === webhookToDelete?.name ? "#10B981" : "#CBD5E1" }}
-              placeholder="Provide matching API name exactly..."
+              placeholder="Type the webhook name to confirm"
               value={deleteConfirmationText}
               onChange={(e) => setDeleteConfirmationText(e.target.value)}
               autoFocus
