@@ -90,18 +90,28 @@ export default function CentralizedModal({
               <button
                 className={styles.secondaryBtn}
                 onClick={secondaryAction.onClick}
-                disabled={secondaryAction.disabled}
+                disabled={secondaryAction.disabled || (primaryAction && primaryAction.loading)}
               >
-                {secondaryAction.label}
+                {secondaryAction.icon}
+                <span>{secondaryAction.label}</span>
               </button>
             )}
             {primaryAction && (
               <button
                 className={`${styles.primaryBtn} ${primaryButtonVariantClass || ''}`}
                 onClick={primaryAction.onClick}
-                disabled={primaryAction.disabled}
+                disabled={primaryAction.disabled || primaryAction.loading}
               >
-                {primaryAction.label}
+                {primaryAction.loading ? (
+                  <span className={styles.buttonLoader}></span>
+                ) : (
+                  primaryAction.icon
+                )}
+                <span>
+                  {primaryAction.loading
+                    ? (primaryAction.loadingLabel || 'Processing...')
+                    : primaryAction.label}
+                </span>
               </button>
             )}
           </div>

@@ -2,9 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import { 
-  FiSearch, FiPlus, FiEye, FiEyeOff, 
+  FiSearch, FiPlus, FiEye, FiEyeOff, FiX,
   FiLayers, FiGlobe, FiCheckSquare, FiSquare, 
-  FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft 
+  FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft
 } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import CentralizedModal from "@/components/ui/modal/modal";
@@ -719,27 +719,29 @@ export default function WorkflowSettings() {
         icon={<FiAlertTriangle size={20} />}
         title="Confirm Deletion"
         primaryAction={{
-          label: isDeleting ? (
-            <>
-              <span className={styles.buttonLoader}></span>
-              Deleting...
-            </>
-          ) : "Delete Webhook",
+          label: "Delete Webhook",
+          loadingLabel: "Deleting...",
+          icon: <FiTrash2 size={14} />,
           variant: "destructive",
-          disabled: deleteConfirmationText !== webhookToDelete?.name || isDeleting,
+          loading: isDeleting,
+          disabled: deleteConfirmationText !== webhookToDelete?.name,
           onClick: () => {
             setIsDeleting(true);
             setTimeout(() => {
               setWebhooks(prev => prev.filter(h => h.id !== webhookToDelete.id));
               setWebhookToDelete(null);
+              setIsDeleting(false);
+              setDeleteConfirmationText("");
             }, 1200);
           }
         }}
         secondaryAction={{
           label: "Cancel",
+          icon: <FiX size={14} />,
           onClick: () => {
             setWebhookToDelete(null);
             setDeleteConfirmationText("");
+            setIsDeleting(false);
           }
         }}
       >

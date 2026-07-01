@@ -13,6 +13,24 @@
   padding: 24px;
 }
 
+.modalOverlay.fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.modalOverlay.fadeOut {
+  animation: fadeOut 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(4px); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; backdrop-filter: blur(4px); }
+  to { opacity: 0; backdrop-filter: blur(0px); }
+}
+
 .modalCard {
   background-color: #FFFFFF;
   border-radius: 12px;
@@ -26,21 +44,21 @@
 }
 
 .modalCard.zoomIn {
-  animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: zoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .modalCard.zoomOut {
-  animation: zoomOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: zoomOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes zoomIn {
-  from { transform: scale(0.9); opacity: 0; }
+  from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 @keyframes zoomOut {
   from { transform: scale(1); opacity: 1; }
-  to { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(0.95); opacity: 0; }
 }
 
 .sm { max-width: 420px; }
@@ -246,3 +264,26 @@
 .iconSuccess { color: #10B981; background-color: #D1FAE5; }
 .iconWarning { color: #F59E0B; background-color: #FEF3C7; }
 .iconError { color: #DC2626; background-color: #FEE2E2; }
+
+/* Dynamic Button Loader and Button Icon Styles */
+.btnIcon {
+  margin-right: 8px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinAnimation {
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
