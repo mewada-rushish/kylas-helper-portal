@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiPlus, FiEye, FiEdit2, FiTrash2, FiArrowLeft } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./templates.module.css";
 
 const KYLAS_PRODUCTS = [
@@ -26,8 +27,17 @@ const INITIAL_TEMPLATES = [
 
 export default function TemplatesListingDashboard() {
   const router = useRouter();
-  const [templates, setTemplates] = useState(INITIAL_TEMPLATES);
+  const [templates, setTemplates] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTemplates(INITIAL_TEMPLATES);
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className={styles.adminLayout}>
@@ -62,37 +72,47 @@ export default function TemplatesListingDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {templates.map((tmpl) => {
-                  const linkedProduct = KYLAS_PRODUCTS.find(p => p.value === tmpl.attachedProductId);
-                  return (
-                    <tr key={tmpl.id}>
-                      <td className={styles.custPrimaryName}>{tmpl.name}</td>
-                      <td className={styles.dateStampCell}>
-                        {tmpl.isDefault ? "Global Core Fallback Configuration Layer" : `Exclusive Product Overwrite: ${linkedProduct?.label || "Alternative General"}`}
-                      </td>
-                      <td>
-                        <span className={`${styles.statusLabelBadge} ${tmpl.isDefault ? styles.statusActive : styles.statusMapped}`}>
-                          {tmpl.isDefault ? "Standard Default Blueprint" : "Dynamic Override Registered"}
-                        </span>
-                      </td>
-                      <td>
-                        <div className={styles.actionsCellRow}>
-                          <button className={styles.iconActionBtn} onClick={() => setPreviewTemplate(tmpl)} title="View Layout Blueprint">
-                            <FiEye />
-                          </button>
-                          <button className={styles.iconActionBtn} onClick={() => router.push(`/invoices/templates/${tmpl.id}`)} title="Open Template Designer">
-                            <FiEdit2 />
-                          </button>
-                          {!tmpl.isDefault && (
-                            <button className={styles.iconActionBtn} onClick={() => setTemplates(templates.filter(t => t.id !== tmpl.id))} title="Delete Blueprint">
-                              <FiTrash2 />
+                {isLoading ? (
+                  <SkeletonLoader type="table" rows={3} columns={4} />
+                ) : templates.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: "center", padding: "32px", color: "#6b7280" }}>
+                      No templates found. Create a new PDF template to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  templates.map((tmpl) => {
+                    const linkedProduct = KYLAS_PRODUCTS.find(p => p.value === tmpl.attachedProductId);
+                    return (
+                      <tr key={tmpl.id}>
+                        <td className={styles.custPrimaryName}>{tmpl.name}</td>
+                        <td className={styles.dateStampCell}>
+                          {tmpl.isDefault ? "Global Core Fallback Configuration Layer" : `Exclusive Product Overwrite: ${linkedProduct?.label || "Alternative General"}`}
+                        </td>
+                        <td>
+                          <span className={`${styles.statusLabelBadge} ${tmpl.isDefault ? styles.statusActive : styles.statusMapped}`}>
+                            {tmpl.isDefault ? "Standard Default Blueprint" : "Dynamic Override Registered"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className={styles.actionsCellRow}>
+                            <button className={styles.iconActionBtn} onClick={() => setPreviewTemplate(tmpl)} title="View Layout Blueprint">
+                              <FiEye />
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                            <button className={styles.iconActionBtn} onClick={() => router.push(`/invoices/templates/${tmpl.id}`)} title="Open Template Designer">
+                              <FiEdit2 />
+                            </button>
+                            {!tmpl.isDefault && (
+                              <button className={styles.iconActionBtn} onClick={() => setTemplates(templates.filter(t => t.id !== tmpl.id))} title="Delete Blueprint">
+                                <FiTrash2 />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
   FiSearch, FiPlus, FiEye, FiEyeOff, FiX,
   FiLayers, FiGlobe, FiCheckSquare, FiSquare, 
@@ -8,6 +8,8 @@ import {
 } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import CentralizedModal from "@/components/ui/modal/modal";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
+import toast from "react-hot-toast";
 import styles from "./WorkflowSettings.module.css";
 
 const INITIAL_WEBHOOKS = [
@@ -101,7 +103,8 @@ const MOCK_RESPONSE_PAYLOAD_TREE = {
 };
 
 export default function WorkflowSettings() {
-  const [webhooks, setWebhooks] = useState(INITIAL_WEBHOOKS);
+  const [webhooks, setWebhooks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   
@@ -114,6 +117,15 @@ export default function WorkflowSettings() {
 
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [hasTested, setHasTested] = useState(false);
+
+  useEffect(() => {
+    // Simulate API fetch delay
+    const timer = setTimeout(() => {
+      setWebhooks(INITIAL_WEBHOOKS);
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const categoryOptions = [
     { label: "All Categories", value: "ALL" },
@@ -303,9 +315,17 @@ export default function WorkflowSettings() {
           </div>
 
           <div className={styles.fullWidthCardsGrid}>
-            {filteredWebhooks.map((hook) => (
-              <div 
-                key={hook.id} 
+            {isLoading ? (
+              <>
+                <SkeletonLoader type="card" />
+                <SkeletonLoader type="card" />
+                <SkeletonLoader type="card" />
+                <SkeletonLoader type="card" />
+              </>
+            ) : (
+              filteredWebhooks.map((hook) => (
+                <div 
+                  key={hook.id} 
                 className={styles.largeWebhookDisplayCard}
                 onClick={() => {
                   setSelectedWebhookId(hook.id);
@@ -355,7 +375,15 @@ export default function WorkflowSettings() {
                   </span>
                 </div>
               </div>
-            ))}
+            ))
+          )}
+            
+            {!isLoading && filteredWebhooks.length === 0 && (
+              <div className={styles.emptyWebhookStatePlate}>
+                <FiActivity size={32} />
+                <p>No webhooks found. Adjust your search parameters or create a new webhook mapping route.</p>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -694,7 +722,7 @@ export default function WorkflowSettings() {
                   type="button"
                   className={styles.saveWebhookChangesBtn}
                   onClick={() => {
-                    alert(`Successfully updated and synchronized target configurations for ${activeWebhook?.name}`);
+                    toast.success(`Successfully updated and synchronized target configurations for ${activeWebhook?.name}`);
                   }}
                 >
                   <FiCheck size={14} /> Update Webhook Specifications
@@ -714,6 +742,7 @@ export default function WorkflowSettings() {
           setDeleteConfirmationText("");
           setIsDeleting(false);
         }}
+        type="alert"
         variant="destructive"
         size="md"
         icon={<FiAlertTriangle size={20} />}
@@ -732,6 +761,7 @@ export default function WorkflowSettings() {
               setWebhookToDelete(null);
               setIsDeleting(false);
               setDeleteConfirmationText("");
+              toast.success("Webhook successfully deleted.");
             }, 1200);
           }
         }}

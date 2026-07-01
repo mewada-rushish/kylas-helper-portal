@@ -11,6 +11,7 @@ import {
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
+import toast from "react-hot-toast";
 import styles from "./workflows.module.css";
 
 const TRIGGER_OPTIONS = [
@@ -425,7 +426,7 @@ export default function WorkflowCanvasEngine() {
     setSaveStatus("Saving workflow...");
     setTimeout(() => {
       setSaveStatus("Workflow successfully saved");
-      alert("Workflow configuration has been fully saved and published.");
+      toast.success("Workflow configuration has been fully saved and published.");
     }, 800);
   };
 

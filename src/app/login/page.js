@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FiLock, FiMail, FiAlertCircle } from "react-icons/fi";
+import toast from "react-hot-toast";
 import styles from "./page.module.css";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -32,14 +33,18 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please try again.");
+        const errorMsg = "Invalid email or password. Please try again.";
+        setError(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
       } else {
         // Auth success, route into the application layer workspace
         router.push(callbackUrl);
       }
     } catch (err) {
-      setError("An unexpected authentication error occurred.");
+      const errorMsg = "An unexpected authentication error occurred.";
+      setError(errorMsg);
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };
@@ -113,5 +118,13 @@ export default function LoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

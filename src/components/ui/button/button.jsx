@@ -31,14 +31,16 @@ export default function AdminButton({
     >
       <span className={styles.btnContent}>
         {loading ? (
-          <FiLoader className={styles.spinAnimation} />
+          <FiLoader className={styles.spinAnimation} style={{ marginRight: 0 }} />
         ) : (
-          Icon && <Icon className={styles.btnIcon} />
-        )}
-        {children && (
-          <span className={styles.btnText}>
-            {loading ? loadingText : children}
-          </span>
+          <>
+            {Icon && <Icon className={styles.btnIcon} />}
+            {children && (
+              <span className={styles.btnText}>
+                {children}
+              </span>
+            )}
+          </>
         )}
       </span>
     </button>

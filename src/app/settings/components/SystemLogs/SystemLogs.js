@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch, FiPlay, FiAlertCircle, FiTerminal } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
+import toast from "react-hot-toast";
 import styles from "./SystemLogs.module.css";
 
 const INITIAL_LOGS = [
@@ -13,11 +15,21 @@ const INITIAL_LOGS = [
 ];
 
 export default function SystemLogs({ setLogsCount }) {
-  const [logs] = useState(INITIAL_LOGS);
+  const [logs, setLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [severityFilter, setSeverityFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeInspectedLog, setActiveInspectedLog] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLogs(INITIAL_LOGS);
+      setIsLoading(false);
+      setLogsCount && setLogsCount(INITIAL_LOGS.length);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [setLogsCount]);
 
   const severityOptions = [
     { value: "all", label: "All Levels" },
@@ -98,38 +110,44 @@ export default function SystemLogs({ setLogsCount }) {
           <span className={styles.colLogActions}>Actions</span>
         </div>
         
-        <div className={styles.logsGridTableBodyDataScroller}>
-          {filteredLogs.map(log => (
-            <div 
-              key={log.id} 
-              className={`${styles.logsGridDataRowWrapper} ${activeInspectedLog?.id === log.id ? styles.activeInspectedRowHighlight : ""}`} 
-              onClick={() => setActiveInspectedLog(log)}
-            >
-              <span className={styles.colLogTimestamp}>{log.timestamp}</span>
-              <span className={styles.colLogSource}>
-                <code className={styles.codeSnippetTagBadge}>{log.source}</code>
-              </span>
-              <span className={styles.colLogSeverity}>
-                <span className={`${styles.severityBadgePill} ${styles[log.severity]}`}>
-                  {log.severity.toUpperCase()}
+        <div className={styles.logsGridTableBodySequence}>
+          {isLoading ? (
+            <SkeletonLoader type="div-table" rows={4} columns={5} />
+          ) : (
+            filteredLogs.map(log => (
+              <div 
+                key={log.id} 
+                className={`${styles.logsGridDataRowWrapper} ${activeInspectedLog?.id === log.id ? styles.activeInspectedRowHighlight : ""}`} 
+                onClick={() => setActiveInspectedLog(log)}
+              >
+                <span className={styles.colLogTimestamp}>{log.timestamp}</span>
+                <span className={styles.colLogSource}>
+                  <code className={styles.codeSnippetTagBadge}>{log.source}</code>
                 </span>
-              </span>
-              <span className={styles.colLogMessage}>{log.message}</span>
-              <span className={styles.colLogActions}>
-                <button 
-                  type="button" 
-                  className={styles.tableRowReplayActionBtn} 
-                  onClick={(e) => { e.stopPropagation(); alert(`Replaying tracking pipeline event context: ${log.id}`); }}
-                >
-                  <FiPlay size={10} />
-                  <span>Replay</span>
-                </button>
-              </span>
-            </div>
-          ))}
-          {filteredLogs.length === 0 && (
-            <div className={styles.emptyLogsFallbackCenterRow}>
-              No ecosystem event traces found matching execution constraints.
+                <span className={styles.colLogSeverity}>
+                  <span className={`${styles.severityBadgePill} ${styles[log.severity]}`}>
+                    {log.severity.toUpperCase()}
+                  </span>
+                </span>
+                <span className={styles.colLogMessage}>{log.message}</span>
+                <span className={styles.colLogActions}>
+                  <button 
+                    type="button" 
+                    className={styles.tableRowReplayActionBtn} 
+                    onClick={(e) => { e.stopPropagation(); toast.success(`Replaying tracking pipeline event context: ${log.id}`); }}
+                  >
+                    <FiPlay size={10} />
+                    <span>Replay</span>
+                  </button>
+                </span>
+              </div>
+            ))
+          )}
+          
+          {!isLoading && filteredLogs.length === 0 && (
+            <div className={styles.logsEmptyDatasetAlertPlate}>
+              <FiTerminal size={24} />
+              <p>No diagnostic events match current pipeline filter sequence</p>
             </div>
           )}
         </div>

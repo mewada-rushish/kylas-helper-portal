@@ -12,6 +12,7 @@ import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import styles from "./editor.module.css";
 import { resolveToken } from "@/lib/variable-resolver";
+import DOMPurify from "isomorphic-dompurify";
 
 // Monaco VS Code Core React Component Engine
 import Editor from "@monaco-editor/react";
@@ -382,7 +383,7 @@ export default function TemplateEditorWorkspace() {
                 >
                   <div 
                     className={styles.htmlPreviewContainerWrapper}
-                    dangerouslySetInnerHTML={{ __html: dynamicRenderedPreviewHTML }} 
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(dynamicRenderedPreviewHTML) }} 
                   />
                 </div>
               </div>

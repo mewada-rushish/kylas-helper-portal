@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { FiCheck, FiSliders, FiFileText, FiGitBranch, FiActivity } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
+import toast from "react-hot-toast";
 import styles from "./settings.module.css";
 
 // Decoupled Sub-Page Feature Component Folders
@@ -50,9 +51,9 @@ export default function GlobalSettingsOrchestrator() {
               <AdminButton 
                 variant="primary" 
                 icon={FiCheck} 
-                onClick={() => alert("Ecosystem configurations updated across active segments.")}
+                onClick={() => toast.success("Ecosystem configurations updated across active segments.")}
               >
-                Apply Changes
+                Apply Core Updates
               </AdminButton>
             </div>
           </header>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   FiCheck, FiPlus, FiTrash2, FiSettings, FiCreditCard, FiActivity, FiEdit3 
 } from "react-icons/fi";
@@ -8,6 +8,7 @@ import Sidebar from "@/components/layout/sidebar/sidebar";
 import Accordion from "@/components/ui/accordion/accordion";
 import AdminButton from "@/components/ui/button/button";
 import CustomDatePicker from "@/components/ui/date-picker/date-picker";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import DynamicReportCard from "./_components/dynamic-report-card";
 import { REPORT_CATALOG, MOCK_DATA_ENGINE } from "./_components/report-registry";
 import styles from "./page.module.css";
@@ -25,6 +26,14 @@ export default function MasterDashboard() {
       currentVis: report.defaultVis
     }))
   );
+  const [isDashboardLoading, setIsDashboardLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDashboardLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleUpdateWidgetMetadata = (id, updates) => setWidgetsMetadata(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   const handleRemoveWidget = (id) => setActiveWidgetIds(prev => prev.filter(wId => wId !== id));
@@ -87,20 +96,28 @@ export default function MasterDashboard() {
 
     return (
       <div className={styles.bentoGridSystem}>
-        {widgets.map(widget => (
-          <DynamicReportCard 
-            key={widget.id}
-            widget={widget}
-            isEditing={isEditing}
-            isBeingDragged={draggedWidgetId === widget.id}
-            onUpdateWidget={handleUpdateWidgetMetadata}
-            onRemoveWidget={handleRemoveWidget}
-            onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          />
-        ))}
+        {isDashboardLoading ? (
+          <>
+            <SkeletonLoader type="card" />
+            <SkeletonLoader type="card" />
+            <SkeletonLoader type="card" />
+          </>
+        ) : (
+          widgets.map(widget => (
+            <DynamicReportCard 
+              key={widget.id}
+              widget={widget}
+              isEditing={isEditing}
+              isBeingDragged={draggedWidgetId === widget.id}
+              onUpdateWidget={handleUpdateWidgetMetadata}
+              onRemoveWidget={handleRemoveWidget}
+              onDragStart={handleDragStart}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+            />
+          ))
+        )}
       </div>
     );
   };

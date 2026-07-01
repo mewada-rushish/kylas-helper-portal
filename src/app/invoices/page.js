@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiPlus, FiLayout, FiEye, FiEdit2 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./invoices.module.css";
 
 const KYLAS_PRODUCTS = [
@@ -23,9 +24,18 @@ const FALLBACK_THEME = { primaryColor: "#27347B", textColor: "#202223", backgrou
 
 export default function InvoicesListPage() {
   const router = useRouter();
-  const [invoices, setInvoices] = useState(INITIAL_INVOICES);
+  const [invoices, setInvoices] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [invoiceModalMode, setInvoiceModalOpen] = useState(null); 
   const [activeInvoice, setActiveInvoice] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInvoices(INITIAL_INVOICES);
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [invCustomer, setInvCustomer] = useState("");
   const [invEmail, setInvEmail] = useState("");
@@ -117,32 +127,42 @@ export default function InvoicesListPage() {
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((inv) => (
-                  <tr key={inv.id}>
-                    <td className={styles.fontCodeIdentity}>{inv.id}</td>
-                    <td>
-                      <div className={styles.customerStackCell}>
-                        <span className={styles.custPrimaryName}>{inv.customer}</span>
-                        <span className={styles.custSubEmail}>{inv.email}</span>
-                      </div>
-                    </td>
-                    <td className={styles.dateStampCell}>{inv.date}</td>
-                    <td className={styles.productCell}>
-                      {KYLAS_PRODUCTS.find(p => p.value === inv.productId)?.label || inv.productId}
-                    </td>
-                    <td className={styles.valueTotalBoldCell}>₹{inv.total.toLocaleString("en-IN")}</td>
-                    <td>
-                      <div className={styles.actionsCellRow}>
-                        <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("view", inv)} title="Preview Invoice parameters">
-                          <FiEye />
-                        </button>
-                        <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("edit", inv)} title="Update Baseline Parameters">
-                          <FiEdit2 />
-                        </button>
-                      </div>
+                {isLoading ? (
+                  <SkeletonLoader type="table" rows={4} columns={6} />
+                ) : invoices.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: "center", padding: "32px", color: "#6b7280" }}>
+                      No invoices found. Generate a new invoice to get started.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  invoices.map((inv) => (
+                    <tr key={inv.id}>
+                      <td className={styles.fontCodeIdentity}>{inv.id}</td>
+                      <td>
+                        <div className={styles.customerStackCell}>
+                          <span className={styles.custPrimaryName}>{inv.customer}</span>
+                          <span className={styles.custSubEmail}>{inv.email}</span>
+                        </div>
+                      </td>
+                      <td className={styles.dateStampCell}>{inv.date}</td>
+                      <td className={styles.productCell}>
+                        {KYLAS_PRODUCTS.find(p => p.value === inv.productId)?.label || inv.productId}
+                      </td>
+                      <td className={styles.valueTotalBoldCell}>₹{inv.total.toLocaleString("en-IN")}</td>
+                      <td>
+                        <div className={styles.actionsCellRow}>
+                          <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("view", inv)} title="Preview Invoice parameters">
+                            <FiEye />
+                          </button>
+                          <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("edit", inv)} title="Update Baseline Parameters">
+                            <FiEdit2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
