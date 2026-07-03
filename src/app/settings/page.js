@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import React, { Suspense } from "react";
 import { FiCheck, FiSliders, FiFileText, FiGitBranch, FiActivity } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -13,9 +14,18 @@ import TemplateGeometry from "./components/TemplateGeometry/TemplateGeometry";
 import WorkflowSettings from "./components/WorkflowSettings/WorkflowSettings";
 import SystemLogs from "./components/SystemLogs/SystemLogs";
 
-export default function GlobalSettingsOrchestrator() {
-  const [activeTab, setActiveTab] = useState("general");
-  const [logsCount, setLogsCount] = useState(0);
+function SettingsDashboardContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  const activeTab = searchParams.get("tab") || "general";
+
+  const setActiveTab = (tab) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", tab);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   // Deterministic UI view renderer switcher map
   const renderActiveSubPage = () => {
@@ -27,7 +37,7 @@ export default function GlobalSettingsOrchestrator() {
       case "workflows":
         return <WorkflowSettings />;
       case "logs":
-        return <SystemLogs setLogsCount={setLogsCount} />;
+        return <SystemLogs />;
       default:
         return <GeneralSettings />;
     }
@@ -91,7 +101,6 @@ export default function GlobalSettingsOrchestrator() {
             >
               <FiActivity size={14} />
               <span>System Logs</span>
-              {logsCount > 0 && <span className={styles.tabCounterNotificationBadge}>{logsCount}</span>}
             </button>
           </nav>
 
@@ -103,5 +112,17 @@ export default function GlobalSettingsOrchestrator() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function GlobalSettingsOrchestrator() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        Loading...
+      </div>
+    }>
+      <SettingsDashboardContent />
+    </Suspense>
   );
 }

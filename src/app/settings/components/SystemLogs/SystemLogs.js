@@ -14,7 +14,7 @@ const INITIAL_LOGS = [
   { id: "log_04", timestamp: "2026-06-30 08:12:59", source: "Kylas CRM", severity: "success", message: "Webhook hook 'wh_config_kylas_crm_leads' resolved successfully. Dynamic context data hydrated cleanly." }
 ];
 
-export default function SystemLogs({ setLogsCount }) {
+export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [severityFilter, setSeverityFilter] = useState("all");
@@ -26,10 +26,9 @@ export default function SystemLogs({ setLogsCount }) {
     const timer = setTimeout(() => {
       setLogs(INITIAL_LOGS);
       setIsLoading(false);
-      setLogsCount && setLogsCount(INITIAL_LOGS.length);
     }, 1200);
     return () => clearTimeout(timer);
-  }, [setLogsCount]);
+  }, []);
 
   const severityOptions = [
     { value: "all", label: "All Levels" },
@@ -53,11 +52,7 @@ export default function SystemLogs({ setLogsCount }) {
     return matchesSeverity && matchesSource && matchesSearch;
   });
 
-  useEffect(() => {
-    if (setLogsCount) {
-      setLogsCount(filteredLogs.length);
-    }
-  }, [filteredLogs, setLogsCount]);
+
 
   return (
     <div className={styles.logsConsoleContainerFlexEngine}>
@@ -75,27 +70,29 @@ export default function SystemLogs({ setLogsCount }) {
           />
         </div>
         
-        <div className={styles.selectFilterControlBlock}>
-          <span className={styles.filterControlTitleText}>Severity</span>
-          <div className={styles.dropdownWrapperOverride}>
-            <CustomDropdown 
-              options={severityOptions}
-              selectedValue={severityFilter}
-              onSelect={(val) => setSeverityFilter(val)}
-              icon={FiAlertCircle}
-            />
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className={styles.selectFilterControlBlock}>
+            <span className={styles.filterControlTitleText}>Severity</span>
+            <div className={styles.dropdownWrapperOverride}>
+              <CustomDropdown 
+                options={severityOptions}
+                selectedValue={severityFilter}
+                onSelect={(val) => setSeverityFilter(val)}
+                icon={FiAlertCircle}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className={styles.selectFilterControlBlock}>
-          <span className={styles.filterControlTitleText}>Channel</span>
-          <div className={styles.dropdownWrapperOverride}>
-            <CustomDropdown 
-              options={sourceOptions}
-              selectedValue={sourceFilter}
-              onSelect={(val) => setSourceFilter(val)}
-              icon={FiTerminal}
-            />
+          <div className={styles.selectFilterControlBlock}>
+            <span className={styles.filterControlTitleText}>Channel</span>
+            <div className={styles.dropdownWrapperOverride}>
+              <CustomDropdown 
+                options={sourceOptions}
+                selectedValue={sourceFilter}
+                onSelect={(val) => setSourceFilter(val)}
+                icon={FiTerminal}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -110,7 +107,7 @@ export default function SystemLogs({ setLogsCount }) {
           <span className={styles.colLogActions}>Actions</span>
         </div>
         
-        <div className={styles.logsGridTableBodySequence}>
+        <div className={styles.logsGridTableBodyDataScroller}>
           {isLoading ? (
             <SkeletonLoader type="div-table" rows={4} columns={5} />
           ) : (
@@ -125,7 +122,7 @@ export default function SystemLogs({ setLogsCount }) {
                   <code className={styles.codeSnippetTagBadge}>{log.source}</code>
                 </span>
                 <span className={styles.colLogSeverity}>
-                  <span className={`${styles.severityBadgePill} ${styles[log.severity]}`}>
+                  <span className={`${styles.severityBadgePill} ${log.severity}`}>
                     {log.severity.toUpperCase()}
                   </span>
                 </span>
@@ -157,7 +154,14 @@ export default function SystemLogs({ setLogsCount }) {
       {activeInspectedLog && (
         <div className={styles.inspectedJsonSummarySlideDrawerWindow}>
           <div className={styles.drawerHeaderFlexLine}>
-            <h3>Trace Inspector JSON Object Matrix: {activeInspectedLog.id}</h3>
+            <h3 className={styles.drawerTitleComplex}>
+              <span className={`${styles.severityBadgePill} ${activeInspectedLog.severity}`} style={{ marginRight: '10px' }}>
+                {activeInspectedLog.severity.toUpperCase()}
+              </span>
+              <span className={styles.drawerTitleSource}>{activeInspectedLog.source}</span>
+              <span className={styles.drawerTitleTime}> • {activeInspectedLog.timestamp}</span>
+              <span className={styles.drawerTitleId}> (Trace: {activeInspectedLog.id})</span>
+            </h3>
             <button 
               type="button" 
               className={styles.closeDrawerActionBtn} 

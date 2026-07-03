@@ -10,7 +10,7 @@ const CENTRAL_NAVIGATION_ITEMS = [
   { id: "canvas", label: "Overview Canvas", icon: FiLayout, href: "/dashboard" },
   { id: "workflows", label: "Workflows", icon: FiGitBranch, href: "/workflows" },
   { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, href: "/invoices" },
-  { id: "settings", label: "Settings", icon: FiSettings, href: "/dashboard#settings", disabled: true }
+  { id: "settings", label: "Settings", icon: FiSettings, href: "/settings" }
 ];
 
 export default function Sidebar({ activeId }) {
