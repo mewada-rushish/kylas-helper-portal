@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FiLock, FiMail, FiAlertCircle, FiLoader } from "react-icons/fi";
+import { FiLock, FiMail, FiAlertCircle, FiLoader, FiEye, FiEyeOff } from "react-icons/fi";
 import toast from "react-hot-toast";
 import styles from "./page.module.css";
 
@@ -12,15 +12,14 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
-  // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
@@ -28,13 +27,13 @@ function LoginContent() {
       const result = await signIn("credentials", {
         email,
         password,
+        rememberMe: rememberMe ? "true" : "false",
         redirect: false,
         callbackUrl,
       });
 
       if (result?.error) {
         const errorMsg = "Invalid email or password. Please try again.";
-        setError(errorMsg);
         toast.error(errorMsg);
         setIsLoading(false);
       } else {
@@ -43,7 +42,6 @@ function LoginContent() {
       }
     } catch (err) {
       const errorMsg = "An unexpected authentication error occurred.";
-      setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
     }
@@ -59,14 +57,6 @@ function LoginContent() {
           <h1>Sign in to AsmitA Ops</h1>
           <p>Kylas Integration & Helper Portal</p>
         </header>
-
-        {/* Security Warning Alert */}
-        {error && (
-          <div className={styles.errorBanner} role="alert">
-            <FiAlertCircle className={styles.errorIcon} />
-            <span>{error}</span>
-          </div>
-        )}
 
         {/* Credential Form Sheet */}
         <form onSubmit={handleSubmit} className={styles.loginForm}>
@@ -92,14 +82,35 @@ function LoginContent() {
               <FiLock className={styles.fieldIcon} />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 disabled={isLoading}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                className={styles.togglePasswordButton}
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
             </div>
+          </div>
+
+          <div className={styles.rememberMeGroup}>
+            <label className={styles.checkboxLabel}>
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isLoading}
+              />
+              <span>Remember me for 30 days</span>
+            </label>
           </div>
 
           <button 

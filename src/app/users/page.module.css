@@ -1,0 +1,299 @@
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--background);
+  font-family: var(--font-poppins), sans-serif;
+  color: #202223;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mainCanvas {
+  flex: 1;
+  margin-left: 240px;
+  padding: 40px 48px;
+  background-color: var(--background);
+}
+
+.pageMaxWidth {
+  max-width: 1048px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.headerTitle h1 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #202223;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.headerTitle p {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  color: #6d7175;
+}
+
+.primaryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cta-bg);
+  color: var(--cta-text);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-raised);
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  background: var(--cta-bg-hover);
+}
+
+.secondaryButton {
+  background: transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondaryButton:hover {
+  background: #f8fafc;
+}
+
+.tableContainer {
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-raised);
+  overflow: hidden;
+}
+
+.usersTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usersTable th, .usersTable td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.usersTable th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.usersTable tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #e0e7ff;
+  color: #3730a3;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.customBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mutedText {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.iconButton:hover {
+  background: #e2e8f0;
+  color: var(--foreground);
+}
+
+.iconButton.danger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--card-bg);
+  padding: 32px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  border: var(--glass-border);
+}
+
+.modalContent h2 {
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.inputGroup input, .inputGroup select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  outline: none;
+}
+
+.inputGroup input:focus, .inputGroup select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.customAccessSection {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.customAccessSection label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.helpText {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.accessCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accessCard:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.accessCard.active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.accessCard input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #4f46e5;
+}
+
+.accessCardContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.accessCardTitle {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.accessCardDesc {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+@media (max-width: 768px) {
+  .mainCanvas { margin-left: 0; padding: 24px 16px; }
+  .pageHeader { flex-direction: column; align-items: flex-start; gap: 16px; }
+}

@@ -131,12 +131,8 @@
 }
 
 @keyframes slideInActiveNav {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(0);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
 }
 
 .navIcon {
@@ -182,3 +178,5 @@
 .logoutBtn:hover {
   background-color: #fff4f4 !important;
 }
+
+@keyframes slideInActiveNav { 0% { transform: translateX(-100%); } 100% { transform: translateX(0); } }
