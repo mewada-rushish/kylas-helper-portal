@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,24 +23,25 @@
 
 @keyframes fadeIn {
   from { opacity: 0; backdrop-filter: blur(0px); }
-  to { opacity: 1; backdrop-filter: blur(4px); }
+  to { opacity: 1; backdrop-filter: blur(5px); }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; backdrop-filter: blur(4px); }
+  from { opacity: 1; backdrop-filter: blur(5px); }
   to { opacity: 0; backdrop-filter: blur(0px); }
 }
 
 .modalCard {
-  background-color: #FFFFFF;
+  background-color: var(--card-bg);
   border-radius: 12px;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+  box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   max-height: calc(100vh - 48px);
   width: 100%;
-  border: 1px solid #E2E8F0;
+  border: var(--glass-border);
+  backdrop-filter: blur(5px);
 }
 
 .modalCard.zoomIn {
@@ -69,11 +70,11 @@
 /* STANDARD CONTENT MODAL STYLES */
 .modalHeader {
   padding: 24px 28px;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: var(--glass-border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background-color: #F8F8FB;
+  background-color: var(--background);
 }
 
 .headerTitleBlock {
@@ -118,8 +119,8 @@
   align-items: center;
   padding: 6px;
   margin: -6px -6px 0 0;
-  border-radius: 6px;
-  transition: all 0.15s ease;
+  border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .closeCrossBtn:hover {
@@ -139,18 +140,18 @@
 
 .modalFooter {
   padding: 20px 28px;
-  border-top: 1px solid #E2E8F0;
+  border-top: var(--glass-border);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background-color: #F8F8FB;
+  background-color: var(--background);
 }
 
 /* GLOBAL BUTTON STYLES */
 .primaryBtn, .secondaryBtn {
   height: 42px;
   padding: 0 20px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 12px;
   font-weight: 700;
@@ -160,12 +161,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 
 .secondaryBtn {
-  background-color: #FFFFFF;
+  background-color: var(--card-bg);
   border: 1px solid #CBD5E1;
   color: #475569;
 }
@@ -177,33 +178,33 @@
 }
 
 .btnPrimary {
-  background-color: #27347B;
-  border: 1px solid #27347B;
-  color: #FFFFFF;
-  box-shadow: 0 2px 4px rgba(39, 52, 123, 0.12);
+  background-color: var(--active-bg);
+  border: 1px solid #4f46e5;
+  color: #4f46e5;
+  box-shadow: var(--shadow-raised);
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background-color: #1E2963;
-  border-color: #1E2963;
+  background-color: #e0e0ff;
+  border-color: #4f46e5;
 }
 
 .destructive {
-  background-color: #E21F26;
-  border: 1px solid #E21F26;
-  color: #FFFFFF;
-  box-shadow: 0 2px 4px rgba(226, 31, 38, 0.12);
+  background-color: #fff4f4;
+  border: 1px solid var(--action-red, #E21F26);
+  color: var(--action-red, #E21F26);
+  box-shadow: var(--shadow-raised);
 }
 
 .destructive:hover:not(:disabled) {
-  background-color: #B91C1C;
-  border-color: #B91C1C;
+  background-color: #ffe8e8;
+  border-color: var(--action-red, #E21F26);
 }
 
 .primaryBtn:disabled, .secondaryBtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  box-shadow: none !important;
+  box-shadow: var(--shadow-raised);
 }
 
 /* ========================================================= */
@@ -212,7 +213,7 @@
 
 .alert .modalHeader {
   border-bottom: none;
-  background-color: #FFFFFF;
+  background-color: var(--card-bg);
   padding: 32px 32px 16px 32px;
 }
 
@@ -233,12 +234,12 @@
 
 .alert .modalBody {
   padding: 0 32px 24px 32px;
-  background-color: #FFFFFF;
+  background-color: var(--card-bg);
 }
 
 .alert .modalFooter {
   border-top: none;
-  background-color: #FFFFFF;
+  background-color: var(--card-bg);
   padding: 0 32px 32px 32px;
   justify-content: center;
   gap: 16px;

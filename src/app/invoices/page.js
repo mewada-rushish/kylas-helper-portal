@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FiPlus, FiLayout, FiEye, FiEdit2 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
+import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./invoices.module.css";
 
@@ -221,11 +222,11 @@ export default function InvoicesListPage() {
                     </div>
                     <div className={styles.inputFieldGroupBlock}>
                       <label>Kylas Sync Catalog Product Mapping</label>
-                      <select className={styles.builderSelectField} value={invProduct} onChange={(e) => setInvProduct(e.target.value)}>
-                        {KYLAS_PRODUCTS.map(p => (
-                          <option key={p.value} value={p.value}>{p.label}</option>
-                        ))}
-                      </select>
+                      <CustomDropdown 
+                        options={KYLAS_PRODUCTS} 
+                        selectedValue={invProduct} 
+                        onSelect={setInvProduct} 
+                      />
                     </div>
                     <div className={styles.formRowTwoColumnGrid}>
                       <div className={styles.inputFieldGroupBlock}>

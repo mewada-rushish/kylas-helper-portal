@@ -1,13 +1,21 @@
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --text-muted: #666666;
-  --border-color: #e5e5e5;
-  --border-hover: #1a1a1a;
-  --cta-bg: #1a1a1a;
-  --cta-bg-hover: #333333;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --text-muted: #86868b;
+  --border-color: #d2d2d7;
+  --border-hover: #86868b;
+  --cta-bg: #007aff;
+  --cta-bg-hover: #0066cc;
   --cta-text: #ffffff;
-  --card-bg: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  
+  /* Apple UI Tokens */
+  --shadow-raised: 0 8px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --shadow-active: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --glass-border: 1px solid rgba(0, 0, 0, 0.08);
+  --accent-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+  --active-bg: rgba(0, 122, 255, 0.08);
+  --active-bg-gray: #e5e5ea;
 }
 
 * {
@@ -19,7 +27,6 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -28,4 +35,72 @@ button, a {
   font-family: inherit;
   cursor: pointer;
   text-decoration: none;
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+button:active:not(:disabled) {
+  filter: brightness(0.90);
+}
+
+/* Custom Scrollbar Styles for Apple UI */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Global Page Loader Styles */
+.page-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 240px; /* Sidebar width offset */
+  right: 0;
+  bottom: 0;
+  background-color: var(--background);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 90; /* Below sidebar's 100 */
+  gap: 16px;
+}
+
+.page-loader-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 122, 255, 0.15);
+  border-top-color: var(--cta-bg);
+  border-radius: 50%;
+  animation: page-spin 0.8s linear infinite;
+}
+
+.page-loader-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+@keyframes page-spin {
+  to { transform: rotate(360deg); }
 }

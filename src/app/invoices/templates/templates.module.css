@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: var(--system-bg, #F8F8FB);
+  background-color: var(--background);
   font-family: var(--font-poppins), sans-serif;
   color: #202223;
   -webkit-font-smoothing: antialiased;
@@ -12,7 +12,7 @@
   flex: 1;
   margin-left: 240px;
   padding: 40px 48px;
-  background-color: var(--system-bg, #F8F8FB);
+  background-color: var(--background);
 }
 
 .pageMaxWidth {
@@ -40,17 +40,17 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background-color: #ffffff;
-  border: 1px solid #c9cccf;
-  border-radius: 6px;
+  background-color: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
   color: #202223;
   cursor: pointer;
   font-size: 18px;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .backButton:hover {
-  background-color: #f4f6f8;
+  background-color: var(--active-bg);
   border-color: var(--deep-navy, #27347B);
 }
 
@@ -76,10 +76,10 @@
 }
 
 .tableCardFrame {
-  background-color: #ffffff;
-  border: 1px solid #e1e3e5;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  background-color: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-raised);
   overflow-x: auto;
 }
 
@@ -98,12 +98,12 @@
   text-transform: uppercase;
   color: #6d7175;
   padding: 14px 16px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: var(--glass-border);
 }
 
 .invoiceTableGrid td {
   padding: 16px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: var(--glass-border);
   color: #202223;
   vertical-align: middle;
 }
@@ -152,8 +152,8 @@
 }
 
 .iconActionBtn {
-  background: #ffffff;
-  border: 1px solid #c9cccf;
+  background: var(--card-bg);
+  border: var(--glass-border);
   border-radius: 4px;
   color: #6d7175;
   width: 32px;
@@ -163,13 +163,13 @@
   justify-content: center;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .iconActionBtn:hover {
   border-color: var(--deep-navy, #27347B);
   color: var(--deep-navy, #27347B);
-  background-color: #f4f6f8;
+  background-color: var(--active-bg);
 }
 
 .iconActionBtn:hover svg[stroke*="Trash2"], 
@@ -185,7 +185,7 @@
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,11 +193,11 @@
 }
 
 .modalContentCardSheet {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-radius: 12px;
   width: 640px;
   max-width: 90%;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -217,7 +217,7 @@
 
 .modalHeaderTitleArea {
   padding: 20px 24px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: var(--glass-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -258,12 +258,12 @@
 }
 
 .pdfInvoiceLayoutContainerMock {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   width: 100%;
   min-width: 680px;
   max-width: 720px;
   aspect-ratio: 1 / 1.414;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;

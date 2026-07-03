@@ -31,7 +31,12 @@ export default function AdminButton({
     >
       <span className={styles.btnContent}>
         {loading ? (
-          <FiLoader className={styles.spinAnimation} style={{ marginRight: 0 }} />
+          <>
+            <FiLoader className={styles.spinAnimation} style={{ marginRight: loadingText ? 8 : 0 }} />
+            {loadingText && (
+              <span className={styles.btnText}>{loadingText}</span>
+            )}
+          </>
         ) : (
           <>
             {Icon && <Icon className={styles.btnIcon} />}

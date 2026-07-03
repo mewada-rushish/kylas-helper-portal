@@ -1,8 +1,8 @@
 .reportCard {
-  background-color: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e1e3e5;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  border: var(--glass-border);
+  box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -27,7 +27,7 @@
 
 .editableGlow {
   border: 1px dashed var(--deep-navy, #27347B);
-  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.08);
+  box-shadow: var(--shadow-raised);
   cursor: grab;
 }
 
@@ -37,13 +37,13 @@
 
 .isDragging {
   opacity: 0.15;
-  box-shadow: none;
+  box-shadow: var(--shadow-raised);
   transform: scale(0.97);
 }
 
 .resizingActiveFrame {
   border: 2px solid var(--deep-navy, #27347B) !important;
-  box-shadow: 0 8px 24px rgba(39, 52, 123, 0.15) !important;
+  box-shadow: var(--shadow-raised);
   z-index: 500 !important;
   cursor: se-resize !important;
 }
@@ -82,11 +82,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
 }
 
 .menuTrigger:hover {
-  background-color: var(--system-bg, #F8F8FB);
+  background-color: var(--background);
   color: #202223;
 }
 
@@ -96,16 +96,23 @@
   right: 0;
   z-index: 9999;
   min-width: 180px;
-  background-color: #ffffff;
-  border: 1px solid #c9cccf;
-  border-radius: 8px;
+  background-color: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
   padding: 6px;
   margin: 0;
   list-style: none;
-  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-raised);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(5px);
 }
 
 .dropdownList li {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -113,13 +120,25 @@
   font-family: var(--font-poppins), sans-serif;
   font-size: 12px;
   color: #202223;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.1s ease;
+  background: transparent;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dropdownList li:hover:not(.menuSectionLabel):not(.menuDivider) {
-  background-color: var(--system-bg, #F8F8FB);
+.dropdownList li:not(.menuSectionLabel):not(.menuDivider)::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--background);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+  border-radius: inherit;
+}
+
+.dropdownList li:hover:not(.menuSectionLabel):not(.menuDivider)::before {
+  transform: translateX(0);
 }
 
 .menuSectionLabel {
@@ -142,17 +161,22 @@
 }
 
 .activeOption {
-  background-color: #e3edfa;
   color: var(--deep-navy, #27347B) !important;
   font-weight: 600;
+}
+
+.activeOption::before {
+  transform: translateX(0) !important;
+  background-color: var(--active-bg) !important;
 }
 
 .deleteOption {
   color: var(--action-red, #E21F26) !important;
 }
 
-.deleteOption:hover {
+.deleteOption:hover::before {
   background-color: #fff4f4 !important;
+  transform: translateX(0) !important;
 }
 
 .cardBody {

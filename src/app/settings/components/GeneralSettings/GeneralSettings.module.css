@@ -6,7 +6,6 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding-bottom: 180px; 
 }
 
 .sectionBrandingHeaderLine {
@@ -32,7 +31,7 @@
 
 .sectionDivider {
   border: 0;
-  border-top: 1px solid #E2E8F0;
+  border-top: var(--glass-border);
   margin: 16px 0 24px 0;
   width: 100%;
   flex-shrink: 0;
@@ -47,15 +46,15 @@
 }
 
 .formSectionGridBlockCard {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--card-bg);
+  border: var(--glass-border);
   border-radius: 12px;
   padding: 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+  box-shadow: var(--shadow-raised);
 }
 
 .formSectionGridBlockCard h3 {
@@ -100,7 +99,7 @@
   background: #F8FAFC;
   padding: 12px;
   border: 1px dashed #CBD5E1;
-  border-radius: 8px;
+  border-radius: 12px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -108,9 +107,9 @@
 .logoFramePreviewBox {
   width: 90px;
   height: 48px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 6px;
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -137,9 +136,9 @@
 .fileUploadCustomTriggerBtn {
   height: 30px;
   padding: 0 12px;
-  background: #FFFFFF;
+  background: var(--card-bg);
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
+  border-radius: 12px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 10px;
   font-weight: 700;
@@ -149,7 +148,7 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fileUploadCustomTriggerBtn:hover {
@@ -188,35 +187,35 @@
   height: 38px;
   padding: 0 12px 0 34px;
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
+  border-radius: 12px;
   font-family: var(--font-poppins), sans-serif;
   font-size: 13px;
   color: #0F172A;
   outline: none;
-  background: #FFFFFF;
+  background: var(--card-bg);
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .primaryTextareaInputWithIcon {
   width: 100%;
   padding: 10px 12px 10px 34px;
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
+  border-radius: 12px;
   font-family: var(--font-poppins), sans-serif;
   font-size: 13px;
   color: #0F172A;
   outline: none;
-  background: #FFFFFF;
+  background: var(--card-bg);
   box-sizing: border-box;
   resize: none;
   line-height: 1.5;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .primaryTextInputWithIcon:focus, .primaryTextareaInputWithIcon:focus {
   border-color: #27347B;
-  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.06);
+  box-shadow: var(--shadow-raised);
 }
 
 .prefixPreviewLegend {

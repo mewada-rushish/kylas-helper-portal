@@ -6,34 +6,55 @@
 
 /* --- THE TRIGGER BUTTON WRAPPER --- */
 .dropdownTrigger {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: 8px;
   padding: 6px 12px;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   color: #202223;
-  border: 1px solid #c9cccf;
-  border-radius: 6px;
+  border: var(--glass-border);
+  border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: all 0.1s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 32px; /* Locks vertical height boundaries */
+  box-shadow: var(--shadow-raised);
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 32px;
   line-height: 1;
 }
 
+.dropdownTrigger::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--active-bg);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+  border-radius: inherit;
+}
+
 .dropdownTrigger:hover {
-  background-color: #f6f6f7;
   border-color: #babfc3;
 }
 
+.dropdownTrigger:hover::before {
+  transform: translateX(0);
+}
+
 .dropdownActive {
-  background-color: #f1f2f4;
-  border-color: #8c9196;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-raised);
+}
+
+.dropdownActive::before {
+  transform: translateX(0);
+  background-color: var(--active-bg);
 }
 
 /* --- VERTICAL BASELINE PROTECTION LAYER --- */
@@ -46,7 +67,7 @@
 
 .iconPrefix {
   font-size: 16px;
-  color: #6d7175;
+  color: var(--text-muted);
   display: block; /* Strips browser-native font descriptor spacing variants */
   flex-shrink: 0;
 }
@@ -54,12 +75,12 @@
 .labelText {
   display: inline-block;
   line-height: 14px; /* Restricts inline typography calculation expansion */
-  color: #202223;
+  color: var(--foreground);
 }
 
 .arrowIcon {
   font-size: 14px;
-  color: #6d7175;
+  color: var(--text-muted);
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
   display: block;
@@ -76,40 +97,64 @@
   right: 0;
   z-index: 200;
   min-width: 200px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 4px;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  border: var(--glass-border);
+  padding: 6px;
   margin: 0;
   list-style: none;
   /* Multi-layered drop shadow */
-  box-shadow: 
-    0 0 0 1px rgba(63, 63, 68, 0.05), 
-    0 4px 6px -1px rgba(0, 0, 0, 0.05), 
-    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-raised);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(5px);
 }
 
 /* --- ITEM INTERACTION NODES --- */
 .dropdownItem {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
   font-size: 13px;
-  color: #202223;
-  border-radius: 6px;
+  color: var(--foreground);
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.1s ease;
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+}
+
+.dropdownItem::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--active-bg);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+  border-radius: inherit;
 }
 
 .dropdownItem:hover {
-  background-color: #f6f6f7;
-  color: #202223;
+  color: var(--foreground);
+}
+
+.dropdownItem:hover::before {
+  transform: translateX(0);
 }
 
 .itemSelected {
-  background-color: #f4f6f8;
   font-weight: 600;
-  color: #008060; /* Shopify Action Green */
+  color: #4f46e5;
+}
+
+.itemSelected::before {
+  transform: translateX(0);
+  background-color: var(--active-bg);
 }
 
 .itemLabel {
@@ -118,7 +163,7 @@
 }
 
 .checkIcon {
-  color: #008060;
+  color: #4f46e5;
   font-size: 14px;
   flex-shrink: 0;
 }

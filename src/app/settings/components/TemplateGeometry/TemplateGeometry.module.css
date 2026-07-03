@@ -6,7 +6,6 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding-bottom: 180px; 
 }
 
 .sectionBrandingHeaderLine {
@@ -32,7 +31,7 @@
 
 .sectionDivider {
   border: 0;
-  border-top: 1px solid #E2E8F0;
+  border-top: var(--glass-border);
   margin: 16px 0 24px 0;
   width: 100%;
   flex-shrink: 0;
@@ -47,15 +46,15 @@
 }
 
 .formSectionGridBlockCard {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--card-bg);
+  border: var(--glass-border);
   border-radius: 12px;
   padding: 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+  box-shadow: var(--shadow-raised);
 }
 
 .fullWidthGridSpanCard {
@@ -89,7 +88,7 @@
   color: #E21F26;
   background: rgba(226, 31, 38, 0.06);
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 12px;
   border: 1px solid rgba(226, 31, 38, 0.1);
 }
 
@@ -157,7 +156,7 @@
   border-radius: 50%;
   display: inline-block;
   position: relative;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .radioElementOptionLabel input[type="radio"]:checked ~ .radioCustomCircle {
@@ -174,7 +173,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: var(--card-bg);
 }
 
 .radioElementOptionLabel input[type="radio"]:checked ~ .radioCustomCircle::after {
@@ -208,19 +207,19 @@
   height: 38px;
   padding: 0 12px 0 34px;
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
+  border-radius: 12px;
   font-family: var(--font-poppins), sans-serif;
   font-size: 13px;
   color: #0F172A;
   outline: none;
-  background: #FFFFFF;
+  background: var(--card-bg);
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .primaryTextInputWithIcon:focus {
   border-color: #27347B;
-  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.06);
+  box-shadow: var(--shadow-raised);
 }
 
 .informationalNoticeAlertRow {
@@ -229,7 +228,7 @@
   gap: 12px;
   background: #F0F4F8;
   border: 1px solid #D0DFEE;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 14px;
   box-sizing: border-box;
 }
@@ -270,7 +269,7 @@
   background: #F8FAFC;
   padding: 0 16px;
   height: 40px;
-  border: 1px solid #E2E8F0;
+  border: var(--glass-border);
   border-bottom: none;
   border-radius: 6px 6px 0 0;
   font-family: var(--font-montserrat), sans-serif;
@@ -300,9 +299,9 @@
 .variableMappingRowsStackList {
   display: flex;
   flex-direction: column;
-  border: 1px solid #E2E8F0;
+  border: var(--glass-border);
   border-radius: 0 0 6px 6px;
-  background: #FFFFFF;
+  background: var(--card-bg);
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -360,20 +359,20 @@
   height: 36px;
   padding: 0 12px;
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
+  border-radius: 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 12px;
   color: #334155;
-  background: #FFFFFF;
+  background: var(--card-bg);
   outline: none;
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .monospaceJsonPathFieldInput:focus {
   border-color: #27347B;
-  background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.05);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-raised);
 }
 
 @media (max-width: 1200px) {

@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FiLock, FiMail, FiAlertCircle } from "react-icons/fi";
+import { FiLock, FiMail, FiAlertCircle, FiLoader } from "react-icons/fi";
 import toast from "react-hot-toast";
 import styles from "./page.module.css";
 
@@ -107,7 +107,14 @@ function LoginContent() {
             className={styles.submitButton}
             disabled={isLoading}
           >
-            {isLoading ? "Authenticating session..." : "Sign in"}
+            {isLoading ? (
+              <>
+                <FiLoader className={styles.spinAnimation} style={{ marginRight: 8 }} />
+                Authenticating session...
+              </>
+            ) : (
+              "Sign in"
+            )}
           </button>
         </form>
 

@@ -6,13 +6,13 @@
   flex-direction: column;
   min-height: 0;
   width: 100%;
-  background: #FFFFFF;
+  background: var(--card-bg);
 }
 
 .logsFiltersStripControlPanel {
-  background: #F8FAFC;
+  background: var(--background);
   padding: 16px 24px;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -39,20 +39,20 @@
   height: 38px;
   padding-left: 36px;
   padding-right: 12px;
-  background: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  border-radius: 8px;
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
   font-family: var(--font-poppins), sans-serif;
   font-size: 12px;
-  color: #0F172A;
+  color: var(--foreground);
   outline: none;
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .logSearchInputField:focus {
-  border-color: #27347B;
-  box-shadow: 0 0 0 3px rgba(39, 52, 123, 0.08);
+  border-color: #4f46e5;
+  box-shadow: var(--shadow-raised);
 }
 
 .selectFilterControlBlock {
@@ -85,8 +85,8 @@
 
 .logsGridTableHeaderRow {
   display: flex;
-  background: #F1F5F9;
-  border-bottom: 1px solid #CBD5E1;
+  background: var(--active-bg);
+  border-bottom: var(--glass-border);
   padding: 12px 20px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 10px;
@@ -106,14 +106,14 @@
 .logsGridTableBodyDataScroller {
   flex: 1;
   overflow-y: auto;
-  background: #FFFFFF;
+  background: var(--card-bg);
 }
 
 .logsGridDataRowWrapper {
   display: flex;
   align-items: center;
   padding: 14px 20px;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: var(--glass-border);
   font-family: var(--font-poppins), sans-serif;
   font-size: 12px;
   color: #334155;
@@ -155,9 +155,9 @@
 .severityBadgePill:global(.error) { background: #FCE8E6; color: #C5221F; }
 
 .tableRowReplayActionBtn {
-  background: #FFFFFF;
+  background: var(--card-bg);
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
+  border-radius: 12px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 10px;
   font-weight: 700;
@@ -190,12 +190,12 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-raised);
 }
 
 .drawerHeaderFlexLine {
-  background: #FFFFFF;
-  border-bottom: 1px solid #E2E8F0;
+  background: var(--card-bg);
+  border-bottom: var(--glass-border);
   padding: 10px 20px;
   display: flex;
   align-items: center;
@@ -248,10 +248,10 @@
   flex: 1;
   padding: 16px 20px;
   overflow-y: auto;
-  background: #FFFFFF;
+  background: var(--card-bg);
   margin: 12px 20px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
+  border: var(--glass-border);
+  border-radius: 12px;
 }
 
 .drawerCodeBlockTerminalBox pre {

@@ -4,7 +4,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #F8F8FB;
+  background-color: var(--background);
   font-family: var(--font-poppins), sans-serif;
   color: #0f172a;
   overflow: hidden;
@@ -34,7 +34,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -70,9 +70,9 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: #ffffff;
+  background: var(--card-bg);
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 12px;
   color: #475569;
   cursor: pointer;
 }
@@ -102,8 +102,8 @@
 .codePaneContainer {
   flex: 0 0 40%;
   width: 40%;
-  background: #ffffff;
-  border-radius: 8px;
+  background: var(--card-bg);
+  border-radius: 12px;
   border: 1px solid #cbd5e1;
   overflow: hidden;
   display: flex;
@@ -145,7 +145,7 @@
 }
 
 .toolbarUtilityIconBtn {
-  background: #ffffff;
+  background: var(--card-bg);
   border: 1px solid #cbd5e1;
   color: #475569;
   width: 26px;
@@ -155,11 +155,11 @@
   justify-content: center;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toolbarUtilityIconBtn:hover {
-  background: #f1f5f9;
+  background: var(--active-bg);
   color: #27347B;
   border-color: #27347B;
 }
@@ -204,11 +204,11 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  background: #ffffff;
+  background: var(--card-bg);
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 12px;
   width: 320px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-raised);
   z-index: 50;
   overflow: hidden;
   display: flex;
@@ -219,7 +219,7 @@
   position: relative;
   padding: 8px;
   background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: var(--glass-border);
 }
 
 .dropdownSearchIcon {
@@ -239,7 +239,7 @@
   border-radius: 4px;
   font-size: 12px;
   outline: none;
-  background: #ffffff;
+  background: var(--card-bg);
   box-sizing: border-box;
 }
 
@@ -253,7 +253,7 @@
   padding: 4px;
   max-height: 240px;
   overflow-y: auto;
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 .dropdownListItemRow {
@@ -267,7 +267,7 @@
 }
 
 .dropdownListItemRow:hover {
-  background: #f1f5f9;
+  background: var(--active-bg);
 }
 
 .variableCodeSnippetHighlight {
@@ -292,7 +292,7 @@
 /* MONACO CONTAINER PANE TARGET */
 .whiteThemeEditorLayerFrame {
   flex: 1;
-  background: #ffffff;
+  background: var(--card-bg);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -303,9 +303,9 @@
 .previewPaneContainer {
   flex: 0 0 60%;
   width: 60%;
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: var(--glass-border);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -315,7 +315,7 @@
 .deviceBar {
   background: #f8fafc;
   padding: 10px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -330,11 +330,11 @@
 
 .devicePillGroup {
   display: flex;
-  background: #f1f5f9;
+  background: var(--active-bg);
   padding: 3px;
-  border-radius: 6px;
+  border-radius: 12px;
   gap: 4px;
-  border: 1px solid #e2e8f0;
+  border: var(--glass-border);
 }
 
 .activeDeviceBtn, .inactiveDeviceBtn {
@@ -346,13 +346,13 @@
   border: none;
   cursor: pointer;
   border-radius: 4px;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1)-in-out;
 }
 
 .activeDeviceBtn {
-  background: #ffffff;
+  background: var(--card-bg);
   color: #27347B;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-raised);
 }
 
 .inactiveDeviceBtn {
@@ -370,13 +370,13 @@
   font-family: var(--font-poppins), sans-serif;
   font-weight: 700;
   color: #475569;
-  background: #ffffff;
+  background: var(--card-bg);
   border: 1px solid #cbd5e1;
   padding: 3px 8px;
   border-radius: 4px;
   min-width: 70px;
   text-align: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  box-shadow: var(--shadow-raised);
 }
 
 /* Hidden mask configuration applied cleanly for preview frame panels */
@@ -400,8 +400,8 @@
 .pdfInvoiceLayoutContainerMock {
   width: 794px;
   min-height: 1123px;
-  background-color: #ffffff;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-raised);
   box-sizing: border-box;
   flex-shrink: 0;
   transform-origin: top center;

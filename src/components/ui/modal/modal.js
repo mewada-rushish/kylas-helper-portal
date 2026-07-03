@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiLoader } from 'react-icons/fi';
 import styles from './modal.module.css';
 
 export default function CentralizedModal({
@@ -103,7 +103,7 @@ export default function CentralizedModal({
                 disabled={primaryAction.disabled || primaryAction.loading}
               >
                 {primaryAction.loading ? (
-                  <span className={styles.buttonLoader}></span>
+                  <FiLoader className={styles.spinAnimation} style={{ marginRight: 8 }} />
                 ) : (
                   primaryAction.icon
                 )}

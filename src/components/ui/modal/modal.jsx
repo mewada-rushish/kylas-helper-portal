@@ -140,7 +140,12 @@ export default function CentralizedModal({
                 disabled={primaryAction.disabled || primaryAction.loading}
               >
                 {primaryAction.loading ? (
-                  <FiLoader className={styles.spinAnimation} style={{ marginRight: 0 }} />
+                  <>
+                    <FiLoader className={styles.spinAnimation} style={{ marginRight: primaryAction.loadingLabel || primaryAction.label ? 8 : 0 }} />
+                    {(primaryAction.loadingLabel || primaryAction.label) && (
+                      <span className={styles.btnText}>{primaryAction.loadingLabel || primaryAction.label}</span>
+                    )}
+                  </>
                 ) : (
                   <>
                     {primaryAction.icon && <span className={styles.btnIcon}>{primaryAction.icon}</span>}
