@@ -9,6 +9,10 @@
   --cta-text: #ffffff;
   --card-bg: rgba(255, 255, 255, 0.8);
   
+  /* Apple UI Font Mapping */
+  --font-poppins: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-montserrat: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
   /* Apple UI Tokens */
   --shadow-raised: 0 8px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
   --shadow-active: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.02);

@@ -83,14 +83,19 @@ export const authOptions = {
         const prisma = (await import("./prisma")).default;
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { passwordChangedAt: true },
+          select: { passwordChangedAt: true, role: true, customAccess: true },
         });
 
-        if (dbUser?.passwordChangedAt) {
-          const changedAtTimestamp = Math.floor(dbUser.passwordChangedAt.getTime() / 1000);
-          // If the token was issued BEFORE the password was changed, it's stale — kill it
-          if (token.issuedAt < changedAtTimestamp) {
-            token.error = "SessionExpired";
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.customAccess = dbUser.customAccess ? JSON.parse(dbUser.customAccess) : [];
+
+          if (dbUser.passwordChangedAt) {
+            const changedAtTimestamp = Math.floor(dbUser.passwordChangedAt.getTime() / 1000);
+            // If the token was issued BEFORE the password was changed, it's stale — kill it
+            if (token.issuedAt < changedAtTimestamp) {
+              token.error = "SessionExpired";
+            }
           }
         }
       } catch (e) {

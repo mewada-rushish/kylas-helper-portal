@@ -28,7 +28,18 @@ export default withAuth(
     // Role-Based Access Control (RBAC) Logic
     const token = req.nextauth.token;
     const role = token?.role || "META_MARKETING";
-    const customAccess = token?.customAccess || [];
+    const rawCustomAccess = token?.customAccess || [];
+    let customAccess = [];
+    if (typeof rawCustomAccess === "string") {
+      try {
+        const parsed = JSON.parse(rawCustomAccess);
+        if (Array.isArray(parsed)) {
+          customAccess = parsed;
+        }
+      } catch (e) {}
+    } else if (Array.isArray(rawCustomAccess)) {
+      customAccess = rawCustomAccess;
+    }
     const path = req.nextUrl.pathname;
 
     // Define base modules
@@ -42,11 +53,26 @@ export default withAuth(
 
     const allowedPaths = baseAccess[role] || [];
     
-    // Check if path starts with any allowed path or custom override
-    const hasBaseAccess = allowedPaths.includes("*") || allowedPaths.some(p => path.startsWith(p));
-    const hasCustomAccess = customAccess.some(p => path.startsWith(p));
+    // Check access rules
+    const isAdminRoute = path.startsWith("/users");
+    const isAdmin = role === "SUPER_ADMIN" || role === "DEVELOPER";
 
-    if (!hasBaseAccess && !hasCustomAccess) {
+    let hasAccess = false;
+    if (isAdminRoute && isAdmin) {
+      hasAccess = true;
+    } else {
+      const hasBaseAccess = allowedPaths.includes("*") || allowedPaths.some(p => path.startsWith(p));
+      const hasCustomAccess = customAccess.some(p => path.startsWith(p));
+      
+      // If customAccess overrides exist, they take precedence over base role access.
+      if (customAccess.length > 0) {
+        hasAccess = hasCustomAccess;
+      } else {
+        hasAccess = hasBaseAccess;
+      }
+    }
+
+    if (!hasAccess) {
       // Access denied, redirect to a fallback. If already on dashboard and denied, we have a problem.
       if (path === "/dashboard") {
         // Just let them in to dashboard if they have literally no other access, or show an unauthorized page.

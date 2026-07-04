@@ -27,7 +27,18 @@ export default function Sidebar({ activeId }) {
   const { data: session } = useSession();
 
   const role = session?.user?.role || "META_MARKETING";
-  const customAccess = session?.user?.customAccess || [];
+  const rawCustomAccess = session?.user?.customAccess || [];
+  let customAccess = [];
+  if (typeof rawCustomAccess === "string") {
+    try {
+      const parsed = JSON.parse(rawCustomAccess);
+      if (Array.isArray(parsed)) {
+        customAccess = parsed;
+      }
+    } catch (e) {}
+  } else if (Array.isArray(rawCustomAccess)) {
+    customAccess = rawCustomAccess;
+  }
   const allowedPaths = BASE_ACCESS[role] || [];
 
   return (
@@ -44,9 +55,18 @@ export default function Sidebar({ activeId }) {
 
       <nav className={styles.navigation}>
         {CENTRAL_NAVIGATION_ITEMS.filter((item) => {
+          // User management is always accessible to SUPER_ADMIN/DEVELOPER
+          if (item.id === "users") {
+            return role === "SUPER_ADMIN" || role === "DEVELOPER";
+          }
+
           const hasBaseAccess = allowedPaths.includes("*") || allowedPaths.some(p => item.href.startsWith(p));
           const hasCustomAccess = customAccess.some(p => item.href.startsWith(p));
-          return hasBaseAccess || hasCustomAccess;
+          
+          if (customAccess.length > 0) {
+            return hasCustomAccess;
+          }
+          return hasBaseAccess;
         }).map((item) => {
           const Icon = item.icon;
 

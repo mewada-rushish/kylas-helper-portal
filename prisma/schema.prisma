@@ -62,3 +62,39 @@ model Invoice {
   total     Float
   createdAt DateTime @default(now())
 }
+
+model SystemSetting {
+  id                  String   @id @default("default")
+  companyName         String   @default("AsmitA Enterprise Studio") @db.VarChar(255)
+  authorizedSignatory String   @default("Authorized Signatory Label") @db.VarChar(255)
+  companyAddress      String   @default("401-403, Deep Navy Business Park, Mira Bhayandar, Maharashtra, 401107") @db.Text
+  invoicePrefixBase   String   @default("INV") @db.VarChar(50)
+  paddingDigits       String   @default("4") @db.VarChar(10)
+  nextSequence        Int      @default(1001)
+  globalCurrency      String   @default("INR") @db.VarChar(10)
+  dateFormat          String   @default("YYYY-MM-DD") @db.VarChar(50)
+  gstin               String   @default("27AAAAA0000A1Z5") @db.VarChar(50)
+  panCode             String   @default("ABCDE1234F") @db.VarChar(50)
+  bankDetails         String   @default("HDFC Bank, A/C: 50200012345678, IFSC: HDFC0000123") @db.Text
+  retryLimit          String   @default("3") @db.VarChar(10)
+  timeoutBound        String   @default("5000") @db.VarChar(50)
+  alertEmail          String   @default("devops@asmita.society.io") @db.VarChar(255)
+  logoUrl             String?  @db.Text
+  updatedAt           DateTime @updatedAt
+}
+
+model Webhook {
+  id                String   @id @default(cuid())
+  name              String   @db.VarChar(255)
+  triggerType       String   @db.VarChar(100)
+  category          String   @db.VarChar(50)
+  method            String   @db.VarChar(10)
+  url               String   @db.Text
+  isActive          Boolean  @default(true)
+  headers           String?  @db.Text
+  queryParams       String?  @db.Text
+  bodyPayload       String?  @db.Text
+  selectedVariables String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

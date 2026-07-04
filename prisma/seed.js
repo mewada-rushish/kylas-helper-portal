@@ -112,6 +112,60 @@ async function main() {
   });
   console.log("Seeded SyncLogs");
 
+  // 6. Create sample Webhooks
+  await prisma.webhook.deleteMany({});
+  const webhooks = [
+    {
+      name: "Kylas CRM Lead Ingestion Hook",
+      triggerType: "LEAD_CREATED",
+      category: "Kylas",
+      method: "POST",
+      url: "https://api.kylas.io/v1/hooks/leads/capture",
+      isActive: true,
+      headers: JSON.stringify([
+        { key: "Authorization", value: "Bearer kylas_prod_sec_token_9910a", isSecret: true, isVisible: false },
+        { key: "Content-Type", value: "application/json", isSecret: false, isVisible: true }
+      ]),
+      queryParams: JSON.stringify([
+        { key: "environment", value: "production" },
+        { key: "sync_mode", value: "async" }
+      ]),
+      bodyPayload: JSON.stringify({ event: "lead.created", payload: { lead_id: "{{lead.id}}", owner_email: "{{user.email}}" } }, null, 2),
+      selectedVariables: JSON.stringify(["response.data.integrationId", "response.status"]),
+    },
+    {
+      name: "Society Financial Ledger Sync",
+      triggerType: "INVOICE_GENERATED",
+      category: "Payment",
+      method: "PUT",
+      url: "https://api.asmitaclub.com/v2/erp/ledger/update",
+      isActive: true,
+      headers: JSON.stringify([
+        { key: "X-BBPS-Auth-Token", value: "bbps_sec_77a1bc", isSecret: true, isVisible: false },
+        { key: "Accept", value: "application/json", isSecret: false, isVisible: true }
+      ]),
+      queryParams: JSON.stringify([{ key: "auto_approve", value: "true" }]),
+      bodyPayload: JSON.stringify({ invoice_ref: "{{invoice.title}}", amount_cents: "{{invoice.total}}", status: "QUEUED" }, null, 2),
+      selectedVariables: JSON.stringify(["response.record.sync_reference"]),
+    },
+    {
+      name: "Custom Analytics Stream Log",
+      triggerType: "SYSTEM_ALERT",
+      category: "Custom",
+      method: "POST",
+      url: "https://analytics.internal.local/stream",
+      isActive: false,
+      headers: JSON.stringify([{ key: "Content-Type", value: "application/json", isSecret: false, isVisible: true }]),
+      queryParams: JSON.stringify([]),
+      bodyPayload: JSON.stringify({ alert_level: "WARN", message: "System sync failed: {{syncLog.leadId}}" }, null, 2),
+      selectedVariables: JSON.stringify([]),
+    }
+  ];
+  for (const wh of webhooks) {
+    await prisma.webhook.create({ data: wh });
+  }
+  console.log("Seeded Webhooks");
+
   console.log("Database seed completed successfully.");
 }
 

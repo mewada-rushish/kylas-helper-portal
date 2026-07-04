@@ -1,7 +1,7 @@
 .sidebar {
   width: 240px;
   background-color: rgba(246, 246, 246, 0.85); /* macOS translucent grey */
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;

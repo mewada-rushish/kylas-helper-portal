@@ -57,15 +57,6 @@ function SettingsDashboardContent() {
                 <p>Configure ecosystem routing paths, fallback canvas properties, and validation rules.</p>
               </div>
             </div>
-            <div className={styles.headerActions}>
-              <AdminButton 
-                variant="primary" 
-                icon={FiCheck} 
-                onClick={() => toast.success("Ecosystem configurations updated across active segments.")}
-              >
-                Apply Core Updates
-              </AdminButton>
-            </div>
           </header>
 
           {/* HORIZONTAL SUB-NAVIGATION ROW RAIL */}

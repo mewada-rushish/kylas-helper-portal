@@ -13,6 +13,12 @@ export async function PUT(request, { params }) {
   try {
     const { role, customAccess } = await request.json();
     const { id } = await params;
+
+    // Prevent modifying your own role
+    if (id === session.user.id && role !== session.user.role) {
+      return NextResponse.json({ error: "Cannot modify your own role" }, { status: 400 });
+    }
+
     const customAccessString = customAccess ? JSON.stringify(customAccess) : null;
 
     const user = await prisma.user.update({

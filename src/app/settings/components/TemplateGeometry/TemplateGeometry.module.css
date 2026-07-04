@@ -16,7 +16,7 @@
   font-family: var(--font-montserrat), sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #27347B;
+  color: #202223;
   margin: 0;
   letter-spacing: -0.02em;
 }
@@ -65,7 +65,7 @@
   font-family: var(--font-montserrat), sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: #27347B;
+  color: #202223;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
@@ -160,8 +160,8 @@
 }
 
 .radioElementOptionLabel input[type="radio"]:checked ~ .radioCustomCircle {
-  border-color: #27347B;
-  background: #27347B;
+  border-color: var(--cta-bg);
+  background: var(--cta-bg);
 }
 
 .radioCustomCircle::after {
@@ -218,7 +218,7 @@
 }
 
 .primaryTextInputWithIcon:focus {
-  border-color: #27347B;
+  border-color: var(--cta-bg);
   box-shadow: var(--shadow-raised);
 }
 
@@ -234,7 +234,7 @@
 }
 
 .noticeIcon {
-  color: #27347B;
+  color: var(--cta-bg);
   margin-top: 2px;
   flex-shrink: 0;
 }
@@ -328,7 +328,7 @@
 }
 
 .tokenTagDecorativeIcon {
-  color: #27347B;
+  color: var(--cta-bg);
   flex-shrink: 0;
 }
 
@@ -370,7 +370,7 @@
 }
 
 .monospaceJsonPathFieldInput:focus {
-  border-color: #27347B;
+  border-color: var(--cta-bg);
   background: var(--card-bg);
   box-shadow: var(--shadow-raised);
 }

@@ -29,8 +29,8 @@
 .actionsCellRow { display: flex; align-items: center; gap: 10px; }
 .iconActionBtn { background: var(--card-bg); border: var(--glass-border); border-radius: 4px; color: #6d7175; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
 .iconActionBtn:hover { border-color: var(--deep-navy, #27347B); color: var(--deep-navy, #27347B); background-color: var(--active-bg); }
-.modalViewportOverlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-.modalContentCardSheet { background-color: var(--card-bg); border-radius: 12px; width: 640px; max-width: 90%; box-shadow: var(--shadow-raised); display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 40px);   backdrop-filter: blur(5px);
+.modalViewportOverlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.modalContentCardSheet { background-color: var(--card-bg); border-radius: 12px; width: 640px; max-width: 90%; box-shadow: var(--shadow-raised); display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 40px);   backdrop-filter: blur(10px);
 }
 .modalContentCardSheetExpandedA4Viewport { max-width: 820px !important; width: 820px !important; }
 .modalHeaderTitleArea { padding: 20px 24px; border-bottom: var(--glass-border); display: flex; justify-content: space-between; align-items: center; background-color: var(--background); text-transform: uppercase; font-family: var(--font-montserrat), sans-serif; font-size: 12px; }

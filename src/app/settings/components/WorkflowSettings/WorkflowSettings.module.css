@@ -63,7 +63,7 @@
 }
 
 .webhookSearchFieldInput:focus {
-  border-color: #27347B;
+  border-color: var(--cta-bg);
   box-shadow: var(--shadow-raised);
 }
 
@@ -74,9 +74,9 @@
 .globalAddWebhookActionBtn {
   height: 40px;
   padding: 0 20px;
-  background-color: #27347B;
+  background-color: var(--cta-bg);
   color: #FFFFFF;
-  border: 1px solid #27347B;
+  border: 1px solid var(--cta-bg);
   border-radius: 12px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 12px;
@@ -88,13 +88,12 @@
   gap: 8px;
   cursor: pointer;
   margin-left: auto;
-  box-shadow: var(--shadow-raised);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .globalAddWebhookActionBtn:hover {
-  background: #1E2963;
-  border-color: #1E2963;
+  background: var(--cta-bg-hover);
+  border-color: var(--cta-bg-hover);
 }
 
 .centeredRegistryHeader {
@@ -103,7 +102,7 @@
 
 .centeredRegistryHeader h4 {
   font-family: var(--font-montserrat), sans-serif;
-  color: #27347B;
+  color: #202223;
   font-size: 16px;
   font-weight: 700;
   margin: 0 0 6px 0;
@@ -137,7 +136,7 @@
 }
 
 .largeWebhookDisplayCard:hover {
-  border-color: #27347B;
+  border-color: var(--cta-bg);
   transform: translateY(-2px);
   box-shadow: var(--shadow-raised);
 }
@@ -222,7 +221,7 @@
 .workbenchBackToListBtnLink:hover {
   background-color: var(--active-bg);
   border-color: #94A3B8;
-  color: #27347B;
+  color: var(--cta-bg);
 }
 
 .editingContextTitleBreadcrumb {
@@ -231,7 +230,7 @@
 }
 
 .activeLabelItemText {
-  color: #27347B;
+  color: var(--cta-bg);
   font-weight: 600;
 }
 
@@ -259,7 +258,7 @@
   font-family: var(--font-montserrat), sans-serif;
   font-size: 11px;
   font-weight: 700;
-  color: #27347B;
+  color: #202223;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -297,7 +296,7 @@
 }
 
 .standardWorkspaceTextFieldInput:focus {
-  border-color: #27347B;
+  border-color: var(--cta-bg);
 }
 
 /* ==================== 4. POSTMAN ENGINES WORKSPACE ==================== */
@@ -376,7 +375,7 @@
 }
 
 .postmanTabLinkBtnPrimes:hover {
-  color: #27347B;
+  color: var(--cta-bg);
 }
 
 .tabActiveStatePrime {
@@ -471,7 +470,7 @@
 }
 
 .headerTableMonospaceInputField:focus {
-  border-color: #27347B;
+  border-color: var(--cta-bg);
 }
 
 .headerTablePasswordMaskInputWrapper {
@@ -499,7 +498,7 @@
 }
 
 .inlineHeaderValuePasswordEyeToggleIndicatorBtn:hover {
-  color: #27347B;
+  color: var(--cta-bg);
 }
 
 .inlineCheckboxContainerItemWrap {
@@ -538,7 +537,7 @@
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #27347B;
+  color: var(--cta-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -787,8 +786,8 @@
 .codeTokenText {
   font-family: ui-monospace, monospace;
   font-size: 11px;
-  color: #27347B;
-  background: rgba(39, 52, 123, 0.06);
+  color: var(--cta-bg);
+  background: var(--active-bg);
   padding: 3px 8px;
   border-radius: 4px;
 }
@@ -855,7 +854,7 @@ input:checked + .nativeSwitchToggleSliderNode:before {
 .saveWebhookChangesBtn {
   height: 42px;
   padding: 0 24px;
-  background-color: #27347B;
+  background-color: var(--cta-bg);
   color: #FFFFFF;
   border: none;
   border-radius: 12px;
@@ -987,3 +986,112 @@ input:checked + .nativeSwitchToggleSliderNode:before {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==================== EMPTY STATE ==================== */
+.emptyWebhookStatePlate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px 32px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.emptyStateIconCluster {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.emptyStatePulseRing {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 2px solid var(--brand-blue, #3b82f6);
+  opacity: 0.25;
+  animation: pulseRing 2s ease-in-out infinite;
+}
+
+@keyframes pulseRing {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.15); opacity: 0.45; }
+}
+
+.emptyStateIconCircle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.1));
+  border: 1.5px solid rgba(59,130,246,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-blue, #3b82f6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.emptyStateOrbitDot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  box-shadow: 0 0 6px rgba(59,130,246,0.6);
+  animation: orbitFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes orbitFloat {
+  from { transform: translateY(0px); opacity: 0.6; }
+  to { transform: translateY(-4px); opacity: 1; }
+}
+
+.emptyStateHeadline {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary, #111);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.emptyStateSubtext {
+  font-size: 13.5px;
+  color: var(--text-muted, #6b7280);
+  max-width: 420px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.emptyStateCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--brand-blue, #3b82f6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+  margin-top: 4px;
+}
+
+.emptyStateCta:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+}
+
+.emptyStateCta:active {
+  transform: translateY(0);
+}

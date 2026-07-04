@@ -16,7 +16,7 @@
   overflow: hidden;
   /* Dual-stage ambient drop shadow formula */
   box-shadow: var(--shadow-raised);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(10px);
 }
 
 /* --- LEFT SIDEBAR PANEL: PRESET ENGINE --- */

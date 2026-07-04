@@ -71,6 +71,13 @@ export default function WorkflowCanvasEngine() {
   const router = useRouter();
   const params = useParams();
 
+  // Workflow Core Database States
+  const [workflowName, setWorkflowName] = useState("Kylas Free-Form Workflow");
+  const [workflowTrigger, setWorkflowTrigger] = useState("lead.created");
+  const [workflowStatus, setWorkflowStatus] = useState("draft");
+  const [isFetching, setIsFetching] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   const [nodes, setNodes] = useState([
     { id: "node_1", type: "trigger", title: "Workflow Trigger", x: 40, y: 220, event: "lead.created" },
     { 
@@ -108,6 +115,37 @@ export default function WorkflowCanvasEngine() {
   const [activeTab, setActiveTab] = useState("builder");
   const [saveStatus, setSaveStatus] = useState("All changes saved");
   const canvasRef = useRef(null);
+
+  // Fetch Workflow data on mount
+  useEffect(() => {
+    async function fetchWorkflow() {
+      if (!params.id) return;
+      if (params.id.startsWith("wf_new_")) {
+        setIsFetching(false);
+        return;
+      }
+      setIsFetching(true);
+      try {
+        const res = await fetch(`/api/workflows/${params.id}`);
+        if (!res.ok) throw new Error("Failed to load workflow");
+        const data = await res.json();
+        
+        setWorkflowName(data.name || "Kylas Free-Form Workflow");
+        setWorkflowStatus(data.status || "draft");
+        
+        if (data.config) {
+          const parsed = JSON.parse(data.config);
+          if (parsed.nodes) setNodes(parsed.nodes);
+          if (parsed.edges) setEdges(parsed.edges);
+        }
+      } catch (err) {
+        toast.error(err.message);
+      } finally {
+        setIsFetching(false);
+      }
+    }
+    fetchWorkflow();
+  }, [params.id]);
 
   const [logs] = useState(INITIAL_LOGS);
   const [selectedLog, setSelectedLog] = useState(null);
@@ -161,14 +199,35 @@ export default function WorkflowCanvasEngine() {
     return () => resizeObserver.disconnect();
   }, [nodes, zoom, pan]);
 
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (nodes.length === 0) return;
+    
     setSaveStatus("Compiling node modifications...");
-    const debounceTimer = setTimeout(() => {
-      setSaveStatus("Canvas modifications auto-saved to draft");
-    }, 1500);
+    const debounceTimer = setTimeout(async () => {
+      try {
+        await fetch(`/api/workflows/${params.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: workflowName,
+            trigger: workflowTrigger,
+            status: workflowStatus,
+            nodesCount: nodes.length,
+            config: JSON.stringify({ nodes, edges })
+          })
+        });
+        setSaveStatus("Canvas modifications auto-saved to draft");
+      } catch (err) {
+        setSaveStatus("Failed to auto-save");
+      }
+    }, 2000);
     return () => clearTimeout(debounceTimer);
-  }, [nodes, edges]);
+  }, [nodes, edges, workflowName, workflowTrigger, workflowStatus, params.id]);
 
   useEffect(() => {
     const canvasElement = canvasRef.current;
@@ -422,12 +481,32 @@ export default function WorkflowCanvasEngine() {
     setEdges(prev => prev.filter(e => !e.fromPlug.includes(id) && !e.toPlug.includes(id)));
   };
 
-  const handleManualSave = () => {
+  const handleManualSave = async (status = "active") => {
     setSaveStatus("Saving workflow...");
-    setTimeout(() => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/workflows/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: workflowName,
+          trigger: workflowTrigger,
+          status: status,
+          nodesCount: nodes.length,
+          config: JSON.stringify({ nodes, edges })
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to save workflow");
+      setWorkflowStatus(status);
       setSaveStatus("Workflow successfully saved");
-      toast.success("Workflow configuration has been fully saved and published.");
-    }, 800);
+      toast.success(`Workflow configuration has been saved as ${status}.`);
+    } catch (err) {
+      setSaveStatus("Failed to save");
+      toast.error(err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const formatDate = (isoString) => {
@@ -456,17 +535,35 @@ export default function WorkflowCanvasEngine() {
               </button>
               <div className={styles.headerTitle}>
                 <div className={styles.titleRow}>
-                  <h1>Kylas Free-Form Workflow</h1>
-                  <span className={styles.statusBadge}>Draft</span>
+                  <input
+                    type="text"
+                    value={workflowName}
+                    onChange={(e) => setWorkflowName(e.target.value)}
+                    className={styles.headerTitleInput}
+                    title="Click to rename workflow"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.4)",
+                      border: "1px solid rgba(0, 0, 0, 0.1)",
+                      borderRadius: "6px",
+                      outline: "none",
+                      fontSize: "20px",
+                      fontWeight: "600",
+                      color: "#1d1d1f",
+                      padding: "4px 8px",
+                      margin: "0",
+                      width: "320px"
+                    }}
+                  />
+                  <span className={styles.statusBadge} style={{ textTransform: "capitalize" }}>{workflowStatus}</span>
                 </div>
                 <span className={styles.autoSaveLabel}>{saveStatus}</span>
               </div>
             </div>
             <div className={styles.headerActions}>
-              <AdminButton variant="secondary" icon={FiFileText} onClick={() => setSaveStatus("Manual draft saved")}>
+              <AdminButton variant="secondary" icon={FiFileText} onClick={() => handleManualSave("draft")} disabled={isSaving}>
                 Save Draft
               </AdminButton>
-              <AdminButton variant="primary" icon={FiSave} onClick={handleManualSave}>
+              <AdminButton variant="primary" icon={FiSave} onClick={() => handleManualSave("active")} disabled={isSaving}>
                 Save Workflow
               </AdminButton>
             </div>

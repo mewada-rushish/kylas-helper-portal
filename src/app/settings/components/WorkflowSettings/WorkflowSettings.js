@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { 
-  FiSearch, FiPlus, FiEye, FiEyeOff, FiX,
+  FiSearch, FiPlus, FiEye, FiEyeOff, FiX, FiActivity,
   FiLayers, FiGlobe, FiCheckSquare, FiSquare, 
   FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft
 } from "react-icons/fi";
@@ -12,75 +12,7 @@ import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
 import styles from "./WorkflowSettings.module.css";
 
-const INITIAL_WEBHOOKS = [
-  {
-    id: 1,
-    name: "Kylas CRM Lead Ingestion Hook",
-    triggerType: "LEAD_CREATED",
-    category: "Kylas",
-    method: "POST",
-    url: "https://api.kylas.io/v1/hooks/leads/capture",
-    isActive: true,
-    headers: [
-      { key: "Authorization", value: "Bearer kylas_prod_sec_token_9910a", isSecret: true, isVisible: false },
-      { key: "Content-Type", value: "application/json", isSecret: false, isVisible: true }
-    ],
-    queryParams: [
-      { key: "environment", value: "production" },
-      { key: "sync_mode", value: "async" }
-    ],
-    bodyPayload: JSON.stringify({
-      event: "lead.created",
-      timestamp: "{{system.current_time}}",
-      payload: {
-        lead_id: "{{lead.id}}",
-        owner_email: "{{user.email}}",
-        source: "Helper Portal Webhook Engine"
-      }
-    }, null, 2),
-    selectedVariables: ["response.data.integrationId", "response.status"]
-  },
-  {
-    id: 2,
-    name: "Society Financial Ledger Sync",
-    triggerType: "INVOICE_GENERATED",
-    category: "Payment",
-    method: "PUT",
-    url: "https://api.asmitaclub.com/v2/erp/ledger/update",
-    isActive: true,
-    headers: [
-      { key: "X-BBPS-Auth-Token", value: "bbps_sec_77a1bc", isSecret: true, isVisible: false },
-      { key: "Accept", value: "application/json", isSecret: false, isVisible: true }
-    ],
-    queryParams: [
-      { key: "auto_approve", value: "true" }
-    ],
-    bodyPayload: JSON.stringify({
-      invoice_ref: "{{invoice.title}}",
-      amount_cents: "{{invoice.config.geometry.total}}",
-      status: "QUEUED"
-    }, null, 2),
-    selectedVariables: ["response.record.sync_reference"]
-  },
-  {
-    id: 3,
-    name: "Custom Analytics Stream Log",
-    triggerType: "SYSTEM_ALERT",
-    category: "Custom",
-    method: "POST",
-    url: "https://analytics.internal.local/stream",
-    isActive: false,
-    headers: [
-      { key: "Content-Type", value: "application/json", isSecret: false, isVisible: true }
-    ],
-    queryParams: [],
-    bodyPayload: JSON.stringify({
-      alert_level: "WARN",
-      message: "System sync attempt failed for payload: {{syncLog.leadId}}"
-    }, null, 2),
-    selectedVariables: []
-  }
-];
+
 
 const MOCK_RESPONSE_PAYLOAD_TREE = {
   status: "SUCCESS",
@@ -118,14 +50,60 @@ export default function WorkflowSettings() {
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [hasTested, setHasTested] = useState(false);
 
-  useEffect(() => {
-    // Simulate API fetch delay
-    const timer = setTimeout(() => {
-      setWebhooks(INITIAL_WEBHOOKS);
+  const fetchWebhooks = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/settings/webhooks");
+      if (!res.ok) throw new Error("Failed to load webhooks");
+      const data = await res.json();
+      const parsedData = data.map(hook => ({
+        ...hook,
+        headers: hook.headers ? JSON.parse(hook.headers) : [],
+        queryParams: hook.queryParams ? JSON.parse(hook.queryParams) : [],
+        selectedVariables: hook.selectedVariables ? JSON.parse(hook.selectedVariables) : [],
+      }));
+      setWebhooks(parsedData);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
       setIsLoading(false);
-    }, 1200);
-    return () => clearTimeout(timer);
+    }
+  };
+
+  useEffect(() => {
+    fetchWebhooks();
   }, []);
+
+  const handleCreateWebhook = async () => {
+    try {
+      const res = await fetch("/api/settings/webhooks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `Custom Webhook Context API #${webhooks.length + 1}`,
+          triggerType: "MANUAL_EVENT",
+          category: "Custom",
+          method: "POST",
+          url: "https://api.domain.com/endpoint",
+          headers: [{ key: "Content-Type", value: "application/json", isSecret: false, isVisible: true }],
+          queryParams: [],
+          bodyPayload: "{\n  \"status\": \"initial\"\n}",
+          selectedVariables: []
+        })
+      });
+      if (!res.ok) throw new Error("Failed to create webhook");
+      const newHook = await res.json();
+      newHook.headers = newHook.headers ? JSON.parse(newHook.headers) : [];
+      newHook.queryParams = newHook.queryParams ? JSON.parse(newHook.queryParams) : [];
+      newHook.selectedVariables = newHook.selectedVariables ? JSON.parse(newHook.selectedVariables) : [];
+      setWebhooks(prev => [newHook, ...prev]);
+      setSelectedWebhookId(newHook.id);
+      setHasTested(false);
+      toast.success("Webhook created successfully!");
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
   const categoryOptions = [
     { label: "All Categories", value: "ALL" },
@@ -149,10 +127,23 @@ export default function WorkflowSettings() {
     return webhooks.find(h => h.id === selectedWebhookId) || null;
   }, [webhooks, selectedWebhookId]);
 
-  const handleToggleActiveState = (id) => {
+  const handleToggleActiveState = async (id, currentVal) => {
     setWebhooks(prev => prev.map(hook => 
-      hook.id === id ? { ...hook, isActive: !hook.isActive } : hook
+      hook.id === id ? { ...hook, isActive: !currentVal } : hook
     ));
+    try {
+      const res = await fetch(`/api/settings/webhooks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !currentVal })
+      });
+      if (!res.ok) throw new Error("Failed to toggle status");
+    } catch (err) {
+      toast.error(err.message);
+      setWebhooks(prev => prev.map(hook => 
+        hook.id === id ? { ...hook, isActive: currentVal } : hook
+      ));
+    }
   };
 
   const handleUpdateFieldCollection = (type, index, field, value) => {
@@ -285,25 +276,7 @@ export default function WorkflowSettings() {
             <button 
               type="button" 
               className={styles.globalAddWebhookActionBtn}
-              onClick={() => {
-                const newId = Date.now();
-                const newHook = {
-                  id: newId,
-                  name: `Custom Webhook Context API #${webhooks.length + 1}`,
-                  triggerType: "MANUAL_EVENT",
-                  category: "Custom",
-                  method: "POST",
-                  url: "https://api.domain.com/endpoint",
-                  isActive: true,
-                  headers: [{ key: "Content-Type", value: "application/json", isSecret: false, isVisible: true }],
-                  queryParams: [],
-                  bodyPayload: "{\n  \"status\": \"initial\"\n}",
-                  selectedVariables: []
-                };
-                setWebhooks([...webhooks, newHook]);
-                setSelectedWebhookId(newId);
-                setHasTested(false);
-              }}
+              onClick={handleCreateWebhook}
             >
               <FiPlus size={14} /> Add Webhook
             </button>
@@ -345,7 +318,7 @@ export default function WorkflowSettings() {
                       <input 
                         type="checkbox" 
                         checked={hook.isActive} 
-                        onChange={() => handleToggleActiveState(hook.id)} 
+                        onChange={() => handleToggleActiveState(hook.id, hook.isActive)} 
                       />
                       <span className={styles.nativeSwitchToggleSliderNode}></span>
                     </label>
@@ -380,8 +353,33 @@ export default function WorkflowSettings() {
             
             {!isLoading && filteredWebhooks.length === 0 && (
               <div className={styles.emptyWebhookStatePlate}>
-                <FiActivity size={32} />
-                <p>No webhooks found. Adjust your search parameters or create a new webhook mapping route.</p>
+                <div className={styles.emptyStateIconCluster}>
+                  <div className={styles.emptyStatePulseRing} />
+                  <div className={styles.emptyStateIconCircle}>
+                    <FiActivity size={28} strokeWidth={1.5} />
+                  </div>
+                  <div className={styles.emptyStateOrbitDot} style={{ top: "4px", right: "12px" }} />
+                  <div className={styles.emptyStateOrbitDot} style={{ bottom: "6px", left: "8px" }} />
+                </div>
+                <h3 className={styles.emptyStateHeadline}>
+                  {searchQuery || categoryFilter !== "ALL"
+                    ? "No matching webhooks"
+                    : "No webhooks configured yet"}
+                </h3>
+                <p className={styles.emptyStateSubtext}>
+                  {searchQuery || categoryFilter !== "ALL"
+                    ? "Try adjusting your search or category filter to find what you're looking for."
+                    : "Webhooks let your portal push real-time events to external systems. Add your first endpoint to start routing Kylas triggers."}
+                </p>
+                {(!searchQuery && categoryFilter === "ALL") && (
+                  <button
+                    className={styles.emptyStateCta}
+                    onClick={handleCreateWebhook}
+                  >
+                    <FiPlus size={15} />
+                    Add Your First Webhook
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -721,8 +719,18 @@ export default function WorkflowSettings() {
                 <button 
                   type="button"
                   className={styles.saveWebhookChangesBtn}
-                  onClick={() => {
-                    toast.success(`Successfully updated and synchronized target configurations for ${activeWebhook?.name}`);
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/settings/webhooks/${activeWebhook.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(activeWebhook)
+                      });
+                      if (!res.ok) throw new Error("Failed to update webhook configurations");
+                      toast.success(`Successfully updated and synchronized target configurations for ${activeWebhook?.name}`);
+                    } catch (err) {
+                      toast.error(err.message);
+                    }
                   }}
                 >
                   <FiCheck size={14} /> Update Webhook Specifications
@@ -754,15 +762,22 @@ export default function WorkflowSettings() {
           variant: "destructive",
           loading: isDeleting,
           disabled: deleteConfirmationText !== webhookToDelete?.name,
-          onClick: () => {
+          onClick: async () => {
             setIsDeleting(true);
-            setTimeout(() => {
+            try {
+              const res = await fetch(`/api/settings/webhooks/${webhookToDelete.id}`, {
+                method: "DELETE"
+              });
+              if (!res.ok) throw new Error("Failed to delete webhook");
               setWebhooks(prev => prev.filter(h => h.id !== webhookToDelete.id));
               setWebhookToDelete(null);
-              setIsDeleting(false);
               setDeleteConfirmationText("");
               toast.success("Webhook successfully deleted.");
-            }, 1200);
+            } catch (err) {
+              toast.error(err.message);
+            } finally {
+              setIsDeleting(false);
+            }
           }
         }}
         secondaryAction={{

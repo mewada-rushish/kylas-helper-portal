@@ -3,7 +3,10 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import NextAuthSessionProvider from "@/components/providers/session-provider";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata = {
   title: "Kylas Helper Portal",
@@ -12,7 +15,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <body className={inter.className}>
         <NextAuthSessionProvider>
           <Toaster position="bottom-center" />

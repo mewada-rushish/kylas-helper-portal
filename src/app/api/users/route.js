@@ -26,6 +26,7 @@ export async function GET(request) {
 
     return NextResponse.json(users);
   } catch (error) {
+    console.error("GET /api/users error:", error);
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
   }
 }
@@ -65,6 +66,7 @@ export async function POST(request) {
 
     return NextResponse.json(user);
   } catch (error) {
+    console.error("POST /api/users error:", error);
     if (error.code === 'P2002') {
       return NextResponse.json({ error: "Email already exists" }, { status: 400 });
     }
