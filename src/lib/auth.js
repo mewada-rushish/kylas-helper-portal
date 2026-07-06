@@ -11,28 +11,36 @@ export const authOptions = {
         rememberMe: { label: "Remember Me", type: "text" }
       },
       async authorize(credentials) {
+        console.log("Login attempt for:", credentials?.email);
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials");
           return null;
         }
 
         // Phase 2: Live Prisma lookup against MySQL 'User' table
         const prisma = (await import("./prisma")).default;
-        const bcrypt = (await import("bcrypt")).default;
+        const bcryptModule = await import("bcrypt");
+        const bcrypt = bcryptModule.default || bcryptModule;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
         if (!user) {
+          console.log("User not found in DB");
           return null;
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        
+        console.log("Password valid?", isPasswordValid);
 
         if (!isPasswordValid) {
+          console.log("Invalid password");
           return null;
         }
 
+        console.log("Login successful!");
         return {
           id: user.id,
           name: user.email.split('@')[0], // Extract name from email for now

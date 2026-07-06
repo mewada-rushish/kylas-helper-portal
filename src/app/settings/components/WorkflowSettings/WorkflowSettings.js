@@ -49,6 +49,8 @@ export default function WorkflowSettings() {
 
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [hasTested, setHasTested] = useState(false);
+  const [testResponsePayload, setTestResponsePayload] = useState(null);
+  const [testMetrics, setTestMetrics] = useState({ status: null, latency: null });
 
   const fetchWebhooks = async () => {
     setIsLoading(true);
@@ -194,13 +196,33 @@ export default function WorkflowSettings() {
     }));
   };
 
-  const runWebhookTestSession = () => {
+  const runWebhookTestSession = async () => {
+    if (!activeWebhook) return;
     setIsSendingTest(true);
-    setTimeout(() => {
-      setIsSendingTest(false);
+    try {
+      const res = await fetch(`/api/settings/webhooks/${activeWebhook.id}/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(activeWebhook)
+      });
+      const result = await res.json();
+      
+      setTestMetrics({
+        status: result.status || "ERROR",
+        latency: result.executionTimeMs || 0
+      });
+      setTestResponsePayload(result.data || result);
       setHasTested(true);
       setActiveTab("RESPONSE");
-    }, 900);
+    } catch (err) {
+      toast.error("Failed to execute webhook test");
+      setTestMetrics({ status: "ERROR", latency: 0 });
+      setTestResponsePayload({ error: err.message });
+      setHasTested(true);
+      setActiveTab("RESPONSE");
+    } finally {
+      setIsSendingTest(false);
+    }
   };
 
   const renderResponsePayloadTreeNodes = (node, parentPath = "response") => {
@@ -433,9 +455,20 @@ export default function WorkflowSettings() {
 
             <div className={styles.rightPanePostmanWorkbenchConsoleBox}>
               <div className={styles.postmanTargetUrlInterfaceBlockBar}>
-                <span className={`${styles.methodSelectionPillReadOnly} ${styles[`method_${activeWebhook?.method}`]}`}>
-                  {activeWebhook?.method}
-                </span>
+                <select 
+                  className={`${styles.methodSelectionPillDropdown} ${styles[`method_${activeWebhook?.method}`]}`}
+                  value={activeWebhook?.method || "POST"}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, method: val } : h));
+                  }}
+                >
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                  <option value="PATCH">PATCH</option>
+                </select>
                 <input 
                   type="text"
                   className={styles.postmanExternalDestinationUrlInputField}
@@ -678,13 +711,15 @@ export default function WorkflowSettings() {
                         onClick={runWebhookTestSession}
                         disabled={isSendingTest}
                       >
-                        {isSendingTest ? "Dispatched Trigger Event..." : "⚡ Send Sandbox Mock Event Trigger Request"}
+                        {isSendingTest ? "Executing Actual Request..." : "⚡ Execute Live Webhook Test Request"}
                       </button>
 
                       {hasTested && !isSendingTest && (
                         <div className={styles.postmanResponseStatusReadoutFlexLine}>
-                          Status: <span className={styles.statusOkIndicatorBadge}>200 SUCCESS</span>
-                          Latency: <span className={styles.statusTimeMetricText}>142 ms</span>
+                          Status: <span className={styles.statusOkIndicatorBadge} style={{ background: testMetrics.status >= 200 && testMetrics.status < 300 ? undefined : '#fde8e8', color: testMetrics.status >= 200 && testMetrics.status < 300 ? undefined : '#e02424' }}>
+                            {testMetrics.status} {testMetrics.status >= 200 && testMetrics.status < 300 ? "SUCCESS" : "FAILED"}
+                          </span>
+                          Latency: <span className={styles.statusTimeMetricText}>{testMetrics.latency} ms</span>
                         </div>
                       )}
                     </div>
@@ -706,7 +741,7 @@ export default function WorkflowSettings() {
                           <div className={styles.treeNodeStructuralRowItemLine}>
                             <span className={styles.objectEnclosureFolderLabelTextCode}>📦 response: Root Object Node</span>
                           </div>
-                          {renderResponsePayloadTreeNodes(MOCK_RESPONSE_PAYLOAD_TREE)}
+                          {renderResponsePayloadTreeNodes(testResponsePayload || {})}
                         </div>
                       </div>
                     )}

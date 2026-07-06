@@ -322,17 +322,24 @@
   margin-bottom: 24px;
 }
 
-.methodSelectionPillReadOnly {
+.methodSelectionPillDropdown {
   background-color: var(--active-bg);
   font-family: var(--font-montserrat), sans-serif;
   font-weight: 700;
   font-size: 12px;
-  padding: 0 20px;
+  padding: 0 10px 0 20px;
   height: 100%;
   display: flex;
   align-items: center;
+  border: none;
   border-right: 1px solid #CBD5E1;
-  user-select: none;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.methodSelectionPillDropdown:focus {
+  outline: none;
 }
 
 .postmanExternalDestinationUrlInputField {
@@ -997,6 +1004,8 @@ input:checked + .nativeSwitchToggleSliderNode:before {
   padding: 64px 32px;
   text-align: center;
   animation: fadeIn 0.3s ease-out;
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .emptyStateIconCluster {
