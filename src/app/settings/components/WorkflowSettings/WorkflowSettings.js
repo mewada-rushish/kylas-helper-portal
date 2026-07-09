@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { 
   FiSearch, FiPlus, FiEye, FiEyeOff, FiX, FiActivity,
   FiLayers, FiGlobe, FiCheckSquare, FiSquare, 
-  FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft
+  FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft, FiLoader
 } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import CentralizedModal from "@/components/ui/modal/modal";
@@ -34,6 +34,19 @@ const MOCK_RESPONSE_PAYLOAD_TREE = {
   }
 };
 
+const safeParseArray = (jsonString) => {
+  if (!jsonString) return [];
+  try {
+    let parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+    if (typeof parsed === 'string') {
+      parsed = JSON.parse(parsed);
+    }
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 export default function WorkflowSettings() {
   const [webhooks, setWebhooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +55,7 @@ export default function WorkflowSettings() {
   
   const [selectedWebhookId, setSelectedWebhookId] = useState(null);
   const [activeTab, setActiveTab] = useState("PARAMS"); 
+  const [responseTab, setResponseTab] = useState("BODY");
   
   const [webhookToDelete, setWebhookToDelete] = useState(null);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
@@ -50,7 +64,41 @@ export default function WorkflowSettings() {
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [hasTested, setHasTested] = useState(false);
   const [testResponsePayload, setTestResponsePayload] = useState(null);
+  const [testResponseHeaders, setTestResponseHeaders] = useState(null);
   const [testMetrics, setTestMetrics] = useState({ status: null, latency: null });
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isResponseExpanded, setIsResponseExpanded] = useState(false);
+  const responseViewerRef = useRef(null);
+  
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const bottomSentinelRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsAtBottom(entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    if (bottomSentinelRef.current) {
+      observer.observe(bottomSentinelRef.current);
+    }
+
+    return () => {
+      if (bottomSentinelRef.current) {
+        observer.unobserve(bottomSentinelRef.current);
+      }
+    };
+  }, [hasTested]);
+
+  useEffect(() => {
+    if (isResponseExpanded && responseViewerRef.current) {
+      setTimeout(() => {
+        responseViewerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+  }, [isResponseExpanded]);
 
   const fetchWebhooks = async () => {
     setIsLoading(true);
@@ -60,9 +108,9 @@ export default function WorkflowSettings() {
       const data = await res.json();
       const parsedData = data.map(hook => ({
         ...hook,
-        headers: hook.headers ? JSON.parse(hook.headers) : [],
-        queryParams: hook.queryParams ? JSON.parse(hook.queryParams) : [],
-        selectedVariables: hook.selectedVariables ? JSON.parse(hook.selectedVariables) : [],
+        headers: safeParseArray(hook.headers),
+        queryParams: safeParseArray(hook.queryParams),
+        selectedVariables: safeParseArray(hook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: v.split('.').pop(), type: 'text' } : v),
       }));
       setWebhooks(parsedData);
     } catch (err) {
@@ -95,13 +143,13 @@ export default function WorkflowSettings() {
       });
       if (!res.ok) throw new Error("Failed to create webhook");
       const newHook = await res.json();
-      newHook.headers = newHook.headers ? JSON.parse(newHook.headers) : [];
-      newHook.queryParams = newHook.queryParams ? JSON.parse(newHook.queryParams) : [];
-      newHook.selectedVariables = newHook.selectedVariables ? JSON.parse(newHook.selectedVariables) : [];
+      newHook.headers = safeParseArray(newHook.headers);
+      newHook.queryParams = safeParseArray(newHook.queryParams);
+      newHook.selectedVariables = safeParseArray(newHook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: v.split('.').pop(), type: 'text' } : v);
       setWebhooks(prev => [newHook, ...prev]);
       setSelectedWebhookId(newHook.id);
       setHasTested(false);
-      toast.success("Webhook created successfully!");
+      toast.success("Webhook created!");
     } catch (err) {
       toast.error(err.message);
     }
@@ -147,7 +195,6 @@ export default function WorkflowSettings() {
       ));
     }
   };
-
   const handleUpdateFieldCollection = (type, index, field, value) => {
     if (!selectedWebhookId) return;
     setWebhooks(prev => prev.map(hook => {
@@ -184,15 +231,40 @@ export default function WorkflowSettings() {
     ));
   };
 
-  const handleToggleResponseVariable = (jsonPath) => {
+  const handleToggleResponseVariable = (path, valueType = "text") => {
     if (!selectedWebhookId) return;
-    setWebhooks(prev => prev.map(hook => {
-      if (hook.id !== selectedWebhookId) return hook;
-      const pathExists = hook.selectedVariables.includes(jsonPath);
-      const updatedVars = pathExists 
-        ? hook.selectedVariables.filter(v => v !== jsonPath)
-        : [...hook.selectedVariables, jsonPath];
-      return { ...hook, selectedVariables: updatedVars };
+    const currentList = activeWebhook.selectedVariables || [];
+    const exists = currentList.find(item => item.path === path);
+    let newList;
+    if (exists) {
+      newList = currentList.filter(item => item.path !== path);
+    } else {
+      const defaultName = path.split('.').pop() || "variable_name";
+      newList = [...currentList, { path, customName: defaultName, type: valueType }];
+    }
+    
+    setWebhooks(prev => prev.map(h => 
+      h.id === selectedWebhookId ? { ...h, selectedVariables: newList } : h
+    ));
+  };
+
+  const handleUpdateCustomVariableName = (path, newName) => {
+    setWebhooks(prev => prev.map(h => {
+      if (h.id !== selectedWebhookId) return h;
+      const updatedList = (h.selectedVariables || []).map(v => 
+        v.path === path ? { ...v, customName: newName } : v
+      );
+      return { ...h, selectedVariables: updatedList };
+    }));
+  };
+
+  const handleUpdateCustomVariableType = (path, newType) => {
+    setWebhooks(prev => prev.map(h => {
+      if (h.id !== selectedWebhookId) return h;
+      const updatedList = (h.selectedVariables || []).map(v => 
+        v.path === path ? { ...v, type: newType } : v
+      );
+      return { ...h, selectedVariables: updatedList };
     }));
   };
 
@@ -212,14 +284,18 @@ export default function WorkflowSettings() {
         latency: result.executionTimeMs || 0
       });
       setTestResponsePayload(result.data || result);
+      setTestResponseHeaders(result.headers || {});
+
+
       setHasTested(true);
-      setActiveTab("RESPONSE");
+      // Auto-expand removed per user request
     } catch (err) {
       toast.error("Failed to execute webhook test");
       setTestMetrics({ status: "ERROR", latency: 0 });
       setTestResponsePayload({ error: err.message });
+      setTestResponseHeaders({});
       setHasTested(true);
-      setActiveTab("RESPONSE");
+      // Auto-expand removed per user request
     } finally {
       setIsSendingTest(false);
     }
@@ -230,44 +306,98 @@ export default function WorkflowSettings() {
 
     return Object.entries(node).map(([key, value]) => {
       const currentPath = `${parentPath}.${key}`;
-      const isObject = typeof value === "object" && value !== null;
-      const isVariableSelected = activeWebhook?.selectedVariables?.includes(currentPath);
+      const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+      const isArray = Array.isArray(value);
+      const hasChildren = typeof value === "object" && value !== null;
+      const isVariableSelected = activeWebhook?.selectedVariables?.some(v => v.path === currentPath);
 
       return (
         <div key={currentPath} style={{ marginLeft: "16px", display: "flex", flexDirection: "column" }}>
           <div className={styles.treeNodeStructuralRowItemLine}>
-            {isObject ? (
-              <span className={styles.objectEnclosureFolderLabelTextCode}>❖ {key}:</span>
-            ) : (
-              <div className={styles.treeNodeLeafParameterRowFlexRowLayout}>
-                <div className={styles.treeLeafKeyNameReadoutFlexRowLayout}>
-                  <span className={styles.treeLeafConnectorLinesLayoutGuideSpan}>└─</span>
-                  <span className={styles.primitiveKeyNameTextCode}>{key}:</span>
-                  <span style={{ fontStyle: "italic", color: "#94A3B8", fontSize: "12px" }}>
-                    &quot;{String(value)}&quot;
-                  </span>
-                  <span className={styles.primitiveTypeNameTextBadge}>{typeof value}</span>
-                </div>
+            <div className={styles.treeNodeLeafParameterRowFlexRowLayout}>
+              <div className={styles.treeLeafKeyNameReadoutFlexRowLayout}>
+                {hasChildren ? (
+                  <span className={styles.objectEnclosureFolderLabelTextCode}>❖ {key}:</span>
+                ) : (
+                  <>
+                    <span className={styles.treeLeafConnectorLinesLayoutGuideSpan}>└─</span>
+                    <span className={styles.primitiveKeyNameTextCode}>{key}:</span>
+                  </>
+                )}
                 
-                <button 
-                  type="button"
-                  className={`${styles.checkboxInteractiveTreeGateToggleButtonLink} ${isVariableSelected ? styles.gateActiveStateTextCode : ""}`}
-                  onClick={() => handleToggleResponseVariable(currentPath)}
-                >
-                  {isVariableSelected ? (
-                    <FiCheckSquare className={styles.checkboxIconActiveColor} size={14} />
-                  ) : (
-                    <FiSquare size={14} />
-                  )}
-                  {isVariableSelected ? "Variable Active" : "Map Key"}
-                </button>
+                <span style={{ fontStyle: "italic", color: "#64748B", fontSize: "12px", marginLeft: hasChildren ? '8px' : '0' }}>
+                  {isArray ? `[Array (${value.length} items)]` : isObject ? `{Object (${Object.keys(value).length} keys)}` : `"${String(value)}"`}
+                </span>
+                <span className={styles.primitiveTypeNameTextBadge}>{isArray ? 'array' : typeof value}</span>
               </div>
-            )}
+              
+              <button 
+                type="button"
+                className={`${styles.checkboxInteractiveTreeGateToggleButtonLink} ${isVariableSelected ? styles.gateActiveStateTextCode : ""}`}
+                onClick={() => {
+                  let valType = "text";
+                  if (isArray) valType = "array";
+                  else if (typeof value === "number") valType = "number";
+                  else if (typeof value === "boolean") valType = "boolean";
+                  
+                  handleToggleResponseVariable(currentPath, valType);
+                }}
+              >
+                {isVariableSelected ? (
+                  <FiCheckSquare className={styles.checkboxIconActiveColor} size={14} />
+                ) : (
+                  <FiSquare size={14} />
+                )}
+                {isVariableSelected ? "Variable Active" : "Map Key"}
+              </button>
+            </div>
           </div>
-          {isObject && renderResponsePayloadTreeNodes(value, currentPath)}
+          {hasChildren && renderResponsePayloadTreeNodes(value, currentPath)}
         </div>
       );
     });
+  };
+
+  const authHeader = activeWebhook?.headers?.find(h => h.key.toLowerCase() === 'authorization');
+  let authType = "No Auth";
+  let bearerToken = "";
+  let basicUser = "";
+  let basicPass = "";
+  if (authHeader) {
+    if (authHeader.value.startsWith("Bearer ")) {
+      authType = "Bearer Token";
+      bearerToken = authHeader.value.replace("Bearer ", "");
+    } else if (authHeader.value.startsWith("Basic ")) {
+      authType = "Basic Auth";
+      try {
+        const decoded = atob(authHeader.value.replace("Basic ", ""));
+        const [u, p] = decoded.split(":");
+        basicUser = u || "";
+        basicPass = p || "";
+      } catch(e) {}
+    }
+  }
+
+  const handleAuthChange = (type, token, user, pass) => {
+    let newValue = "";
+    if (type === "Bearer Token") newValue = `Bearer ${token}`;
+    else if (type === "Basic Auth") newValue = `Basic ${btoa((user||"") + ":" + (pass||""))}`;
+    
+    setWebhooks(prev => prev.map(hook => {
+      if (hook.id !== selectedWebhookId) return hook;
+      let newHeaders = [...hook.headers];
+      const idx = newHeaders.findIndex(h => h.key.toLowerCase() === 'authorization');
+      if (type === "No Auth") {
+        if (idx > -1) newHeaders.splice(idx, 1);
+      } else {
+        if (idx > -1) {
+          newHeaders[idx].value = newValue;
+        } else {
+          newHeaders.push({ key: "Authorization", value: newValue, isSecret: true, isVisible: false });
+        }
+      }
+      return { ...hook, headers: newHeaders };
+    }));
   };
 
   return (
@@ -407,71 +537,128 @@ export default function WorkflowSettings() {
           </div>
         </div>
       ) : (
-        
         <div className={styles.fullWidthWorkbenchEditorPane}>
           <div className={styles.editorTopNavigationBarStripLine}>
-            <button 
-              type="button" 
-              className={styles.workbenchBackToListBtnLink}
-              onClick={() => setSelectedWebhookId(null)}
-            >
-              <FiArrowLeft size={16} /> Back to Webhook Registry
-            </button>
-            <div className={styles.editingContextTitleBreadcrumb}>
-              Settings / Webhooks / <span className={styles.activeLabelItemText}>{activeWebhook?.name}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button 
+                type="button" 
+                className={styles.workbenchBackToListBtnLink}
+                onClick={() => setSelectedWebhookId(null)}
+              >
+                <FiArrowLeft size={16} /> Back to Webhook Registry
+              </button>
+              <div className={styles.editingContextTitleBreadcrumb}>
+                Settings / Webhooks / <span className={styles.activeLabelItemText}>{activeWebhook?.name}</span>
+              </div>
+            </div>
+            <div className={styles.editorTopRightActions}>
+              <button 
+                type="button"
+                className={styles.appleSaveActionBtn}
+                disabled={isUpdating}
+                onClick={async () => {
+                  setIsUpdating(true);
+                  try {
+                    const res = await fetch(`/api/settings/webhooks/${activeWebhook.id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        name: activeWebhook.name,
+                        triggerType: activeWebhook.triggerType,
+                        method: activeWebhook.method,
+                        url: activeWebhook.url,
+                        headers: activeWebhook.headers,
+                        queryParams: activeWebhook.queryParams,
+                        bodyPayload: activeWebhook.bodyPayload,
+                        selectedVariables: activeWebhook.selectedVariables
+                      })
+                    });
+                    if (!res.ok) throw new Error("Failed to save changes");
+                    toast.success("Webhook saved!");
+                  } catch (err) {
+                    toast.error(err.message);
+                  } finally {
+                    setIsUpdating(false);
+                  }
+                }}
+              >
+                {isUpdating ? <FiLoader className={styles.spinIcon} size={14} /> : "Save Changes"}
+              </button>
             </div>
           </div>
 
-          <div className={styles.splitWorkbenchFormAndControlsLayout}>
-            <div className={styles.workbenchLeftSidebarConfigurationForm}>
-              <h4>Webhook Attributes</h4>
-              
-              <div className={styles.formInputGroupFieldElement}>
-                <span className={styles.fieldLabelTextPrimitive}>Configuration Title</span>
+          <div className={styles.unifiedAppleEditorLayout}>
+            
+            <div className={styles.applePropertiesCard}>
+              <div className={styles.applePropertyRow}>
+                <span className={styles.applePropertyLabel}>Title</span>
                 <input 
                   type="text" 
-                  className={styles.standardWorkspaceTextFieldInput}
+                  className={styles.applePropertyInput}
                   value={activeWebhook?.name || ""}
+                  placeholder="Webhook Name"
                   onChange={(e) => {
                     const val = e.target.value;
                     setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, name: val } : h));
                   }}
                 />
               </div>
-
-              <div className={styles.formInputGroupFieldElement}>
-                <span className={styles.fieldLabelTextPrimitive}>Trigger Criteria Token</span>
+              <div className={styles.applePropertyDivider} />
+              <div className={styles.applePropertyRow}>
+                <span className={styles.applePropertyLabel}>Trigger</span>
                 <input 
                   type="text" 
-                  className={styles.standardWorkspaceTextFieldInput}
+                  className={styles.applePropertyInput}
                   value={activeWebhook?.triggerType || ""}
+                  placeholder="TRIGGER_EVENT_NAME"
                   onChange={(e) => {
                     const val = e.target.value;
                     setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, triggerType: val.toUpperCase() } : h));
                   }}
                 />
               </div>
+              <div className={styles.applePropertyDivider} />
+              <div className={styles.applePropertyRow}>
+                <span className={styles.applePropertyLabel}>Status</span>
+                <div className={styles.applePropertyToggleWrapper}>
+                  <label className={styles.nativeSwitchToggleTrackLabel}>
+                    <input 
+                      type="checkbox" 
+                      checked={activeWebhook?.isActive || false} 
+                      onChange={() => handleToggleActiveState(activeWebhook.id, activeWebhook.isActive)} 
+                    />
+                    <span className={styles.nativeSwitchToggleSliderNode}></span>
+                  </label>
+                  <span className={styles.appleToggleStatusText}>
+                    {activeWebhook?.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className={styles.rightPanePostmanWorkbenchConsoleBox}>
-              <div className={styles.postmanTargetUrlInterfaceBlockBar}>
-                <select 
-                  className={`${styles.methodSelectionPillDropdown} ${styles[`method_${activeWebhook?.method}`]}`}
-                  value={activeWebhook?.method || "POST"}
-                  onChange={(e) => {
-                    const val = e.target.value;
+            <div className={styles.safariAddressBarContainer}>
+              <div className={styles.safariMethodDropdown}>
+                <CustomDropdown 
+                  options={[
+                    { label: "GET", value: "GET" },
+                    { label: "POST", value: "POST" },
+                    { label: "PUT", value: "PUT" },
+                    { label: "DELETE", value: "DELETE" },
+                    { label: "PATCH", value: "PATCH" }
+                  ]}
+                  selectedValue={activeWebhook?.method || "POST"}
+                  onSelect={(val) => {
                     setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, method: val } : h));
                   }}
-                >
-                  <option value="GET">GET</option>
-                  <option value="POST">POST</option>
-                  <option value="PUT">PUT</option>
-                  <option value="DELETE">DELETE</option>
-                  <option value="PATCH">PATCH</option>
-                </select>
+                  triggerClassName={styles.safariDropdownTrigger}
+                />
+              </div>
+              <div className={styles.safariUrlInputWrapper}>
+                <FiGlobe className={styles.safariUrlIcon} size={14} />
                 <input 
                   type="text"
-                  className={styles.postmanExternalDestinationUrlInputField}
+                  className={styles.safariUrlInput}
+                  placeholder="https://api.example.com/webhook"
                   value={activeWebhook?.url || ""}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -479,300 +666,379 @@ export default function WorkflowSettings() {
                   }}
                 />
               </div>
+              <button 
+                type="button"
+                className={styles.safariSendBtn}
+                onClick={runWebhookTestSession}
+                disabled={isSendingTest}
+              >
+                {isSendingTest ? <FiLoader className={styles.spinIcon} size={16} /> : "Send"}
+              </button>
+            </div>
 
-              <div className={styles.postmanSubTabBarNavigationStrip}>
+            <div className={styles.macOsSegmentedControlContainer}>
+              <div className={styles.macOsSegmentedControlBackground}>
                 <button 
-                  type="button"
-                  className={`${styles.postmanTabLinkBtnPrimes} ${activeTab === "PARAMS" ? styles.tabActiveStatePrime : ""}`}
+                  className={`${styles.segmentBtn} ${activeTab === "PARAMS" ? styles.segmentActive : ""}`}
                   onClick={() => setActiveTab("PARAMS")}
                 >
-                  Params 
-                  <span className={styles.tabNumericBadgeIndicatorCount}>
-                    {activeWebhook?.queryParams?.length || 0}
-                  </span>
+                  Params {activeWebhook?.queryParams?.length > 0 && <span className={styles.segmentBadge}>{activeWebhook.queryParams.length}</span>}
                 </button>
                 <button 
-                  type="button"
-                  className={`${styles.postmanTabLinkBtnPrimes} ${activeTab === "HEADERS" ? styles.tabActiveStatePrime : ""}`}
+                  className={`${styles.segmentBtn} ${activeTab === "AUTH" ? styles.segmentActive : ""}`}
+                  onClick={() => setActiveTab("AUTH")}
+                >
+                  Authorization
+                </button>
+                <button 
+                  className={`${styles.segmentBtn} ${activeTab === "HEADERS" ? styles.segmentActive : ""}`}
                   onClick={() => setActiveTab("HEADERS")}
                 >
-                  Headers
-                  <span className={styles.tabNumericBadgeIndicatorCount}>
-                    {activeWebhook?.headers?.length || 0}
-                  </span>
+                  Headers {activeWebhook?.headers?.length > 0 && <span className={styles.segmentBadge}>{activeWebhook.headers.length}</span>}
                 </button>
                 <button 
-                  type="button"
-                  className={`${styles.postmanTabLinkBtnPrimes} ${activeTab === "BODY" ? styles.tabActiveStatePrime : ""}`}
+                  className={`${styles.segmentBtn} ${activeTab === "BODY" ? styles.segmentActive : ""}`}
                   onClick={() => setActiveTab("BODY")}
                 >
-                  Body Payload
+                  Body
                 </button>
                 <button 
-                  type="button"
-                  className={`${styles.postmanTabLinkBtnPrimes} ${activeTab === "VARIABLES" ? styles.tabActiveStatePrime : ""}`}
+                  className={`${styles.segmentBtn} ${activeTab === "VARIABLES" ? styles.segmentActive : ""}`}
                   onClick={() => setActiveTab("VARIABLES")}
                 >
-                  Variables Mapped
-                  <span className={styles.tabNumericBadgeIndicatorCount} style={{ background: "#E21F26", color: "#FFF" }}>
-                    {activeWebhook?.selectedVariables?.length || 0}
-                  </span>
-                </button>
-                <button 
-                  type="button"
-                  className={`${styles.postmanTabLinkBtnPrimes} ${activeTab === "RESPONSE" ? styles.tabActiveStatePrime : ""}`}
-                  onClick={() => setActiveTab("RESPONSE")}
-                >
-                  Live Test Engine
-                </button>
-              </div>
-
-              <div className={styles.postmanTabViewportWorkspaceInteriorBox}>
-                
-                {activeTab === "PARAMS" && (
-                  <div className={styles.headersPaneWorkbenchTableGridLayout}>
-                    <div className={styles.headersTableBannerRowTrack}>
-                      <span className={styles.colHeaderKeyFieldText}>URL Parameter Key</span>
-                      <span className={styles.colHeaderValueFieldText}>Dynamic Context / Literal Value</span>
-                      <span className={styles.colHeaderUtilityFieldText}>Action</span>
-                    </div>
-                    <div className={styles.headersDataScrollTrackContainerRowsStack}>
-                      {activeWebhook?.queryParams?.map((param, index) => (
-                        <div key={index} className={styles.headerRecordInteractionRowFlexLine}>
-                          <input 
-                            type="text" 
-                            className={styles.headerTableMonospaceInputField} 
-                            placeholder="e.g. leadSource"
-                            value={param.key}
-                            onChange={(e) => handleUpdateFieldCollection("queryParams", index, "key", e.target.value)}
-                          />
-                          <input 
-                            type="text" 
-                            className={styles.headerTableMonospaceInputField} 
-                            style={{ flex: "1" }}
-                            placeholder="e.g. {{lead.source}}"
-                            value={param.value}
-                            onChange={(e) => handleUpdateFieldCollection("queryParams", index, "value", e.target.value)}
-                          />
-                          <button 
-                            type="button" 
-                            className={styles.headerRowDeleteTrashActionBtnElement}
-                            onClick={() => handleRemoveFieldRow("queryParams", index)}
-                          >
-                            <FiTrash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <button 
-                      type="button" 
-                      className={styles.addNewHeaderParameterMatrixRowBtnLink}
-                      onClick={() => handleAddFieldRow("queryParams")}
-                    >
-                      <FiPlus size={12} /> Add Query Parameter Row
-                    </button>
-                  </div>
-                )}
-
-                {activeTab === "HEADERS" && (
-                  <div className={styles.headersPaneWorkbenchTableGridLayout}>
-                    <div className={styles.headersTableBannerRowTrack}>
-                      <span className={styles.colHeaderKeyFieldText}>HTTP Header Specification Key</span>
-                      <span className={styles.colHeaderValueFieldText}>Authorization Value Data Token</span>
-                      <span className={styles.colHeaderUtilityFieldText}>Action</span>
-                    </div>
-                    <div className={styles.headersDataScrollTrackContainerRowsStack}>
-                      {activeWebhook?.headers?.map((header, index) => (
-                        <div key={index} className={styles.headerRecordInteractionRowFlexLine}>
-                          <input 
-                            type="text" 
-                            className={styles.headerTableMonospaceInputField} 
-                            placeholder="Authorization"
-                            value={header.key}
-                            onChange={(e) => handleUpdateFieldCollection("headers", index, "key", e.target.value)}
-                          />
-                          
-                          <div className={styles.headerTablePasswordMaskInputWrapper}>
-                            <input 
-                              type={header.isSecret && !header.isVisible ? "password" : "text"} 
-                              className={styles.headerTableMonospaceInputField}
-                              placeholder="Bearer secret_token"
-                              value={header.value}
-                              onChange={(e) => handleUpdateFieldCollection("headers", index, "value", e.target.value)}
-                            />
-                            {header.isSecret && (
-                              <button 
-                                type="button" 
-                                className={styles.inlineHeaderValuePasswordEyeToggleIndicatorBtn}
-                                onClick={() => handleUpdateFieldCollection("headers", index, "isVisible", !header.isVisible)}
-                              >
-                                {header.isVisible ? <FiEyeOff size={14} /> : <FiEye size={14} />}
-                              </button>
-                            )}
-                          </div>
-
-                          <label className={styles.inlineCheckboxContainerItemWrap}>
-                            <input 
-                              type="checkbox" 
-                              checked={header.isSecret || false} 
-                              onChange={(e) => handleUpdateFieldCollection("headers", index, "isSecret", e.target.checked)}
-                            /> Mask
-                          </label>
-
-                          <button 
-                            type="button" 
-                            className={styles.headerRowDeleteTrashActionBtnElement}
-                            onClick={() => handleRemoveFieldRow("headers", index)}
-                          >
-                            <FiTrash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <button 
-                      type="button" 
-                      className={styles.addNewHeaderParameterMatrixRowBtnLink}
-                      onClick={() => handleAddFieldRow("headers")}
-                    >
-                      <FiPlus size={12} /> Add Custom Header Entity
-                    </button>
-                  </div>
-                )}
-
-                {activeTab === "BODY" && (
-                  <div className={styles.bodyJSONPaneWorkbenchLayout}>
-                    <div className={styles.postmanSubHeaderContextControlsStrip}>
-                      <span className={styles.activePostmanRadioIndicatorDot}>raw JSON text configuration data</span>
-                    </div>
-                    <textarea 
-                      className={styles.monospaceRawJsonWorkspaceTextareaField}
-                      rows={12}
-                      value={activeWebhook?.bodyPayload || ""}
-                      onChange={(e) => handleBodyPayloadChange(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                {activeTab === "VARIABLES" && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div className={styles.unverifiedPayloadBlockingCalloutCard}>
-                      <FiAlertTriangle className={styles.unverifiedIconNoticeColor} size={18} />
-                      <div className={styles.unverifiedTextWrapColumn}>
-                        <h5>Bi-Directional Key Token Mapping System</h5>
-                        <p>
-                          Outgoing workflows interpolate tokens inside wrapped brackets while selected response paths extract matching keys instantly back into storage scopes.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={styles.headersPaneWorkbenchTableGridLayout}>
-                      <div className={styles.headersTableBannerRowTrack}>
-                        <span className={styles.colHeaderKeyFieldText}>Extracted Response Target Node Address</span>
-                        <span className={styles.colHeaderValueFieldText}>System Local Variable Context Mapping</span>
-                      </div>
-                      <div className={styles.headersDataScrollTrackContainerRowsStack}>
-                        {!activeWebhook?.selectedVariables || activeWebhook.selectedVariables.length === 0 ? (
-                          <div className={styles.emptyStateFallbackNoticeBlock}>
-                            No execution paths mapped. Go to the Live Test Engine tab to capture keys.
-                          </div>
-                        ) : (
-                          activeWebhook.selectedVariables.map((variablePath, idx) => (
-                            <div key={idx} className={styles.headerRecordInteractionRowFlexLine}>
-                              <input 
-                                type="text" 
-                                className={styles.headerTableMonospaceInputField} 
-                                readOnly 
-                                value={variablePath}
-                              />
-                              <span className={styles.linkedBindingConfirmationLabelBadge}>
-                                Auto Mapped
-                              </span>
-                              <button 
-                                type="button" 
-                                className={styles.headerRowDeleteTrashActionBtnElement}
-                                onClick={() => handleToggleResponseVariable(variablePath)}
-                              >
-                                <FiTrash2 size={14} />
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "RESPONSE" && (
-                  <div className={styles.fetchResponsePaneWorkbenchLayout}>
-                    <div className={styles.postmanResponseActionBarStripLine}>
-                      <button 
-                        type="button"
-                        className={styles.postmanRequestSendExecuteBtnLink}
-                        onClick={runWebhookTestSession}
-                        disabled={isSendingTest}
-                      >
-                        {isSendingTest ? "Executing Actual Request..." : "⚡ Execute Live Webhook Test Request"}
-                      </button>
-
-                      {hasTested && !isSendingTest && (
-                        <div className={styles.postmanResponseStatusReadoutFlexLine}>
-                          Status: <span className={styles.statusOkIndicatorBadge} style={{ background: testMetrics.status >= 200 && testMetrics.status < 300 ? undefined : '#fde8e8', color: testMetrics.status >= 200 && testMetrics.status < 300 ? undefined : '#e02424' }}>
-                            {testMetrics.status} {testMetrics.status >= 200 && testMetrics.status < 300 ? "SUCCESS" : "FAILED"}
-                          </span>
-                          Latency: <span className={styles.statusTimeMetricText}>{testMetrics.latency} ms</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {isSendingTest && (
-                      <div className={styles.testEngineLoaderBoxWrapperFrame}>
-                        <FiGlobe className={styles.spinningGlobalGlobeLoaderIcon} size={24} />
-                        <p>Parsing webhook rules matrices and executing mock endpoint handshake routes...</p>
-                      </div>
-                    )}
-
-                    {hasTested && !isSendingTest && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <span className={styles.fieldLabelTextPrimitive}>
-                          Click any active path key checkbox underneath to dynamically map parameters:
-                        </span>
-                        
-                        <div className={styles.hierarchicalInteractiveTreeTerminalWindowBoxFrame}>
-                          <div className={styles.treeNodeStructuralRowItemLine}>
-                            <span className={styles.objectEnclosureFolderLabelTextCode}>📦 response: Root Object Node</span>
-                          </div>
-                          {renderResponsePayloadTreeNodes(testResponsePayload || {})}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-              </div>
-
-              <div className={styles.postmanWorkspaceFooterRow}>
-                <button 
-                  type="button"
-                  className={styles.saveWebhookChangesBtn}
-                  onClick={async () => {
-                    try {
-                      const res = await fetch(`/api/settings/webhooks/${activeWebhook.id}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(activeWebhook)
-                      });
-                      if (!res.ok) throw new Error("Failed to update webhook configurations");
-                      toast.success(`Successfully updated and synchronized target configurations for ${activeWebhook?.name}`);
-                    } catch (err) {
-                      toast.error(err.message);
-                    }
-                  }}
-                >
-                  <FiCheck size={14} /> Update Webhook Specifications
+                  Variables Mapped {activeWebhook?.selectedVariables?.length > 0 && <span className={styles.segmentBadge}>{activeWebhook.selectedVariables.length}</span>}
                 </button>
               </div>
             </div>
 
+            <div className={styles.macOsTabsContentArea}>
+              {activeTab === "PARAMS" && (
+                <div className={styles.headersPaneWorkbenchTableGridLayout}>
+                  <div className={styles.headersTableBannerRowTrack}>
+                    <span className={styles.colHeaderKeyFieldText}>URL Parameter Key</span>
+                    <span className={styles.colHeaderValueFieldText}>Dynamic Context / Literal Value</span>
+                    <span className={styles.colHeaderUtilityFieldText}>Action</span>
+                  </div>
+                  <div className={styles.headersDataScrollTrackContainerRowsStack}>
+                    {activeWebhook?.queryParams?.map((param, index) => (
+                      <div key={index} className={styles.headerRecordInteractionRowFlexLine}>
+                        <input 
+                          type="text" 
+                          className={styles.headerTableMonospaceInputField} 
+                          placeholder="e.g. leadSource"
+                          value={param.key}
+                          onChange={(e) => handleUpdateFieldCollection("queryParams", index, "key", e.target.value)}
+                        />
+                        <input 
+                          type="text" 
+                          className={styles.headerTableMonospaceInputField} 
+                          style={{ flex: "1" }}
+                          placeholder="e.g. {{lead.source}}"
+                          value={param.value}
+                          onChange={(e) => handleUpdateFieldCollection("queryParams", index, "value", e.target.value)}
+                        />
+                        <button 
+                          type="button" 
+                          className={styles.headerRowDeleteTrashActionBtnElement}
+                          onClick={() => handleRemoveFieldRow("queryParams", index)}
+                        >
+                          <FiTrash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    type="button" 
+                    className={styles.addNewHeaderParameterMatrixRowBtnLink}
+                    onClick={() => handleAddFieldRow("queryParams")}
+                  >
+                    <FiPlus size={12} /> Add Query Parameter Row
+                  </button>
+                </div>
+              )}
+
+              {activeTab === "AUTH" && (
+                <div className={styles.authTabWrapperCard}>
+                  <div className={styles.authTabSplitLayout}>
+                    <div className={styles.authTabLeftColumn}>
+                      <span className={styles.authTypeLabelSmall}>TYPE</span>
+                      <div style={{ width: '200px' }}>
+                        <CustomDropdown 
+                          options={[
+                            { label: "No Auth", value: "No Auth" },
+                            { label: "Bearer Token", value: "Bearer Token" },
+                            { label: "Basic Auth", value: "Basic Auth" }
+                          ]}
+                          selectedValue={authType}
+                          onSelect={(val) => handleAuthChange(val, bearerToken, basicUser, basicPass)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className={styles.authTabRightColumn}>
+                      {authType === "No Auth" && (
+                        <div className={styles.authNoAuthText}>
+                          This request does not use any authorization.
+                        </div>
+                      )}
+                      
+                      {authType === "Bearer Token" && (
+                        <div className={styles.formInputGroupFieldElement}>
+                          <span className={styles.fieldLabelTextPrimitive}>Token</span>
+                          <input 
+                            type="text" 
+                            className={styles.standardWorkspaceTextFieldInput}
+                            placeholder="Token"
+                            value={bearerToken}
+                            onChange={(e) => handleAuthChange("Bearer Token", e.target.value, basicUser, basicPass)}
+                          />
+                        </div>
+                      )}
+
+                      {authType === "Basic Auth" && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div className={styles.formInputGroupFieldElement}>
+                            <span className={styles.fieldLabelTextPrimitive}>Username</span>
+                            <input 
+                              type="text" 
+                              className={styles.standardWorkspaceTextFieldInput}
+                              placeholder="Username"
+                              value={basicUser}
+                              onChange={(e) => handleAuthChange("Basic Auth", bearerToken, e.target.value, basicPass)}
+                            />
+                          </div>
+                          <div className={styles.formInputGroupFieldElement}>
+                            <span className={styles.fieldLabelTextPrimitive}>Password</span>
+                            <input 
+                              type="password" 
+                              className={styles.standardWorkspaceTextFieldInput}
+                              placeholder="Password"
+                              value={basicPass}
+                              onChange={(e) => handleAuthChange("Basic Auth", bearerToken, basicUser, e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "HEADERS" && (
+                <div className={styles.headersPaneWorkbenchTableGridLayout}>
+                  <div className={styles.headersTableBannerRowTrack}>
+                    <span className={styles.colHeaderKeyFieldText}>Key</span>
+                    <span className={styles.colHeaderValueFieldText}>Value</span>
+                    <span className={styles.colHeaderUtilityFieldText}>Action</span>
+                  </div>
+                  <div className={styles.headersDataScrollTrackContainerRowsStack}>
+                    {activeWebhook?.headers?.map((header, index) => (
+                      <div key={index} className={styles.headerRecordInteractionRowFlexLine}>
+                        <input 
+                          type="text" 
+                          className={styles.headerTableMonospaceInputField} 
+                          placeholder="Key"
+                          value={header.key}
+                          onChange={(e) => handleUpdateFieldCollection("headers", index, "key", e.target.value)}
+                        />
+                        
+                        <div className={styles.headerTablePasswordMaskInputWrapper}>
+                          <input 
+                            type={header.isSecret && !header.isVisible ? "password" : "text"} 
+                            className={styles.headerTableMonospaceInputField}
+                            placeholder="Value"
+                            value={header.value}
+                            onChange={(e) => handleUpdateFieldCollection("headers", index, "value", e.target.value)}
+                          />
+                          {header.isSecret && (
+                            <button 
+                              type="button" 
+                              className={styles.inlineHeaderValuePasswordEyeToggleIndicatorBtn}
+                              onClick={() => handleUpdateFieldCollection("headers", index, "isVisible", !header.isVisible)}
+                            >
+                              {header.isVisible ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+                            </button>
+                          )}
+                        </div>
+
+                        <label className={styles.inlineCheckboxContainerItemWrap}>
+                          <input 
+                            type="checkbox" 
+                            checked={header.isSecret || false} 
+                            onChange={(e) => handleUpdateFieldCollection("headers", index, "isSecret", e.target.checked)}
+                          /> Mask
+                        </label>
+
+                        <button 
+                          type="button" 
+                          className={styles.headerRowDeleteTrashActionBtnElement}
+                          onClick={() => handleRemoveFieldRow("headers", index)}
+                        >
+                          <FiTrash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    type="button" 
+                    className={styles.addNewHeaderParameterMatrixRowBtnLink}
+                    onClick={() => handleAddFieldRow("headers")}
+                  >
+                    <FiPlus size={12} /> Add Custom Header Entity
+                  </button>
+                </div>
+              )}
+
+              {activeTab === "BODY" && (
+                <div className={styles.bodyJSONPaneWorkbenchLayout}>
+                  <div className={styles.postmanSubHeaderContextControlsStrip}>
+                    <span className={styles.activePostmanRadioIndicatorDot}>raw JSON text configuration data</span>
+                  </div>
+                  <textarea 
+                    className={styles.monospaceRawJsonWorkspaceTextareaField}
+                    rows={12}
+                    value={activeWebhook?.bodyPayload || ""}
+                    onChange={(e) => handleBodyPayloadChange(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {activeTab === "VARIABLES" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div className={styles.unverifiedPayloadBlockingCalloutCard}>
+                    <FiAlertTriangle className={styles.unverifiedIconNoticeColor} size={18} />
+                    <div className={styles.unverifiedTextWrapColumn}>
+                      <h5>Variables Mapped</h5>
+                      <p>
+                        Once you test the webhook successfully, you can map response fields to custom variable names inside the Response window below.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.headersPaneWorkbenchTableGridLayout}>
+                    <div className={styles.headersTableBannerRowTrack}>
+                      <span className={styles.colHeaderKeyFieldText}>Extracted Response Target Node Address</span>
+                      <span className={styles.colHeaderValueFieldText} style={{ flex: 0.5 }}>Type</span>
+                      <span className={styles.colHeaderValueFieldText}>Custom Variable Name</span>
+                    </div>
+                    <div className={styles.headersDataScrollTrackContainerRowsStack}>
+                      {!activeWebhook?.selectedVariables || activeWebhook.selectedVariables.length === 0 ? (
+                        <div className={styles.emptyStateFallbackNoticeBlock}>
+                          No execution paths mapped. Check the response pane below to map paths.
+                        </div>
+                      ) : (
+                        activeWebhook.selectedVariables.map((variableObj, idx) => (
+                          <div key={idx} className={styles.headerRecordInteractionRowFlexLine}>
+                            <input 
+                              type="text" 
+                              className={styles.headerTableMonospaceInputField} 
+                              readOnly 
+                              value={variableObj.path}
+                            />
+                            <div style={{ flex: "0.5" }}>
+                              <CustomDropdown 
+                                options={[
+                                  { label: "Text", value: "text" },
+                                  { label: "Number", value: "number" },
+                                  { label: "Boolean", value: "boolean" },
+                                  { label: "Array", value: "array" },
+                                  { label: "JSON Array", value: "json array" }
+                                ]}
+                                selectedValue={variableObj.type || "text"}
+                                onSelect={(val) => handleUpdateCustomVariableType(variableObj.path, val)}
+                              />
+                            </div>
+                            <input 
+                              type="text" 
+                              className={styles.headerTableMonospaceInputField} 
+                              placeholder="Custom Variable Name"
+                              value={variableObj.customName || ""}
+                              onChange={(e) => handleUpdateCustomVariableName(variableObj.path, e.target.value)}
+                              style={{ flex: "1" }}
+                            />
+                            <button 
+                              type="button" 
+                              className={styles.headerRowDeleteTrashActionBtnElement}
+                              onClick={() => handleToggleResponseVariable(variableObj.path)}
+                            >
+                              <FiTrash2 size={14} />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {hasTested && (
+              <div 
+                className={`${styles.macOsResponseViewerContainer} ${(!isResponseExpanded && !isAtBottom) ? styles.stickyViewer : ''}`} 
+                ref={responseViewerRef}
+              >
+                <div 
+                  className={styles.responseTabBarPane}
+                  onClick={() => setIsResponseExpanded(!isResponseExpanded)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className={styles.responseTabsGroup}>
+                    <button 
+                      className={`${styles.responseTabLink} ${responseTab === "BODY" ? styles.responseTabLinkActive : ""}`}
+                      onClick={(e) => { e.stopPropagation(); setResponseTab("BODY"); setIsResponseExpanded(true); }}
+                    >Body</button>
+                    <button 
+                      className={`${styles.responseTabLink} ${responseTab === "HEADERS" ? styles.responseTabLinkActive : ""}`}
+                      onClick={(e) => { e.stopPropagation(); setResponseTab("HEADERS"); setIsResponseExpanded(true); }}
+                    >Headers</button>
+                  </div>
+                  <div className={styles.responseMetricsGroup}>
+                    <span>Status: <span className={testMetrics.status === 200 ? styles.statusOk : styles.statusError}>
+                      {testMetrics.status}
+                    </span></span>
+                    <span className={styles.latencyText}>{testMetrics.latency} ms</span>
+                  </div>
+                </div>
+                
+                {isResponseExpanded && (
+                  <div className={styles.responseBodyViewer}>
+                  {responseTab === "BODY" && (
+                    <div className={styles.fetchResponsePaneWorkbenchLayout}>
+                      <div className={styles.hierarchicalInteractiveTreeTerminalWindowBoxFrame}>
+                        {typeof testResponsePayload === "object" && testResponsePayload !== null ? (
+                          renderResponsePayloadTreeNodes(testResponsePayload)
+                        ) : (
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: '#0F172A', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, monospace' }}>
+                            {String(testResponsePayload || "No response body returned")}
+                          </pre>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {responseTab === "HEADERS" && (
+                    <div className={styles.fetchResponsePaneWorkbenchLayout}>
+                      <div className={styles.hierarchicalInteractiveTreeTerminalWindowBoxFrame}>
+                        {testResponseHeaders && Object.keys(testResponseHeaders).length > 0 ? (
+                          <div style={{ padding: "8px 16px" }}>
+                            {Object.entries(testResponseHeaders).map(([key, value]) => (
+                              <div key={key} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid #E2E8F0' }}>
+                                <span style={{ fontWeight: 600, width: '250px', color: '#0F172A', fontSize: '13px' }}>{key}</span>
+                                <span style={{ color: '#475569', fontSize: '13px', wordBreak: 'break-all', flex: 1 }}>{value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div style={{ color: '#94A3B8', fontSize: '13px', padding: '16px' }}>No headers returned</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                )}
+              </div>
+            )}
+            {/* Sentinel element to track if we've scrolled to the bottom of the container */}
+            <div ref={bottomSentinelRef} style={{ height: '1px', width: '100%' }}></div>
           </div>
         </div>
       )}
@@ -807,7 +1073,7 @@ export default function WorkflowSettings() {
               setWebhooks(prev => prev.filter(h => h.id !== webhookToDelete.id));
               setWebhookToDelete(null);
               setDeleteConfirmationText("");
-              toast.success("Webhook successfully deleted.");
+              toast.success("Webhook deleted.");
             } catch (err) {
               toast.error(err.message);
             } finally {

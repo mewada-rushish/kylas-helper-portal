@@ -56,6 +56,14 @@ export async function POST(request) {
       fetchOptions.body = bodyPayload;
     }
 
+    console.log("=== WEBHOOK TEST REQUEST ===");
+    console.log("URL:", finalUrl);
+    console.log("Method:", fetchOptions.method);
+    console.log("Headers:");
+    fetchHeaders.forEach((value, key) => console.log(`  ${key}: ${value}`));
+    console.log("Body Payload:", fetchOptions.body);
+    console.log("============================");
+
     const response = await fetch(finalUrl, fetchOptions);
     const executionTimeMs = Date.now() - startTime;
     
@@ -74,10 +82,16 @@ export async function POST(request) {
       }
     }
 
+    const responseHeaders = {};
+    response.headers.forEach((value, key) => {
+      responseHeaders[key] = value;
+    });
+
     return NextResponse.json({
       status,
       executionTimeMs,
-      data
+      data,
+      headers: responseHeaders
     });
   } catch (error) {
     console.error("POST /api/settings/webhooks/[id]/test error:", error);

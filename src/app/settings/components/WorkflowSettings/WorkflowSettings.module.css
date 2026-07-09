@@ -3,7 +3,6 @@
   flex: 1;
   width: 100%;
   padding: 40px;
-  padding-bottom: 120px;
   overflow-y: auto;
   box-sizing: border-box;
   display: flex;
@@ -23,13 +22,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--card-bg);
-  padding: 16px;
-  border: var(--glass-border);
-  border-radius: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   box-sizing: border-box;
-  box-shadow: var(--shadow-raised);
 }
 
 .searchFilterInputBoxWrapper {
@@ -204,34 +198,40 @@
 
 .workbenchBackToListBtnLink {
   background: none;
-  border: 1px solid #CBD5E1;
+  border: 1px solid #E2E8F0;
   color: #475569;
   padding: 8px 16px;
-  border-radius: 12px;
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s;
+  height: 36px;
 }
 
 .workbenchBackToListBtnLink:hover {
-  background-color: var(--active-bg);
-  border-color: #94A3B8;
-  color: var(--cta-bg);
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
 }
 
 .editingContextTitleBreadcrumb {
-  font-size: 13px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #64748B;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
 }
 
 .activeLabelItemText {
-  color: var(--cta-bg);
+  color: #0F172A;
   font-weight: 600;
+  margin-left: 4px;
 }
 
 .splitWorkbenchFormAndControlsLayout {
@@ -308,18 +308,22 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  position: sticky;
+  top: 24px;
+  height: calc(100vh - 80px);
+  overflow: hidden;
 }
 
 .postmanTargetUrlInterfaceBlockBar {
   display: flex;
   align-items: center;
-  border: 1px solid #CBD5E1;
-  border-radius: 12px;
-  overflow: hidden;
-  height: 42px;
+  gap: 8px;
+  border-radius: 4px;
+  height: 40px;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+  background-color: transparent;
 }
 
 .methodSelectionPillDropdown {
@@ -345,13 +349,21 @@
 .postmanExternalDestinationUrlInputField {
   flex: 1;
   height: 100%;
-  border: none;
-  outline: none;
+  border: 1px solid #E2E8F0;
+  background-color: #F8FAFC;
   padding: 0 16px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: 13px;
+  font-family: monospace;
+  font-size: 14px;
   color: #0F172A;
-  background: transparent;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.postmanExternalDestinationUrlInputField:focus {
+  border-color: #0066cc;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02), 0 0 0 1px #0066cc;
+  z-index: 2;
 }
 
 .postmanSubTabBarNavigationStrip {
@@ -415,7 +427,6 @@
   background: var(--card-bg);
   border: var(--glass-border);
   border-radius: 12px;
-  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -425,7 +436,8 @@
   padding: 12px 16px;
   background-color: #F8FAFC;
   border-bottom: var(--glass-border);
-  font-family: var(--font-montserrat), sans-serif;
+  border-radius: 12px 12px 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 11px;
   font-weight: 700;
   color: #64748B;
@@ -434,20 +446,32 @@
   box-sizing: border-box;
 }
 
-.colHeaderKeyFieldText { flex: 0 0 38%; width: 38%; }
-.colHeaderValueFieldText { flex: 1; padding-left: 4px; }
-.colHeaderUtilityFieldText { width: 90px; text-align: center; }
+.colHeaderKeyFieldText {
+  flex: 0 0 38%;
+  width: 38%;
+}
+
+.colHeaderValueFieldText {
+  flex: 1;
+  padding-left: 4px;
+}
+
+.colHeaderUtilityFieldText {
+  width: 90px;
+  text-align: center;
+}
 
 .headersDataScrollTrackContainerRowsStack {
   display: flex;
   flex-direction: column;
+  border-radius: 0 0 12px 12px;
 }
 
 .headerRecordInteractionRowFlexLine {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: var(--glass-border);
+  padding: 8px 16px;
+  border-bottom: 1px solid #F1F5F9;
   gap: 14px;
   box-sizing: border-box;
   width: 100%;
@@ -463,15 +487,16 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 13px;
   color: #0F172A;
-  border: 1px solid #CBD5E1;
+  border: 1px solid #E2E8F0;
   border-radius: 12px;
   outline: none;
-  background-color: var(--card-bg);
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
 
-.headerRecordInteractionRowFlexLine > input:first-child {
+.headerRecordInteractionRowFlexLine>input:first-child {
   flex: 0 0 38%;
   width: 38%;
 }
@@ -525,14 +550,17 @@
   border: none;
   color: #94A3B8;
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
-  transition: color 0.1s ease;
+  justify-content: center;
 }
 
 .headerRowDeleteTrashActionBtnElement:hover {
-  color: #E21F26;
+  color: #EF4444;
+  background-color: #FEF2F2;
 }
 
 .addNewHeaderParameterMatrixRowBtnLink {
@@ -540,7 +568,7 @@
   background: #F8FAFC;
   border: none;
   border-top: var(--glass-border);
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -577,10 +605,10 @@
 }
 
 .activePostmanRadioIndicatorDot {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
   font-weight: 600;
-  color: #E21F26;
+  color: #64748B;
 }
 
 .monospaceRawJsonWorkspaceTextareaField {
@@ -646,23 +674,133 @@
 }
 
 .postmanRequestSendExecuteBtnLink {
-  height: 38px;
-  padding: 0 18px;
-  background-color: #10B981;
+  height: 100%;
+  padding: 0 24px;
+  background-color: #0066cc;
   color: #FFFFFF;
   border: none;
-  border-radius: 12px;
-  font-family: var(--font-montserrat), sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .postmanRequestSendExecuteBtnLink:hover {
-  opacity: 0.9;
+  background-color: #0056b3;
+}
+
+/* Response Split Pane */
+.splitPaneContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.topRequestPane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px solid #E2E8F0;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  overflow-y: auto;
+}
+
+.bottomResponsePane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.responseTabBarPane {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 12px 16px;
+  background-color: #F8FAFC;
+}
+
+.responseTabsGroup {
+  display: flex;
+  gap: 24px;
+}
+
+.responseTabLink {
+  background: none;
+  border: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #64748B;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  margin-bottom: -1px;
+}
+
+.responseTabLinkActive {
+  color: #007AFF;
+  font-weight: 600;
+  border-bottom: 2px solid #007AFF;
+}
+
+.responseMetricsGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.statusError {
+  color: #DC2626;
+  font-weight: 600;
+}
+
+.statusOk {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.latencyText {
+  color: #475569;
+}
+
+.responseBodyViewer {
+  flex: none;
+  min-height: 250px;
+  height: 400px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  resize: vertical;
 }
 
 .postmanResponseStatusReadoutFlexLine {
@@ -681,14 +819,15 @@
 }
 
 .statusTimeMetricText {
-  color: #15803D;
+  color: #10B981;
 }
 
 .hierarchicalInteractiveTreeTerminalWindowBoxFrame {
-  background-color: #1E293B;
-  color: #E2E8F0;
+  background-color: #FFFFFF;
+  color: #0F172A;
   padding: 24px;
-  border-radius: 12px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 13px;
   max-height: 450px;
@@ -703,7 +842,7 @@
 }
 
 .objectEnclosureFolderLabelTextCode {
-  color: #38BDF8;
+  color: #0284C7;
   font-weight: 600;
 }
 
@@ -725,13 +864,13 @@
 }
 
 .primitiveKeyNameTextCode {
-  color: #A7F3D0;
+  color: #059669;
   font-weight: 500;
 }
 
 .primitiveTypeNameTextBadge {
-  background-color: #334155;
-  color: #94A3B8;
+  background-color: #F1F5F9;
+  color: #64748B;
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
@@ -753,11 +892,11 @@
 }
 
 .checkboxIconActiveColor {
-  color: #38BDF8;
+  color: #0284C7;
 }
 
 .gateActiveStateTextCode {
-  color: #38BDF8 !important;
+  color: #0284C7 !important;
 }
 
 /* ==================== 7. DESIGN SYSTEM PILLS & UTILITIES ==================== */
@@ -771,10 +910,25 @@
   letter-spacing: 0.03em;
 }
 
-.method_POST { background-color: #DCFCE7; color: #16A34A; }
-.method_PUT { background-color: #DBEAFE; color: #2563EB; }
-.method_GET { background-color: #FEF9C3; color: #CA8A04; }
-.method_DELETE { background-color: #FEE2E2; color: #DC2626; }
+.method_POST {
+  background-color: #DCFCE7;
+  color: #16A34A;
+}
+
+.method_PUT {
+  background-color: #DBEAFE;
+  color: #2563EB;
+}
+
+.method_GET {
+  background-color: #FEF9C3;
+  color: #CA8A04;
+}
+
+.method_DELETE {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
 
 .categoryPillTagLabel {
   font-family: var(--font-montserrat), sans-serif;
@@ -786,9 +940,20 @@
   letter-spacing: 0.03em;
 }
 
-.categoryPillTagLabel.Kylas { background-color: #E0F2FE; color: #0369A1; }
-.categoryPillTagLabel.Payment { background-color: #F3E8FF; color: #6B21A8; }
-.categoryPillTagLabel.Custom { background-color: var(--active-bg); color: #475569; }
+.categoryPillTagLabel.Kylas {
+  background-color: #E0F2FE;
+  color: #0369A1;
+}
+
+.categoryPillTagLabel.Payment {
+  background-color: #F3E8FF;
+  color: #6B21A8;
+}
+
+.categoryPillTagLabel.Custom {
+  background-color: var(--active-bg);
+  color: #475569;
+}
 
 .codeTokenText {
   font-family: ui-monospace, monospace;
@@ -823,7 +988,10 @@
 .nativeSwitchToggleSliderNode {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #CBD5E1;
   transition: .2s ease;
   border-radius: 12px;
@@ -841,11 +1009,11 @@
   border-radius: 50%;
 }
 
-input:checked + .nativeSwitchToggleSliderNode {
+input:checked+.nativeSwitchToggleSliderNode {
   background-color: #10B981;
 }
 
-input:checked + .nativeSwitchToggleSliderNode:before {
+input:checked+.nativeSwitchToggleSliderNode:before {
   transform: translateX(18px);
 }
 
@@ -861,10 +1029,10 @@ input:checked + .nativeSwitchToggleSliderNode:before {
 .saveWebhookChangesBtn {
   height: 42px;
   padding: 0 24px;
-  background-color: var(--cta-bg);
+  background-color: #007AFF;
   color: #FFFFFF;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   font-family: var(--font-montserrat), sans-serif;
   font-size: 13px;
   font-weight: 700;
@@ -874,11 +1042,11 @@ input:checked + .nativeSwitchToggleSliderNode:before {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: opacity 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .saveWebhookChangesBtn:hover {
-  opacity: 0.9;
+  background-color: #0056b3;
 }
 
 .emptyStateFallbackNoticeBlock {
@@ -886,6 +1054,88 @@ input:checked + .nativeSwitchToggleSliderNode:before {
   text-align: center;
   color: #94A3B8;
   font-size: 13px;
+}
+
+.bottomResponsePaneCollapsed {
+  flex: none !important;
+  height: 48px;
+}
+
+.collapsibleResponseHeaderBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  background-color: #F4F5F7;
+  border-radius: 20px;
+  padding: 0 16px;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 16px;
+  transition: background-color 0.15s ease;
+}
+
+.collapsibleResponseHeaderBar:hover {
+  background-color: #F1F5F9;
+}
+
+.responseHeaderTabs {
+  display: flex;
+  align-items: center;
+}
+
+.responseHeaderTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0F172A;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.authTabWrapperCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.authTabSplitLayout {
+  display: flex;
+  min-height: 150px;
+}
+
+.authTabLeftColumn {
+  width: 240px;
+  padding: 24px;
+  background-color: #FAFAFA;
+  border-right: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+.authTypeLabelSmall {
+  display: block;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.authTabRightColumn {
+  flex: 1;
+  padding: 24px;
+  background-color: #FFFFFF;
+  border-radius: 0 8px 8px 0;
+}
+
+.authNoAuthText {
+  color: #64748B;
+  font-size: 14px;
+  margin-top: 16px;
 }
 
 .linkedBindingConfirmationLabelBadge {
@@ -986,12 +1236,21 @@ input:checked + .nativeSwitchToggleSliderNode:before {
 }
 
 @keyframes spin {
-  100% { transform: rotate(360deg); }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==================== EMPTY STATE ==================== */
@@ -1028,23 +1287,32 @@ input:checked + .nativeSwitchToggleSliderNode:before {
 }
 
 @keyframes pulseRing {
-  0%, 100% { transform: scale(1); opacity: 0.2; }
-  50% { transform: scale(1.15); opacity: 0.45; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 0.45;
+  }
 }
 
 .emptyStateIconCircle {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.1));
-  border: 1.5px solid rgba(59,130,246,0.2);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.1));
+  border: 1.5px solid rgba(59, 130, 246, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--brand-blue, #3b82f6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .emptyStateOrbitDot {
@@ -1053,13 +1321,20 @@ input:checked + .nativeSwitchToggleSliderNode:before {
   height: 8px;
   border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  box-shadow: 0 0 6px rgba(59,130,246,0.6);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
   animation: orbitFloat 3s ease-in-out infinite alternate;
 }
 
 @keyframes orbitFloat {
-  from { transform: translateY(0px); opacity: 0.6; }
-  to { transform: translateY(-4px); opacity: 1; }
+  from {
+    transform: translateY(0px);
+    opacity: 0.6;
+  }
+
+  to {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
 
 .emptyStateHeadline {
@@ -1091,16 +1366,296 @@ input:checked + .nativeSwitchToggleSliderNode:before {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 14px rgba(59,130,246,0.35);
-  margin-top: 4px;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+  margin-top: 24px;
 }
 
 .emptyStateCta:hover {
   background: #2563eb;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
 }
 
 .emptyStateCta:active {
   transform: translateY(0);
-}
+}
+
+/* Apple/macOS UI Revamp Styles */
+
+.unifiedAppleEditorLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.applePropertiesCard {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 56px;
+}
+
+.applePropertyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.applePropertyLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.applePropertyInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #0F172A;
+  font-weight: 500;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+.applePropertyInput::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.applePropertyDivider {
+  width: 1px;
+  height: 32px;
+  background-color: #E2E8F0;
+  margin: 0 24px;
+}
+
+.applePropertyToggleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appleToggleStatusText {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.safariAddressBarContainer {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  height: 48px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.safariMethodDropdown {
+  width: 110px;
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #E2E8F0;
+}
+
+.safariMethodDropdown>div {
+  height: 100%;
+}
+
+.safariNativeSelect {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #0F172A;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.safariDropdownTrigger {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  padding: 0 12px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: #0F172A !important;
+  border-radius: 6px 0 0 6px !important;
+}
+
+.safariDropdownTrigger:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+.safariUrlInputWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 100%;
+  gap: 8px;
+}
+
+.safariUrlIcon {
+  color: #94A3B8;
+}
+
+.safariUrlInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #0F172A;
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+.safariSendBtn {
+  height: 100%;
+  padding: 0 24px;
+  border-radius: 6px;
+  background: #007AFF;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.safariSendBtn:hover {
+  background: #0062CC;
+}
+
+.safariSendBtn:disabled {
+  background: #94A3B8;
+  cursor: not-allowed;
+}
+
+.macOsSegmentedControlContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.macOsSegmentedControlBackground {
+  display: inline-flex;
+  background: #E2E8F0;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmentBtn {
+  border: none;
+  background: transparent;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.segmentBtn:hover {
+  color: #0F172A;
+}
+
+.segmentActive {
+  background: #FFFFFF;
+  color: #0F172A;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+
+.segmentBadge {
+  background: #007AFF;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.macOsTabsContentArea {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  padding: 24px;
+}
+
+.macOsResponseViewerContainer {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  margin-top: 24px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stickyViewer {
+  position: sticky;
+  bottom: -40px;
+  z-index: 50;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 0;
+}
+
+.editorTopRightActions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.appleSaveActionBtn {
+  background: #10B981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appleSaveActionBtn:hover {
+  background: #059669;
+}

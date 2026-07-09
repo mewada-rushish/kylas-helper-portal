@@ -24,7 +24,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   transition: all 0.2s ease;
   min-height: 42px;
   line-height: 1.4;
@@ -51,13 +51,14 @@
 }
 
 .dropdownActive {
-  border-color: var(--cta-bg);
+  border-color: #007AFF;
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+  background-color: #EBF5FF;
 }
 
 .dropdownActive::before {
   transform: translateX(0);
-  background-color: var(--active-bg);
+  background-color: transparent;
 }
 
 /* --- VERTICAL BASELINE PROTECTION LAYER --- */
@@ -152,12 +153,13 @@
 
 .itemSelected {
   font-weight: 600;
-  color: var(--cta-bg);
+  color: #007AFF;
+  background-color: #EBF5FF;
 }
 
 .itemSelected::before {
   transform: translateX(0);
-  background-color: var(--active-bg);
+  background-color: transparent;
 }
 
 .itemLabel {
@@ -166,7 +168,7 @@
 }
 
 .checkIcon {
-  color: var(--cta-bg);
+  color: #007AFF;
   font-size: 14px;
   flex-shrink: 0;
 }
