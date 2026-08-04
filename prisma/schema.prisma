@@ -98,3 +98,14 @@ model Webhook {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
+
+model IncomingWebhookConfig {
+  id             String   @id @default(cuid())
+  provider       String   @unique // e.g., "KYLAS"
+  endpointPath   String   // e.g., "/api/webhooks/kylas"
+  authType       String   @default("NO_AUTH") // NO_AUTH, BEARER_TOKEN, BASIC_AUTH
+  authToken      String?  @db.VarChar(255)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

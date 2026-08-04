@@ -11,6 +11,7 @@ import styles from "./settings.module.css";
 // Decoupled Sub-Page Feature Component Folders
 import GeneralSettings from "./components/GeneralSettings/GeneralSettings";
 import TemplateGeometry from "./components/TemplateGeometry/TemplateGeometry";
+import IncomingWebhooks from "./components/IncomingWebhooks/IncomingWebhooks";
 import WorkflowSettings from "./components/WorkflowSettings/WorkflowSettings";
 import SystemLogs from "./components/SystemLogs/SystemLogs";
 
@@ -34,6 +35,8 @@ function SettingsDashboardContent() {
         return <GeneralSettings />;
       case "templates":
         return <TemplateGeometry />;
+      case "incoming-webhooks":
+        return <IncomingWebhooks />;
       case "workflows":
         return <WorkflowSettings />;
       case "logs":
@@ -76,6 +79,14 @@ function SettingsDashboardContent() {
             >
               <FiFileText size={14} />
               <span>Template Geometry</span>
+            </button>
+            <button 
+              type="button" 
+              className={`${styles.horizontalTabLinkBtn} ${activeTab === "incoming-webhooks" ? styles.tabActiveState : ""}`} 
+              onClick={() => setActiveTab("incoming-webhooks")}
+            >
+              <FiGitBranch size={14} />
+              <span>Incoming Webhooks</span>
             </button>
             <button 
               type="button" 

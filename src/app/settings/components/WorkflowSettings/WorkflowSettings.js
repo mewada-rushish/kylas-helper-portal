@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { 
   FiSearch, FiPlus, FiEye, FiEyeOff, FiX, FiActivity,
   FiLayers, FiGlobe, FiCheckSquare, FiSquare, 
-  FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft, FiLoader
+  FiAlertTriangle, FiCheck, FiTrash2, FiArrowLeft, FiLoader, FiCopy
 } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import CentralizedModal from "@/components/ui/modal/modal";
