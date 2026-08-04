@@ -4,34 +4,46 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   FiGitBranch, FiPlus, FiEdit2, FiTrash2, FiMoreVertical, FiSearch, 
-  FiChevronLeft, FiChevronRight, FiPlay, FiPause, FiFileText, FiActivity
+  FiChevronLeft, FiChevronRight, FiPlay, FiPause, FiFileText, FiActivity,
+  FiAlertTriangle, FiX
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
+import CentralizedModal from "@/components/ui/modal/modal";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
+import toast from "react-hot-toast";
 import styles from "./workflows-list.module.css";
 
-const MOCK_WORKFLOWS = [
-  { id: "wf_101", name: "High-Value Deal Routing", trigger: "deal.won", status: "active", nodes: 4, lastUpdated: "2026-06-16T10:30:00Z" },
-  { id: "wf_102", name: "Website Lead Distribution", trigger: "lead.created", status: "active", nodes: 6, lastUpdated: "2026-06-15T14:20:00Z" },
-  { id: "wf_103", name: "VIP Customer Welcome", trigger: "contact.updated", status: "draft", nodes: 2, lastUpdated: "2026-06-10T09:15:00Z" },
-  { id: "wf_104", name: "Inactive Campaign Cleanup", trigger: "deal.lost", status: "inactive", nodes: 3, lastUpdated: "2026-06-08T11:00:00Z" },
-  { id: "wf_105", name: "New Employee Onboarding", trigger: "user.created", status: "active", nodes: 8, lastUpdated: "2026-06-05T16:45:00Z" },
-  { id: "wf_106", name: "Weekly Report Generation", trigger: "schedule.weekly", status: "active", nodes: 1, lastUpdated: "2026-06-01T08:00:00Z" },
-  { id: "wf_107", name: "Support Ticket Escalation", trigger: "ticket.created", status: "draft", nodes: 5, lastUpdated: "2026-05-28T13:30:00Z" },
-];
 
-export default function WorkflowsDirectory() {
+
+export default function WorkflowsPage() {
   const router = useRouter();
-  const [workflows, setWorkflows] = useState(MOCK_WORKFLOWS);
-  
+  const [workflows, setWorkflows] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [triggerFilter, setTriggerFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [workflowToDelete, setWorkflowToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const itemsPerPage = 5;
+
+  const fetchWorkflows = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/workflows");
+      if (!res.ok) throw new Error("Failed to load workflows");
+      const data = await res.json();
+      setWorkflows(data);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -40,12 +52,31 @@ export default function WorkflowsDirectory() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    fetchWorkflows();
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const handleCreateNew = () => {
-    const newDraftId = `wf_new_${Date.now()}`;
-    router.push(`/workflows/${newDraftId}`);
+  const handleCreateNew = async () => {
+    try {
+      const res = await fetch("/api/workflows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "New Automation Workflow",
+          trigger: "lead.created",
+          status: "draft",
+          nodesCount: 1,
+          config: null
+        })
+      });
+      if (!res.ok) throw new Error("Failed to create workflow");
+      const newWf = await res.json();
+      router.push(`/workflows/${newWf.id}`);
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   const handleEdit = (id) => {
@@ -53,20 +84,48 @@ export default function WorkflowsDirectory() {
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to permanently delete this workflow?")) {
-      setWorkflows(prev => prev.filter(wf => wf.id !== id));
-      
-      const newFilteredLength = workflows.filter(wf => wf.id !== id).length;
-      if (currentPage > 1 && newFilteredLength <= (currentPage - 1) * itemsPerPage) {
-        setCurrentPage(p => p - 1);
-      }
-    }
+    setWorkflowToDelete(workflows.find(wf => wf.id === id) || null);
     setOpenMenuId(null);
   };
 
-  const changeStatus = (id, newStatus) => {
-    setWorkflows(prev => prev.map(wf => wf.id === id ? { ...wf, status: newStatus } : wf));
-    setOpenMenuId(null);
+  const confirmDelete = async () => {
+    if (!workflowToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/workflows/${workflowToDelete.id}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Failed to delete workflow");
+      setWorkflows(prev => prev.filter(wf => wf.id !== workflowToDelete.id));
+      
+      const newFilteredLength = workflows.filter(wf => wf.id !== workflowToDelete.id).length;
+      if (currentPage > 1 && newFilteredLength <= (currentPage - 1) * itemsPerPage) {
+        setCurrentPage(p => p - 1);
+      }
+      
+      setWorkflowToDelete(null);
+      toast.success("Workflow deleted successfully");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const changeStatus = async (id, newStatus) => {
+    try {
+      const res = await fetch(`/api/workflows/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      setWorkflows(prev => prev.map(wf => wf.id === id ? { ...wf, status: newStatus } : wf));
+      setOpenMenuId(null);
+      toast.success(`Workflow status updated to ${newStatus}`);
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   const formatDate = (isoString) => {
@@ -163,7 +222,9 @@ export default function WorkflowsDirectory() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedWorkflows.length === 0 ? (
+                  {isLoading ? (
+                    <SkeletonLoader type="table" rows={itemsPerPage} columns={6} />
+                  ) : paginatedWorkflows.length === 0 ? (
                     <tr>
                       <td colSpan="6" className={styles.emptyState}>
                         {searchQuery || statusFilter !== "all" || triggerFilter !== "all"
@@ -181,8 +242,8 @@ export default function WorkflowsDirectory() {
                         <td>
                           <span className={styles.triggerBadge}><FiActivity /> {wf.trigger}</span>
                         </td>
-                        <td className={styles.mutedCell}>{wf.nodes} Nodes</td>
-                        <td className={styles.mutedCell}>{formatDate(wf.lastUpdated)}</td>
+                        <td className={styles.mutedCell}>{wf.nodesCount ?? 0} Nodes</td>
+                        <td className={styles.mutedCell}>{formatDate(wf.updatedAt)}</td>
                         <td>
                           <div className={`${styles.statusBadgeView} ${styles[wf.status]}`}>
                             <div className={styles.toggleKnob} />
@@ -266,6 +327,45 @@ export default function WorkflowsDirectory() {
           </div>
         </div>
       </main>
+      
+      {/* High-Assurance Destructive Confirm Action Modal */}
+      <CentralizedModal
+        isOpen={workflowToDelete !== null}
+        onClose={() => {
+          setWorkflowToDelete(null);
+          setIsDeleting(false);
+        }}
+        type="alert"
+        variant="destructive"
+        size="md"
+        icon={<FiAlertTriangle size={20} />}
+        title="Confirm Deletion"
+        primaryAction={{
+          label: "Delete Workflow",
+          loadingLabel: "Deleting...",
+          icon: <FiTrash2 size={14} />,
+          variant: "destructive",
+          loading: isDeleting,
+          onClick: confirmDelete
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          icon: <FiX size={14} />,
+          onClick: () => {
+            setWorkflowToDelete(null);
+            setIsDeleting(false);
+          }
+        }}
+      >
+        <div style={{ textAlign: "center", padding: "12px 0" }}>
+          <p style={{ margin: "0 0 16px 0", color: "#475569", lineHeight: "1.5" }}>
+            Are you sure you want to permanently delete the workflow <strong>{workflowToDelete?.name}</strong>?
+          </p>
+          <p style={{ margin: 0, color: "#64748B", fontSize: "12px" }}>
+            This action cannot be undone and will immediately halt any active routing.
+          </p>
+        </div>
+      </CentralizedModal>
     </div>
   );
 }

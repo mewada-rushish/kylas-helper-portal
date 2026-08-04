@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: var(--system-bg, #F8F8FB);
+  background-color: var(--background);
   font-family: var(--font-poppins), sans-serif;
   color: #202223;
   -webkit-font-smoothing: antialiased;
@@ -12,7 +12,7 @@
   flex: 1;
   margin-left: 240px;
   padding: 40px 48px;
-  background-color: var(--system-bg, #F8F8FB);
+  background-color: var(--background);
 }
 
 .pageMaxWidth {
@@ -59,12 +59,12 @@
 }
 
 .customizerAlertCard {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border: 1px solid var(--deep-navy, #27347B);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-raised);
   animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -98,9 +98,9 @@
 }
 
 .emptyDashboardState {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border: 1px dashed #c9cccf;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 48px;
   text-align: center;
   color: #6d7175;
@@ -117,9 +117,9 @@
 }
 
 .catalogLibraryCard {
-  background-color: var(--system-bg, #F8F8FB);
-  border: 1px solid #c9cccf;
-  border-radius: 6px;
+  background-color: var(--background);
+  border: var(--glass-border);
+  border-radius: 12px;
   padding: 10px 14px;
   display: flex;
   align-items: center;
@@ -145,11 +145,11 @@
   font-weight: 700;
   text-transform: uppercase;
   color: #8c9196;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   padding: 2px 6px;
   border-radius: 4px;
   width: fit-content;
-  border: 1px solid #e1e3e5;
+  border: var(--glass-border);
 }
 
 .removeReportActionBtn {
@@ -158,12 +158,12 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   color: var(--action-red, #E21F26);
-  border: 1px solid #e1e3e5;
-  border-radius: 6px;
+  border: var(--glass-border);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .removeReportActionBtn:hover {
@@ -180,7 +180,7 @@
   background-color: var(--deep-navy, #27347B);
   color: #ffffff;
   border: 1px solid var(--deep-navy, #27347B);
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
   transition: opacity 0.15s ease;
 }

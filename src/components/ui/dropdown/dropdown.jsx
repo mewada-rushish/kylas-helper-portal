@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { FiChevronDown, FiCheck } from "react-icons/fi";
 import styles from "./dropdown.module.css";
 
-export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon }) {
+export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -23,7 +23,7 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
   return (
     <div className={styles.dropdownContainer} ref={dropdownRef}>
       <button 
-        className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownActive : ""}`} 
+        className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownActive : ""} ${triggerClassName || ""}`} 
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >

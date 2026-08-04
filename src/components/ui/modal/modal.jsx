@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { 
-  FiX, FiCheckCircle, FiAlertTriangle, FiInfo, FiAlertCircle 
+  FiX, FiCheckCircle, FiAlertTriangle, FiInfo, FiAlertCircle, FiLoader
 } from "react-icons/fi";
 import styles from "./modal.module.css";
 
@@ -18,9 +18,12 @@ export default function CentralizedModal({
   children,
   primaryAction,
   secondaryAction,
-  closeOnOverlayClick = true
+  closeOnOverlayClick = true,
+  icon
 }) {
   const [mounted, setMounted] = useState(false);
+  const [isRendered, setIsRendered] = useState(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -29,14 +32,19 @@ export default function CentralizedModal({
 
   useEffect(() => {
     if (isOpen) {
+      setIsRendered(true);
+      setIsAnimatingOut(false);
       document.body.style.overflow = "hidden";
-    } else {
+    } else if (isRendered) {
+      setIsAnimatingOut(true);
+      const timer = setTimeout(() => {
+        setIsRendered(false);
+        setIsAnimatingOut(false);
+      }, 250); // Matches the 0.25s animation duration
       document.body.style.overflow = "";
+      return () => clearTimeout(timer);
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  }, [isOpen, isRendered]);
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -48,79 +56,119 @@ export default function CentralizedModal({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
-  if (!mounted || !isOpen) return null;
+  if (!mounted || !isRendered) return null;
 
   const handleOverlayClick = () => {
     if (closeOnOverlayClick) onClose();
   };
 
   const renderAlertIcon = () => {
+    const getIconClass = () => {
+      switch (variant) {
+        case "success": return styles.iconSuccess;
+        case "warning": return styles.iconWarning;
+        case "error":
+        case "destructive": return styles.iconError;
+        case "info":
+        default: return styles.iconInfo;
+      }
+    };
+
+    if (icon) {
+      return <div className={`${styles.headerIcon} ${getIconClass()}`}>{icon}</div>;
+    }
+
     switch (variant) {
       case "success":
-        return <FiCheckCircle className={`${styles.alertIcon} ${styles.iconSuccess}`} />;
+        return <FiCheckCircle className={`${styles.headerIcon} ${styles.iconSuccess}`} />;
       case "warning":
-        return <FiAlertTriangle className={`${styles.alertIcon} ${styles.iconWarning}`} />;
+        return <FiAlertTriangle className={`${styles.headerIcon} ${styles.iconWarning}`} />;
       case "error":
       case "destructive":
-        return <FiAlertCircle className={`${styles.alertIcon} ${styles.iconError}`} />;
+        return <FiAlertCircle className={`${styles.headerIcon} ${styles.iconError}`} />;
       case "info":
       default:
-        return <FiInfo className={`${styles.alertIcon} ${styles.iconInfo}`} />;
+        return <FiInfo className={`${styles.headerIcon} ${styles.iconInfo}`} />;
     }
   };
 
+  const animClass = isAnimatingOut ? styles.fadeOut : styles.fadeIn;
+  const cardAnimClass = isAnimatingOut ? styles.zoomOut : styles.zoomIn;
+
   const modalComponent = (
-    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
-      <div 
-        className={`${styles.modalCard} ${styles[size]} ${styles[type]} ${type === "alert" ? styles[variant] : ""}`}
-        onClick={(e) => e.stopPropagation()}
+    <>
+      {/* Dedicated blur + dim backdrop — lives outside the overlay's stacking context */}
+      <div className={`${styles.blurBackdrop} ${animClass}`} />
+
+      {/* Transparent click-catcher + flex centering only */}
+      <div
+        className={`${styles.modalOverlay} ${animClass}`}
+        onClick={handleOverlayClick}
       >
-        <div className={styles.modalHeader}>
-          <div className={styles.headerTitleBlock}>
-            {type === "alert" && renderAlertIcon()}
-            <div className={styles.titleTextFrame}>
-              <h3 className={styles.modalTitle}>{title}</h3>
-              {description && <p className={styles.modalDescription}>{description}</p>}
+        <div
+          className={`${styles.modalCard} ${styles[size]} ${styles[type]} ${cardAnimClass}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.modalHeader}>
+            <div className={styles.headerTitleBlock}>
+              {(type === "alert" || icon) && renderAlertIcon()}
+              <div className={styles.titleTextFrame}>
+                <h3 className={styles.modalTitle}>{title}</h3>
+                {description && <p className={styles.modalDescription}>{description}</p>}
+              </div>
             </div>
+            {type === "content" && (
+              <button className={styles.closeCrossBtn} onClick={onClose} aria-label="Close modal">
+                <FiX />
+              </button>
+            )}
           </div>
-          {type === "content" && (
-            <button className={styles.closeCrossBtn} onClick={onClose} aria-label="Close modal">
-              <FiX />
-            </button>
+
+          <div className={styles.modalBody}>
+            {children}
+          </div>
+
+          {(primaryAction || secondaryAction) && (
+            <div className={styles.modalFooter}>
+              {secondaryAction && (
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={secondaryAction.onClick}
+                  disabled={secondaryAction.disabled}
+                >
+                  {secondaryAction.icon && <span className={styles.btnIcon}>{secondaryAction.icon}</span>}
+                  {secondaryAction.label}
+                </button>
+              )}
+              {primaryAction && (
+                <button
+                  type={primaryAction.type || "button"}
+                  className={`${styles.primaryBtn} ${primaryAction.variant ? styles[primaryAction.variant] : styles.btnPrimary}`}
+                  onClick={primaryAction.onClick}
+                  disabled={primaryAction.disabled || primaryAction.loading}
+                >
+                  {primaryAction.loading ? (
+                    <>
+                      <FiLoader className={styles.spinAnimation} style={{ marginRight: primaryAction.loadingLabel || primaryAction.label ? 8 : 0 }} />
+                      {(primaryAction.loadingLabel || primaryAction.label) && (
+                        <span className={styles.btnText}>{primaryAction.loadingLabel || primaryAction.label}</span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {primaryAction.icon && <span className={styles.btnIcon}>{primaryAction.icon}</span>}
+                      {primaryAction.label}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           )}
         </div>
-
-        <div className={styles.modalBody}>
-          {children}
-        </div>
-
-        {(primaryAction || secondaryAction) && (
-          <div className={styles.modalFooter}>
-            {secondaryAction && (
-              <button
-                type="button"
-                className={styles.secondaryBtn}
-                onClick={secondaryAction.onClick}
-                disabled={secondaryAction.disabled}
-              >
-                {secondaryAction.label}
-              </button>
-            )}
-            {primaryAction && (
-              <button
-                type={primaryAction.type || "button"}
-                className={`${styles.primaryBtn} ${primaryAction.variant ? styles[primaryAction.variant] : styles.btnPrimary}`}
-                onClick={primaryAction.onClick}
-                disabled={primaryAction.disabled || primaryAction.loading}
-              >
-                {primaryAction.loading ? "Processing..." : primaryAction.label}
-              </button>
-            )}
-          </div>
-        )}
       </div>
-    </div>
+    </>
   );
 
   return createPortal(modalComponent, document.body);
-}
+}

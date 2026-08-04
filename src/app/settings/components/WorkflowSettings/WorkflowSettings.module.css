@@ -1,0 +1,1661 @@
+/* ==================== 1. BASE WORKSPACE STRUCTURE ==================== */
+.workflowsMainWorkspaceNode {
+  flex: 1;
+  width: 100%;
+  padding: 40px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-poppins), sans-serif;
+}
+
+.fullWidthListContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.topControlDeckStripStrip {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  box-sizing: border-box;
+}
+
+.searchFilterInputBoxWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 360px;
+}
+
+.searchInnerDecorativeIcon {
+  position: absolute;
+  left: 14px;
+  color: #64748B;
+  z-index: 2;
+}
+
+.webhookSearchFieldInput {
+  width: 100%;
+  height: 40px;
+  padding-left: 40px;
+  padding-right: 16px;
+  font-size: 13px;
+  color: #0F172A;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  outline: none;
+  background-color: var(--card-bg);
+  box-sizing: border-box;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.webhookSearchFieldInput:focus {
+  border-color: var(--cta-bg);
+  box-shadow: var(--shadow-raised);
+}
+
+.categoryDropdownWrapperOverride {
+  width: 180px;
+}
+
+.globalAddWebhookActionBtn {
+  height: 40px;
+  padding: 0 20px;
+  background-color: var(--cta-bg);
+  color: #FFFFFF;
+  border: 1px solid var(--cta-bg);
+  border-radius: 12px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.globalAddWebhookActionBtn:hover {
+  background: var(--cta-bg-hover);
+  border-color: var(--cta-bg-hover);
+}
+
+.centeredRegistryHeader {
+  margin-bottom: 24px;
+}
+
+.centeredRegistryHeader h4 {
+  font-family: var(--font-montserrat), sans-serif;
+  color: #202223;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.centeredRegistryHeader p {
+  color: #64748B;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ==================== 2. GRID CARDS DISPLAY ==================== */
+.fullWidthCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.largeWebhookDisplayCard {
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.largeWebhookDisplayCard:hover {
+  border-color: var(--cta-bg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+}
+
+.cardHeaderTopMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.webhookDisplayTitleName {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.webhookCardTruncatedUrlCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 12px;
+  color: #475569;
+  background-color: #F8FAFC;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: var(--glass-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.cardMetaFooterInfoRow {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 14px;
+  width: 100%;
+}
+
+/* ==================== 3. WORKBENCH EDITOR PANELS ==================== */
+.fullWidthWorkbenchEditorPane {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
+  box-sizing: border-box;
+}
+
+.editorTopNavigationBarStripLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--glass-border);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.workbenchBackToListBtnLink {
+  background: none;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  height: 36px;
+}
+
+.workbenchBackToListBtnLink:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.editingContextTitleBreadcrumb {
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #64748B;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.activeLabelItemText {
+  color: #0F172A;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.splitWorkbenchFormAndControlsLayout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.workbenchLeftSidebarConfigurationForm {
+  background-color: #F8FAFC;
+  border: var(--glass-border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.workbenchLeftSidebarConfigurationForm h4 {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #202223;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.formInputGroupFieldElement {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.fieldLabelTextPrimitive {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.standardWorkspaceTextFieldInput {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #0F172A;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  outline: none;
+  background-color: var(--card-bg);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.standardWorkspaceTextFieldInput:focus {
+  border-color: var(--cta-bg);
+}
+
+/* ==================== 4. POSTMAN ENGINES WORKSPACE ==================== */
+.rightPanePostmanWorkbenchConsoleBox {
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: sticky;
+  top: 24px;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+.postmanTargetUrlInterfaceBlockBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  background-color: transparent;
+}
+
+.methodSelectionPillDropdown {
+  background-color: var(--active-bg);
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 0 10px 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-right: 1px solid #CBD5E1;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.methodSelectionPillDropdown:focus {
+  outline: none;
+}
+
+.postmanExternalDestinationUrlInputField {
+  flex: 1;
+  height: 100%;
+  border: 1px solid #E2E8F0;
+  background-color: #F8FAFC;
+  padding: 0 16px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #0F172A;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.postmanExternalDestinationUrlInputField:focus {
+  border-color: #0066cc;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02), 0 0 0 1px #0066cc;
+  z-index: 2;
+}
+
+.postmanSubTabBarNavigationStrip {
+  display: flex;
+  gap: 4px;
+  border-bottom: var(--glass-border);
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.postmanTabLinkBtnPrimes {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 18px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: -1px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.postmanTabLinkBtnPrimes:hover {
+  color: var(--cta-bg);
+}
+
+.tabActiveStatePrime {
+  border-bottom-color: #E21F26;
+  color: #E21F26 !important;
+}
+
+.tabNumericBadgeIndicatorCount {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  background-color: #E2E8F0;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.postmanTabViewportWorkspaceInteriorBox {
+  min-height: 300px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==================== 5. PARAMETERS KEY-VALUE GRID ==================== */
+.headersPaneWorkbenchTableGridLayout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.headersTableBannerRowTrack {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #F8FAFC;
+  border-bottom: var(--glass-border);
+  border-radius: 12px 12px 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-sizing: border-box;
+}
+
+.colHeaderKeyFieldText {
+  flex: 0 0 38%;
+  width: 38%;
+}
+
+.colHeaderValueFieldText {
+  flex: 1;
+  padding-left: 4px;
+}
+
+.colHeaderUtilityFieldText {
+  width: 90px;
+  text-align: center;
+}
+
+.headersDataScrollTrackContainerRowsStack {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 0 12px 12px;
+}
+
+.headerRecordInteractionRowFlexLine {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.headerRecordInteractionRowFlexLine:last-child {
+  border-bottom: none;
+}
+
+.headerTableMonospaceInputField {
+  height: 38px;
+  padding: 0 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  outline: none;
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.headerRecordInteractionRowFlexLine>input:first-child {
+  flex: 0 0 38%;
+  width: 38%;
+}
+
+.headerTableMonospaceInputField:focus {
+  border-color: var(--cta-bg);
+}
+
+.headerTablePasswordMaskInputWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.headerTablePasswordMaskInputWrapper .headerTableMonospaceInputField {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.inlineHeaderValuePasswordEyeToggleIndicatorBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.inlineHeaderValuePasswordEyeToggleIndicatorBtn:hover {
+  color: var(--cta-bg);
+}
+
+.inlineCheckboxContainerItemWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748B;
+  cursor: pointer;
+  user-select: none;
+  width: 65px;
+  justify-content: center;
+}
+
+.headerRowDeleteTrashActionBtnElement {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerRowDeleteTrashActionBtnElement:hover {
+  color: #EF4444;
+  background-color: #FEF2F2;
+}
+
+.addNewHeaderParameterMatrixRowBtnLink {
+  height: 44px;
+  background: #F8FAFC;
+  border: none;
+  border-top: var(--glass-border);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--cta-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.addNewHeaderParameterMatrixRowBtnLink:hover {
+  background-color: var(--active-bg);
+}
+
+/* ==================== 6. CODE TEXTAREAS & RESPONSE TREES ==================== */
+.bodyJSONPaneWorkbenchLayout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.postmanSubHeaderContextControlsStrip {
+  display: flex;
+  background: #F8FAFC;
+  height: 36px;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: var(--glass-border);
+}
+
+.activePostmanRadioIndicatorDot {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.monospaceRawJsonWorkspaceTextareaField {
+  width: 100%;
+  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  color: #0F172A;
+  line-height: 1.6;
+  border: none;
+  outline: none;
+  background-color: var(--card-bg);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.unverifiedPayloadBlockingCalloutCard {
+  display: flex;
+  gap: 16px;
+  background-color: #FFFBEB;
+  border: 1px solid #FDE68A;
+  padding: 16px;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.unverifiedIconNoticeColor {
+  color: #D97706;
+  flex-shrink: 0;
+}
+
+.unverifiedTextWrapColumn h5 {
+  margin: 0 0 4px 0;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  color: #92400E;
+  font-weight: 700;
+}
+
+.unverifiedTextWrapColumn p {
+  margin: 0;
+  font-size: 12px;
+  color: #B45309;
+  line-height: 1.6;
+}
+
+.fetchResponsePaneWorkbenchLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.postmanResponseActionBarStripLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #F8FAFC;
+  border: var(--glass-border);
+  padding: 14px 16px;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.postmanRequestSendExecuteBtnLink {
+  height: 100%;
+  padding: 0 24px;
+  background-color: #0066cc;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.postmanRequestSendExecuteBtnLink:hover {
+  background-color: #0056b3;
+}
+
+/* Response Split Pane */
+.splitPaneContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.topRequestPane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px solid #E2E8F0;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  overflow-y: auto;
+}
+
+.bottomResponsePane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.responseTabBarPane {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 12px 16px;
+  background-color: #F8FAFC;
+}
+
+.responseTabsGroup {
+  display: flex;
+  gap: 24px;
+}
+
+.responseTabLink {
+  background: none;
+  border: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #64748B;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  margin-bottom: -1px;
+}
+
+.responseTabLinkActive {
+  color: #007AFF;
+  font-weight: 600;
+  border-bottom: 2px solid #007AFF;
+}
+
+.responseMetricsGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.statusError {
+  color: #DC2626;
+  font-weight: 600;
+}
+
+.statusOk {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.latencyText {
+  color: #475569;
+}
+
+.responseBodyViewer {
+  flex: none;
+  min-height: 250px;
+  height: 400px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  resize: vertical;
+}
+
+.postmanResponseStatusReadoutFlexLine {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.statusOkIndicatorBadge {
+  background-color: #DCFCE7;
+  color: #15803D;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.statusTimeMetricText {
+  color: #10B981;
+}
+
+.hierarchicalInteractiveTreeTerminalWindowBoxFrame {
+  background-color: #FFFFFF;
+  color: #0F172A;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  max-height: 450px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.treeNodeStructuralRowItemLine {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.objectEnclosureFolderLabelTextCode {
+  color: #0284C7;
+  font-weight: 600;
+}
+
+.treeNodeLeafParameterRowFlexRowLayout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.treeLeafKeyNameReadoutFlexRowLayout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.treeLeafConnectorLinesLayoutGuideSpan {
+  color: #475569;
+}
+
+.primitiveKeyNameTextCode {
+  color: #059669;
+  font-weight: 500;
+}
+
+.primitiveTypeNameTextBadge {
+  background-color: #F1F5F9;
+  color: #64748B;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.checkboxInteractiveTreeGateToggleButtonLink {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.checkboxIconActiveColor {
+  color: #0284C7;
+}
+
+.gateActiveStateTextCode {
+  color: #0284C7 !important;
+}
+
+/* ==================== 7. DESIGN SYSTEM PILLS & UTILITIES ==================== */
+.httpMethodPillBadge {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.method_POST {
+  background-color: #DCFCE7;
+  color: #16A34A;
+}
+
+.method_PUT {
+  background-color: #DBEAFE;
+  color: #2563EB;
+}
+
+.method_GET {
+  background-color: #FEF9C3;
+  color: #CA8A04;
+}
+
+.method_DELETE {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+.categoryPillTagLabel {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.categoryPillTagLabel.Kylas {
+  background-color: #E0F2FE;
+  color: #0369A1;
+}
+
+.categoryPillTagLabel.Payment {
+  background-color: #F3E8FF;
+  color: #6B21A8;
+}
+
+.categoryPillTagLabel.Custom {
+  background-color: var(--active-bg);
+  color: #475569;
+}
+
+.codeTokenText {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--cta-bg);
+  background: var(--active-bg);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.variablesCounterSummaryPill {
+  font-size: 12px;
+  color: #64748B;
+  background-color: var(--active-bg);
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.nativeSwitchToggleTrackLabel {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.nativeSwitchToggleTrackLabel input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.nativeSwitchToggleSliderNode {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #CBD5E1;
+  transition: .2s ease;
+  border-radius: 12px;
+}
+
+.nativeSwitchToggleSliderNode:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--card-bg);
+  transition: .2s ease;
+  border-radius: 50%;
+}
+
+input:checked+.nativeSwitchToggleSliderNode {
+  background-color: #10B981;
+}
+
+input:checked+.nativeSwitchToggleSliderNode:before {
+  transform: translateX(18px);
+}
+
+.postmanWorkspaceFooterRow {
+  margin-top: 24px;
+  border-top: var(--glass-border);
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.saveWebhookChangesBtn {
+  height: 42px;
+  padding: 0 24px;
+  background-color: #007AFF;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.saveWebhookChangesBtn:hover {
+  background-color: #0056b3;
+}
+
+.emptyStateFallbackNoticeBlock {
+  padding: 40px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+.bottomResponsePaneCollapsed {
+  flex: none !important;
+  height: 48px;
+}
+
+.collapsibleResponseHeaderBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  background-color: #F4F5F7;
+  border-radius: 20px;
+  padding: 0 16px;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 16px;
+  transition: background-color 0.15s ease;
+}
+
+.collapsibleResponseHeaderBar:hover {
+  background-color: #F1F5F9;
+}
+
+.responseHeaderTabs {
+  display: flex;
+  align-items: center;
+}
+
+.responseHeaderTitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0F172A;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.authTabWrapperCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.authTabSplitLayout {
+  display: flex;
+  min-height: 150px;
+}
+
+.authTabLeftColumn {
+  width: 240px;
+  padding: 24px;
+  background-color: #FAFAFA;
+  border-right: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+.authTypeLabelSmall {
+  display: block;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.authTabRightColumn {
+  flex: 1;
+  padding: 24px;
+  background-color: #FFFFFF;
+  border-radius: 0 8px 8px 0;
+}
+
+.authNoAuthText {
+  color: #64748B;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.linkedBindingConfirmationLabelBadge {
+  font-size: 12px;
+  color: #10B981;
+  font-weight: 600;
+}
+
+.testEngineLoaderBoxWrapperFrame {
+  padding: 48px;
+  text-align: center;
+  color: #475569;
+  font-size: 13px;
+}
+
+.spinningGlobalGlobeLoaderIcon {
+  animation: spin 2s linear infinite;
+  color: #E21F26;
+  margin-bottom: 12px;
+}
+
+.topCardActionsUnifiedCluster {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topRightCardDeleteTriggerButton {
+  background: transparent !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  color: #94A3B8 !important;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: var(--shadow-raised);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topRightCardDeleteTriggerButton:hover {
+  color: #E21F26 !important;
+  border-color: #FCA5A5 !important;
+  background-color: #FEF2F2 !important;
+}
+
+/* ==================== 8. HIGH-ASSURANCE VERIFICATION MODAL ==================== */
+.modalDeletionSafetyBodyScopeBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 8px;
+}
+
+.modalDeletionSafetyDescription {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalVerificationTargetCodeBadgeReadout {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #DC2626;
+  background-color: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  padding: 12px 16px;
+  border-radius: 12px;
+  user-select: all;
+  text-align: left;
+  letter-spacing: 0.2px;
+  display: block;
+  max-width: 100%;
+  word-break: break-all;
+  margin-bottom: 1rem;
+}
+
+/* Button Loader */
+.buttonLoader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== EMPTY STATE ==================== */
+.emptyWebhookStatePlate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px 32px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.emptyStateIconCluster {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.emptyStatePulseRing {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 2px solid var(--brand-blue, #3b82f6);
+  opacity: 0.25;
+  animation: pulseRing 2s ease-in-out infinite;
+}
+
+@keyframes pulseRing {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 0.45;
+  }
+}
+
+.emptyStateIconCircle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.1));
+  border: 1.5px solid rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-blue, #3b82f6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.emptyStateOrbitDot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+  animation: orbitFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes orbitFloat {
+  from {
+    transform: translateY(0px);
+    opacity: 0.6;
+  }
+
+  to {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.emptyStateHeadline {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary, #111);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.emptyStateSubtext {
+  font-size: 13.5px;
+  color: var(--text-muted, #6b7280);
+  max-width: 420px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.emptyStateCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--brand-blue, #3b82f6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+  margin-top: 24px;
+}
+
+.emptyStateCta:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+}
+
+.emptyStateCta:active {
+  transform: translateY(0);
+}
+
+/* Apple/macOS UI Revamp Styles */
+
+.unifiedAppleEditorLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.applePropertiesCard {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 56px;
+}
+
+.applePropertyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.applePropertyLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.applePropertyInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #0F172A;
+  font-weight: 500;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+.applePropertyInput::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.applePropertyDivider {
+  width: 1px;
+  height: 32px;
+  background-color: #E2E8F0;
+  margin: 0 24px;
+}
+
+.applePropertyToggleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appleToggleStatusText {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.safariAddressBarContainer {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  height: 48px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.safariMethodDropdown {
+  width: 110px;
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #E2E8F0;
+}
+
+.safariMethodDropdown>div {
+  height: 100%;
+}
+
+.safariNativeSelect {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #0F172A;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.safariDropdownTrigger {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  padding: 0 12px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: #0F172A !important;
+  border-radius: 6px 0 0 6px !important;
+}
+
+.safariDropdownTrigger:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+.safariUrlInputWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 100%;
+  gap: 8px;
+}
+
+.safariUrlIcon {
+  color: #94A3B8;
+}
+
+.safariUrlInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #0F172A;
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+.safariSendBtn {
+  height: 100%;
+  padding: 0 24px;
+  border-radius: 6px;
+  background: #007AFF;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.safariSendBtn:hover {
+  background: #0062CC;
+}
+
+.safariSendBtn:disabled {
+  background: #94A3B8;
+  cursor: not-allowed;
+}
+
+.macOsSegmentedControlContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.macOsSegmentedControlBackground {
+  display: inline-flex;
+  background: #E2E8F0;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segmentBtn {
+  border: none;
+  background: transparent;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.segmentBtn:hover {
+  color: #0F172A;
+}
+
+.segmentActive {
+  background: #FFFFFF;
+  color: #0F172A;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+
+.segmentBadge {
+  background: #007AFF;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.macOsTabsContentArea {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  padding: 24px;
+}
+
+.macOsResponseViewerContainer {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  margin-top: 24px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stickyViewer {
+  position: sticky;
+  bottom: -40px;
+  z-index: 50;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 0;
+}
+
+.editorTopRightActions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.appleSaveActionBtn {
+  background: #10B981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appleSaveActionBtn:hover {
+  background: #059669;
+}
