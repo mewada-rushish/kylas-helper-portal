@@ -15,15 +15,7 @@ const KYLAS_PRODUCTS = [
   { value: "prod_devops_supp", label: "Dedicated Cloud DevOps Maintenance Hours" }
 ];
 
-const INITIAL_TEMPLATES = [
-  { 
-    id: "tmpl_default", 
-    name: "Standard PDF Layout Master", 
-    isDefault: true, 
-    attachedProductId: null,
-    theme: { primaryColor: "#27347B", textColor: "#202223", backgroundColor: "#ffffff", borderColor: "#e1e3e5" }
-  }
-];
+
 
 export default function TemplatesListingDashboard() {
   const router = useRouter();
@@ -31,13 +23,41 @@ export default function TemplatesListingDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTemplates(INITIAL_TEMPLATES);
+  const fetchTemplates = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/invoices/templates");
+      if (res.ok) {
+        const data = await res.json();
+        // Parse theme if it's a string
+        const parsedData = data.map(t => ({
+          ...t,
+          theme: typeof t.theme === "string" ? JSON.parse(t.theme) : t.theme
+        }));
+        setTemplates(parsedData);
+      }
+    } catch (error) {
+      console.error("Failed to load templates:", error);
+    } finally {
       setIsLoading(false);
-    }, 1200);
-    return () => clearTimeout(timer);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this template?")) return;
+    try {
+      const res = await fetch(`/api/invoices/templates/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchTemplates();
+      }
+    } catch (error) {
+      console.error("Failed to delete template:", error);
+    }
+  };
 
   return (
     <div className={styles.adminLayout}>
@@ -103,7 +123,7 @@ export default function TemplatesListingDashboard() {
                               <FiEdit2 />
                             </button>
                             {!tmpl.isDefault && (
-                              <button className={styles.iconActionBtn} onClick={() => setTemplates(templates.filter(t => t.id !== tmpl.id))} title="Delete Blueprint">
+                              <button className={styles.iconActionBtn} onClick={() => handleDelete(tmpl.id)} title="Delete Blueprint">
                                 <FiTrash2 />
                               </button>
                             )}

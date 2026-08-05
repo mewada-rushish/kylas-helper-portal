@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   FiMaximize, FiLayers, FiCode, FiLink, 
-  FiAlertCircle, FiInfo, FiHash 
+  FiAlertCircle, FiInfo, FiHash, FiCheck 
 } from "react-icons/fi";
+import toast from "react-hot-toast";
+import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import styles from "./TemplateGeometry.module.css";
 
@@ -15,6 +17,13 @@ export default function TemplateGeometry() {
   const [globalMargin, setGlobalMargin] = useState(24);
   const [nullStrategy, setNullStrategy] = useState("fallback");
   const [activeWebhookSource, setActiveWebhookSource] = useState("wh_kylas_lead_capture");
+  
+  const [isFetching, setIsFetching] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [webhookProfileOptions, setWebhookProfileOptions] = useState([
+    { value: "wh_kylas_lead_capture", label: "Kylas CRM Lead Webhook Pipeline (META_LEAD)" },
+    { value: "wh_invoice_manual_trigger", label: "Manual Invoice Generator API Dispatch Hook" }
+  ]);
 
   // Webhook-specific dynamic token mapping values
   const [allWebhookMappings, setAllWebhookMappings] = useState({
@@ -34,10 +43,75 @@ export default function TemplateGeometry() {
     }
   });
 
-  const webhookProfileOptions = [
-    { value: "wh_kylas_lead_capture", label: "Kylas CRM Lead Webhook Pipeline (META_LEAD)" },
-    { value: "wh_invoice_manual_trigger", label: "Manual Invoice Generator API Dispatch Hook" }
-  ];
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.templatePageSize) setDefaultPageSize(data.templatePageSize);
+          if (data.templateOrientation) setDefaultOrientation(data.templateOrientation);
+          if (data.templateMargin !== undefined) setGlobalMargin(data.templateMargin);
+          if (data.templateNullStrategy) setNullStrategy(data.templateNullStrategy);
+          if (data.webhookMappings) setAllWebhookMappings(JSON.parse(data.webhookMappings));
+        }
+
+        const hooksRes = await fetch("/api/settings/incoming-webhooks");
+        if (hooksRes.ok) {
+          const hooksData = await hooksRes.json();
+          if (hooksData && hooksData.length > 0) {
+            const dynamicOptions = hooksData.map(h => ({
+              value: h.id,
+              label: `${h.name} (${h.provider})`
+            }));
+            setWebhookProfileOptions(dynamicOptions);
+            
+            // If current active source is not in the new options, switch to the first one
+            setActiveWebhookSource(prev => {
+               if (!dynamicOptions.find(opt => opt.value === prev)) {
+                 return dynamicOptions[0].value;
+               }
+               return prev;
+            });
+          }
+        }
+      } catch (err) {
+        toast.error("Failed to fetch settings");
+      } finally {
+        setIsFetching(false);
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templatePageSize: defaultPageSize,
+          templateOrientation: defaultOrientation,
+          templateMargin: globalMargin,
+          templateNullStrategy: nullStrategy,
+          webhookMappings: JSON.stringify(allWebhookMappings)
+        })
+      });
+
+      if (res.ok) {
+        toast.success("Template settings saved successfully");
+      } else {
+        throw new Error("Save failed");
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to save settings");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+
 
   const nullStrategyOptions = [
     { value: "fallback", label: "Print Fallback String (e.g. N/A)" },
@@ -65,11 +139,21 @@ export default function TemplateGeometry() {
   return (
     <div className={styles.settingsFormViewNode}>
       
-      <div className={styles.sectionBrandingHeaderLine}>
-        <h2>Template Blueprint & Variable Core</h2>
-        <p className={styles.sectionSubtitleText}>
-          Establish base canvas dimension layouts and structurally map inbound webhook JSON payloads directly to dynamic rendering tokens.
-        </p>
+      <div className={styles.sectionBrandingHeaderLine} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2>Template Blueprint & Variable Core</h2>
+          <p className={styles.sectionSubtitleText}>
+            Establish base canvas dimension layouts and structurally map inbound webhook JSON payloads directly to dynamic rendering tokens.
+          </p>
+        </div>
+        <AdminButton 
+          variant="primary" 
+          icon={FiCheck} 
+          onClick={handleSaveSettings}
+          disabled={isSaving || isFetching}
+        >
+          {isSaving ? "Saving..." : "Save Settings"}
+        </AdminButton>
       </div>
       <hr className={styles.sectionDivider} />
 

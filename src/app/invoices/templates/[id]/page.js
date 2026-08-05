@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { 
   FiCheck, FiArrowLeft, FiSearch, FiBriefcase, 
   FiCode, FiMonitor, FiSmartphone, FiTablet, FiPlus,
@@ -69,6 +69,8 @@ const VARIABLE_DICTIONARY = [
 
 export default function TemplateEditorWorkspace() {
   const router = useRouter();
+  const params = useParams();
+  const templateId = params?.id;
   
   // High-Assurance Monaco Component Reference Registers
   const editorRef = useRef(null);
@@ -78,6 +80,11 @@ export default function TemplateEditorWorkspace() {
   const dropdownRef = useRef(null);
   
   const [htmlContent, setHtmlContent] = useState(DEFAULT_MARKUP_TEMPLATE);
+  const [templateName, setTemplateName] = useState("New PDF Template");
+  const [isDefaultTemplate, setIsDefaultTemplate] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   const [previewDeviceMode, setPreviewDeviceMode] = useState("desktop"); 
   const [variableSearch, setVariableSearch] = useState("");
   const [zoomLevel, setZoomLevel] = useState(0.75); // Initial zoom factor level locked strictly at 75%
@@ -93,6 +100,61 @@ export default function TemplateEditorWorkspace() {
     rate: 45000,
     total: 53100,
     date: new Date().toISOString().split("T")[0]
+  };
+
+  useEffect(() => {
+    if (templateId && !templateId.match(/^[0-9]+$/)) { // If it's a real CUID/UUID (not a Date.now() timestamp for a new one)
+      fetch(`/api/invoices/templates/${templateId}`)
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error("Not found");
+        })
+        .then(data => {
+          setHtmlContent(data.config || DEFAULT_MARKUP_TEMPLATE);
+          setTemplateName(data.name || "New PDF Template");
+          setIsDefaultTemplate(data.isDefault || false);
+          setIsFetching(false);
+        })
+        .catch(err => {
+          console.error("Failed to load template", err);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false); // New template
+    }
+  }, [templateId]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setAutoSaveBadge("Saving...");
+    try {
+      const isNew = templateId && templateId.match(/^[0-9]+$/);
+      const url = isNew ? "/api/invoices/templates" : `/api/invoices/templates/${templateId}`;
+      const method = isNew ? "POST" : "PUT";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: templateName,
+          isDefault: isDefaultTemplate,
+          config: htmlContent,
+          theme: JSON.stringify({ primaryColor: "#27347B", textColor: "#202223", backgroundColor: "#ffffff", borderColor: "#e1e3e5" })
+        })
+      });
+
+      if (res.ok) {
+        setAutoSaveBadge("Saved successfully");
+        router.push("/invoices/templates");
+      } else {
+        setAutoSaveBadge("Save failed");
+      }
+    } catch (err) {
+      console.error(err);
+      setAutoSaveBadge("Save error");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Sync zoom level adjustments directly via CSS variables properties
@@ -215,14 +277,29 @@ export default function TemplateEditorWorkspace() {
               <button className={styles.backButton} onClick={() => router.push("/invoices/templates")}><FiArrowLeft /></button>
               <div>
                 <div className={styles.builderTitleFlexRow}>
-                  <h1>PDF Blueprint Studio Markup Engine</h1>
+                  <input 
+                    type="text" 
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    style={{ fontSize: "20px", fontWeight: "bold", border: "none", outline: "none", background: "transparent", color: "#0f172a", width: "300px" }}
+                  />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', marginLeft: '12px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={isDefaultTemplate} 
+                      onChange={(e) => setIsDefaultTemplate(e.target.checked)} 
+                    />
+                    Set as Default
+                  </label>
                   <span className={styles.autoSaveStatusBadge}>{autoSaveBadge}</span>
                 </div>
                 <p>Input raw HTML template configuration syntax with integrated token link extensions.</p>
               </div>
             </div>
             <div className={styles.headerActions}>
-              <AdminButton variant="primary" icon={FiCheck} onClick={() => router.push("/invoices/templates")}>Finish Template</AdminButton>
+              <AdminButton variant="primary" icon={FiCheck} onClick={handleSave} disabled={isSaving || isFetching}>
+                {isSaving ? "Saving..." : "Finish Template"}
+              </AdminButton>
             </div>
           </header>
 

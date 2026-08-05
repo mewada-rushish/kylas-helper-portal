@@ -81,6 +81,11 @@ model SystemSetting {
   alertEmail          String   @default("devops@asmita.society.io") @db.VarChar(255)
   logoUrl             String?  @db.Text
   logRetentionDays    String   @default("0") @db.VarChar(10) // "0" means infinite
+  templatePageSize    String   @default("A4") @db.VarChar(50)
+  templateOrientation String   @default("portrait") @db.VarChar(50)
+  templateMargin      Int      @default(24)
+  templateNullStrategy String  @default("fallback") @db.VarChar(50)
+  webhookMappings     String?  @db.Text
   updatedAt           DateTime @updatedAt
 }
 
