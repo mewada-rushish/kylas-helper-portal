@@ -411,7 +411,7 @@ export default function IncomingWebhooks() {
                   </span>
                   <input 
                     type="text"
-                    value={(activeWebhook?.endpointPath || "").replace('/api/webhooks/incoming/', '')}
+                    value={(activeWebhook?.endpointPath || "").replace(/^\/api\/webhooks\/(incoming\/)?/, '')}
                     onChange={(e) => {
                       const cleanSlug = e.target.value.replace(/[^a-zA-Z0-9\-_/]/g, '');
                       const newPath = `/api/webhooks/incoming/${cleanSlug}`;
@@ -514,14 +514,16 @@ export default function IncomingWebhooks() {
                 </div>
               </div>
 
-              {isFetchingLogs ? (
-                <div style={{ textAlign: "center", padding: "20px" }}><FiLoader className={styles.spinIcon} size={20} color="#64748B" /></div>
-              ) : logs.length === 0 ? (
-                <div style={{ backgroundColor: "#F8FAFC", padding: "30px", textAlign: "center", borderRadius: "8px", border: "1px dashed #CBD5E1" }}>
-                  <p style={{ color: "#64748B", fontSize: "13px", margin: 0 }}>No payloads recorded yet. Send a test webhook to see it here.</p>
+              {logs.length === 0 ? (
+                <div style={{ backgroundColor: "#F8FAFC", padding: "30px", textAlign: "center", borderRadius: "8px", border: "1px dashed #CBD5E1", minHeight: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {isFetchingLogs ? (
+                    <FiLoader className={styles.spinIcon} size={20} color="#64748B" />
+                  ) : (
+                    <p style={{ color: "#64748B", fontSize: "13px", margin: 0 }}>No payloads recorded yet. Send a test webhook to see it here.</p>
+                  )}
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", opacity: isFetchingLogs ? 0.6 : 1, transition: "opacity 0.2s ease-in-out" }}>
                   {logs.map((log) => (
                     <div key={log.id} style={{ border: "1px solid #E2E8F0", borderRadius: "8px", overflow: "hidden" }}>
                       <div style={{ backgroundColor: "#F8FAFC", padding: "10px 16px", borderBottom: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#475569", fontWeight: "500" }}>
