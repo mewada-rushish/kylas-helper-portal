@@ -68,6 +68,27 @@ export default function WorkflowSettings() {
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   
   const [selectedWebhookId, setSelectedWebhookId] = useState(null);
+
+  // Read from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      setSelectedWebhookId(id);
+    }
+  }, []);
+
+  // Sync to URL when it changes
+  useEffect(() => {
+    const url = new URL(window.location);
+    if (selectedWebhookId) {
+      url.searchParams.set('id', selectedWebhookId);
+    } else {
+      url.searchParams.delete('id');
+    }
+    window.history.replaceState(null, '', url);
+  }, [selectedWebhookId]);
+
   const [activeTab, setActiveTab] = useState("PARAMS"); 
   const [responseTab, setResponseTab] = useState("BODY");
   
