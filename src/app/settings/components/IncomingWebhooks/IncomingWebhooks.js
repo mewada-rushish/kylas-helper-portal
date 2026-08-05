@@ -69,6 +69,27 @@ export default function IncomingWebhooks() {
     }
   }, [selectedWebhookId]);
 
+  const handleCopyText = async (text) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+        document.body.prepend(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      toast.success("Webhook URL copied to clipboard!");
+    } catch (err) {
+      toast.error("Failed to copy URL");
+      console.error(err);
+    }
+  };
+
   const handleCreateWebhook = async () => {
     try {
       const res = await fetch("/api/settings/incoming-webhooks", {
@@ -404,8 +425,7 @@ export default function IncomingWebhooks() {
                   type="button"
                   onClick={() => {
                     const url = typeof window !== 'undefined' ? `${window.location.origin}${activeWebhook?.endpointPath}` : activeWebhook?.endpointPath;
-                    navigator.clipboard.writeText(url);
-                    toast.success("Webhook URL copied to clipboard!");
+                    handleCopyText(url);
                   }}
                   style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#0F172A", color: "white", border: "none", padding: "10px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}
                 >
