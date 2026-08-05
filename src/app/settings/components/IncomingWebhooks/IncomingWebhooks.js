@@ -19,6 +19,21 @@ export default function IncomingWebhooks() {
   const [logs, setLogs] = useState([]);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
 
+  const fetchLogs = async () => {
+    setIsFetchingLogs(true);
+    try {
+      const res = await fetch("/api/settings/incoming-webhooks/logs");
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data);
+      }
+    } catch (error) {
+      console.error("Failed to load webhook logs:", error);
+    } finally {
+      setIsFetchingLogs(false);
+    }
+  };
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -41,21 +56,6 @@ export default function IncomingWebhooks() {
       }
     };
     
-    const fetchLogs = async () => {
-      setIsFetchingLogs(true);
-      try {
-        const res = await fetch("/api/settings/incoming-webhooks/logs");
-        if (res.ok) {
-          const data = await res.json();
-          setLogs(data);
-        }
-      } catch (error) {
-        console.error("Failed to load webhook logs:", error);
-      } finally {
-        setIsFetchingLogs(false);
-      }
-    };
-
     fetchConfig();
     fetchLogs();
   }, []);
