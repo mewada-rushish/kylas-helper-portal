@@ -126,5 +126,6 @@ model SystemLog {
   source    String   @db.VarChar(100)
   severity  String   @default("info") @db.VarChar(20)
   message   String   @db.Text
+  details   String?  @db.Text
   createdAt DateTime @default(now())
 }

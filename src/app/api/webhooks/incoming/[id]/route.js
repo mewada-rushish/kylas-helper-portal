@@ -44,7 +44,8 @@ export async function POST(request, { params }) {
     await logSystemAction(
       "Incoming Webhooks",
       "success",
-      `Received payload from ${config.provider || "External Service"} at endpoint: /api/webhooks/incoming/${id}`
+      `Received payload from ${config.provider || "External Service"} at endpoint: /api/webhooks/incoming/${id}`,
+      JSON.stringify(payload, null, 2)
     );
 
     // (Future Step 5: Trigger Automation Workflows)

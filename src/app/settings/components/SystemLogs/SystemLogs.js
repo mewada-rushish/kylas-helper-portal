@@ -36,13 +36,22 @@ export default function SystemLogs() {
         const hh = String(dateObj.getHours()).padStart(2, '0');
         const min = String(dateObj.getMinutes()).padStart(2, '0');
         const ss = String(dateObj.getSeconds()).padStart(2, '0');
+        let parsedDetails = null;
+        if (log.details) {
+          try {
+            parsedDetails = JSON.parse(log.details);
+          } catch(e) {
+            parsedDetails = log.details;
+          }
+        }
         
         return {
           id: log.id,
           timestamp: `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`,
           source: log.source,
           severity: log.severity,
-          message: log.message
+          message: log.message,
+          ...(parsedDetails && { details: parsedDetails })
         };
       });
       setLogs(formattedLogs);

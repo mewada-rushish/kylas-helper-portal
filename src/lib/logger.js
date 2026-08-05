@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 
-export async function logSystemAction(source, severity, message) {
+export async function logSystemAction(source, severity, message, details = null) {
   try {
     // Write log to DB
     await prisma.systemLog.create({
@@ -8,6 +8,7 @@ export async function logSystemAction(source, severity, message) {
         source,
         severity,
         message,
+        details,
       }
     });
 
