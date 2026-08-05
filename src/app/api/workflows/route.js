@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { logSystemAction } from "@/lib/logger";
 
 // GET /api/workflows
 export async function GET(request) {
@@ -44,6 +45,12 @@ export async function POST(request) {
         config: config || null
       }
     });
+
+    await logSystemAction(
+      "Automation Workflows",
+      "info",
+      `Created new workflow rule: ${workflow.name}`
+    );
 
     return NextResponse.json(workflow);
   } catch (error) {

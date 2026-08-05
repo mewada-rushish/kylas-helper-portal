@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { logSystemAction } from "@/lib/logger";
 
 // GET /api/workflows/[id]
 export async function GET(request, { params }) {
@@ -60,6 +61,12 @@ export async function PUT(request, { params }) {
       }
     });
 
+    await logSystemAction(
+      "Automation Workflows",
+      "info",
+      `Updated workflow rule: ${workflow.name}`
+    );
+
     return NextResponse.json(workflow);
   } catch (error) {
     console.error("PUT /api/workflows/[id] error:", error);
@@ -80,6 +87,13 @@ export async function DELETE(request, { params }) {
     await prisma.workflowRule.delete({
       where: { id }
     });
+
+    await logSystemAction(
+      "Automation Workflows",
+      "warning",
+      `Deleted workflow rule with ID: ${id}`
+    );
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/workflows/[id] error:", error);
