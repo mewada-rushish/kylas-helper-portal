@@ -915,58 +915,56 @@ export default function WorkflowSettings() {
                     </div>
                   </div>
 
-                  <div className={styles.headersPaneWorkbenchTableGridLayout}>
-                    <div className={styles.headersTableBannerRowTrack}>
-                      <span className={styles.colHeaderKeyFieldText}>Extracted Response Target Node Address</span>
-                      <span className={styles.colHeaderValueFieldText} style={{ flex: 0.5 }}>Type</span>
-                      <span className={styles.colHeaderValueFieldText}>Custom Variable Name</span>
-                    </div>
-                    <div className={styles.headersDataScrollTrackContainerRowsStack}>
-                      {!activeWebhook?.selectedVariables || activeWebhook.selectedVariables.length === 0 ? (
-                        <div className={styles.emptyStateFallbackNoticeBlock}>
-                          No execution paths mapped. Check the response pane below to map paths.
-                        </div>
-                      ) : (
-                        activeWebhook.selectedVariables.map((variableObj, idx) => (
-                          <div key={idx} className={styles.headerRecordInteractionRowFlexLine}>
-                            <input 
-                              type="text" 
-                              className={styles.headerTableMonospaceInputField} 
-                              readOnly 
-                              value={variableObj.path}
-                            />
-                            <div style={{ flex: "0.5" }}>
-                              <CustomDropdown 
-                                options={[
-                                  { label: "Text", value: "text" },
-                                  { label: "Number", value: "number" },
-                                  { label: "Boolean", value: "boolean" },
-                                  { label: "Array", value: "array" },
-                                  { label: "JSON Array", value: "json array" }
-                                ]}
-                                selectedValue={variableObj.type || "text"}
-                                onSelect={(val) => handleUpdateCustomVariableType(variableObj.path, val)}
-                              />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0", marginTop: "16px" }}>
+                    {!activeWebhook?.selectedVariables || activeWebhook.selectedVariables.length === 0 ? (
+                      <div className={styles.emptyStateFallbackNoticeBlock}>
+                        No execution paths mapped. Check the response pane below to map paths.
+                      </div>
+                    ) : (
+                      activeWebhook.selectedVariables.map((variableObj, idx) => (
+                        <div key={idx} className={styles.treeNodeStructuralRowItemLine}>
+                          <div className={styles.treeNodeLeafParameterRowFlexRowLayout}>
+                            <div className={styles.treeLeafKeyNameReadoutFlexRowLayout}>
+                              <span className={styles.treeLeafConnectorLinesLayoutGuideSpan}>└─</span>
+                              <span className={styles.primitiveKeyNameTextCode}>{variableObj.path}:</span>
                             </div>
-                            <input 
-                              type="text" 
-                              className={styles.headerTableMonospaceInputField} 
-                              placeholder="Custom Variable Name"
-                              value={variableObj.customName || ""}
-                              onChange={(e) => handleUpdateCustomVariableName(variableObj.path, e.target.value)}
-                              style={{ flex: "1" }}
-                            />
-                            <button 
-                              type="button" 
-                              className={styles.headerRowDeleteTrashActionBtnElement}
-                              onClick={() => handleToggleResponseVariable(variableObj.path)}
-                            >
-                              <FiTrash2 size={14} />
-                            </button>
+                            
+                            <div style={{ flexGrow: 1, borderBottom: "1px dashed #CBD5E1", margin: "0 16px" }} />
+                            
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                              <div style={{ width: "120px" }}>
+                                <CustomDropdown 
+                                  options={[
+                                    { label: "Text", value: "text" },
+                                    { label: "Number", value: "number" },
+                                    { label: "Boolean", value: "boolean" },
+                                    { label: "Array", value: "array" },
+                                    { label: "JSON Array", value: "json array" }
+                                  ]}
+                                  selectedValue={variableObj.type || "text"}
+                                  onSelect={(val) => handleUpdateCustomVariableType(variableObj.path, val)}
+                                />
+                              </div>
+                              <input 
+                                type="text"
+                                value={variableObj.customName || ""}
+                                placeholder="Custom Variable Name"
+                                onChange={(e) => handleUpdateCustomVariableName(variableObj.path, e.target.value)}
+                                style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid #CBD5E1", fontSize: "12px", outline: "none", width: "180px" }}
+                              />
+                              <button 
+                                type="button" 
+                                onClick={() => handleToggleResponseVariable(variableObj.path)} 
+                                style={{ background: "none", border: "none", color: "#EF4444", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", borderRadius: "4px" }} 
+                                title="Remove mapping"
+                              >
+                                <FiTrash2 size={14} />
+                              </button>
+                            </div>
                           </div>
-                        ))
-                      )}
-                    </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
