@@ -98,7 +98,7 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  right: 0;
+  min-width: 100%;
   z-index: 200;
   background-color: #ffffff;
   border-radius: 12px;
