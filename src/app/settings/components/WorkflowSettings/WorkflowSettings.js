@@ -68,6 +68,8 @@ export default function WorkflowSettings() {
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   
   const [selectedWebhookId, setSelectedWebhookId] = useState(null);
+  const [activeTab, setActiveTab] = useState("PARAMS"); 
+  const [responseTab, setResponseTab] = useState("BODY");
 
   // Read from URL on mount and handle back button
   useEffect(() => {
@@ -119,9 +121,6 @@ export default function WorkflowSettings() {
       window.history.pushState(null, '', url);
     }
   }, [selectedWebhookId, activeTab]);
-
-  const [activeTab, setActiveTab] = useState("PARAMS"); 
-  const [responseTab, setResponseTab] = useState("BODY");
   
   const [webhookToDelete, setWebhookToDelete] = useState(null);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
