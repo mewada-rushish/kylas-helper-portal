@@ -34,9 +34,8 @@ export async function POST(request) {
     const body = await request.json();
     const { id, name, provider, endpointPath, authType, authToken, isActive, isTestMode, selectedVariables } = body;
 
-    if (!name || !provider) {
-      return NextResponse.json({ error: "Name and Provider are required" }, { status: 400 });
-    }
+    const safeName = name || "Incoming Webhook";
+    const safeProvider = provider || `CUSTOM_${Date.now()}`;
 
     let config;
     const selectedVarsStr = selectedVariables !== undefined ? (typeof selectedVariables === 'string' ? selectedVariables : JSON.stringify(selectedVariables)) : null;
@@ -46,8 +45,8 @@ export async function POST(request) {
       config = await prisma.incomingWebhookConfig.update({
         where: { id },
         data: {
-          name,
-          provider,
+          name: safeName,
+          provider: safeProvider,
           endpointPath: basePath,
           authType,
           authToken,
@@ -59,8 +58,8 @@ export async function POST(request) {
     } else {
       config = await prisma.incomingWebhookConfig.create({
         data: {
-          name,
-          provider,
+          name: safeName,
+          provider: safeProvider,
           endpointPath: basePath,
           authType: authType || "NO_AUTH",
           authToken,
