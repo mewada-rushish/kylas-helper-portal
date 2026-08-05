@@ -13,6 +13,20 @@ import toast from "react-hot-toast";
 import styles from "./WorkflowSettings.module.css";
 
 
+const generateSmartDefaultName = (path) => {
+  const parts = path.split('.');
+  let defaultName = parts.pop() || "variable_name";
+  if (defaultName === 'id' && parts.length > 0) {
+    let prev = parts.pop();
+    if (!isNaN(prev) && parts.length > 0) {
+        prev = parts.pop() + '_' + prev;
+    }
+    defaultName = prev + (prev.includes('_') ? '_id' : 'Id'); 
+  } else if (!isNaN(defaultName) && parts.length > 0) {
+    defaultName = parts.pop() + '_' + defaultName;
+  }
+  return defaultName;
+};
 
 const MOCK_RESPONSE_PAYLOAD_TREE = {
   status: "SUCCESS",
@@ -110,7 +124,7 @@ export default function WorkflowSettings() {
         ...hook,
         headers: safeParseArray(hook.headers),
         queryParams: safeParseArray(hook.queryParams),
-        selectedVariables: safeParseArray(hook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: v.split('.').pop(), type: 'text' } : v),
+        selectedVariables: safeParseArray(hook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: generateSmartDefaultName(v), type: 'text' } : v),
       }));
       setWebhooks(parsedData);
     } catch (err) {
@@ -145,7 +159,7 @@ export default function WorkflowSettings() {
       const newHook = await res.json();
       newHook.headers = safeParseArray(newHook.headers);
       newHook.queryParams = safeParseArray(newHook.queryParams);
-      newHook.selectedVariables = safeParseArray(newHook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: v.split('.').pop(), type: 'text' } : v);
+      newHook.selectedVariables = safeParseArray(newHook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: generateSmartDefaultName(v), type: 'text' } : v);
       setWebhooks(prev => [newHook, ...prev]);
       setSelectedWebhookId(newHook.id);
       setHasTested(false);
@@ -239,7 +253,7 @@ export default function WorkflowSettings() {
     if (exists) {
       newList = currentList.filter(item => item.path !== path);
     } else {
-      const defaultName = path.split('.').pop() || "variable_name";
+      const defaultName = generateSmartDefaultName(path);
       newList = [...currentList, { path, customName: defaultName, type: valueType }];
     }
     

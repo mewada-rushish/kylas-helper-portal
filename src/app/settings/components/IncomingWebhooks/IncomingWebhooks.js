@@ -194,7 +194,17 @@ export default function IncomingWebhooks() {
     if (exists) {
       newList = currentList.filter(item => item.path !== path);
     } else {
-      const defaultName = path.split('.').pop() || "variable_name";
+      const parts = path.split('.');
+      let defaultName = parts.pop() || "variable_name";
+      if (defaultName === 'id' && parts.length > 0) {
+        let prev = parts.pop();
+        if (!isNaN(prev) && parts.length > 0) {
+            prev = parts.pop() + '_' + prev;
+        }
+        defaultName = prev + (prev.includes('_') ? '_id' : 'Id'); 
+      } else if (!isNaN(defaultName) && parts.length > 0) {
+        defaultName = parts.pop() + '_' + defaultName;
+      }
       newList = [...currentList, { path, customName: defaultName, type: valueType }];
     }
     setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, selectedVariables: newList } : h));
