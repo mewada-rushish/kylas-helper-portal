@@ -20,10 +20,9 @@ function SettingsDashboardContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const [activeTab, setActiveTabState] = React.useState(searchParams.get("tab") || "general");
+  const activeTab = searchParams.get("tab") || "general";
 
   const setActiveTab = (tab) => {
-    setActiveTabState(tab);
     router.replace(`${pathname}?tab=${tab}`, { scroll: false });
   };
 
