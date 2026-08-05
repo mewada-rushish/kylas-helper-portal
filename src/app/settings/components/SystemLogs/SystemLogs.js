@@ -16,6 +16,10 @@ export default function SystemLogs() {
   const [sourceFilter, setSourceFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeInspectedLog, setActiveInspectedLog] = useState(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -75,6 +79,18 @@ export default function SystemLogs() {
     return matchesSeverity && matchesSource && matchesSearch;
   });
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [severityFilter, sourceFilter, searchQuery]);
+
+  // Calculate paginated logs
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
 
 
   return (
@@ -95,7 +111,6 @@ export default function SystemLogs() {
         
         <div style={{ display: 'flex', gap: '1rem' }}>
           <div className={styles.selectFilterControlBlock}>
-            <span className={styles.filterControlTitleText}>Severity</span>
             <div className={styles.dropdownWrapperOverride}>
               <CustomDropdown 
                 options={severityOptions}
@@ -107,7 +122,6 @@ export default function SystemLogs() {
           </div>
 
           <div className={styles.selectFilterControlBlock}>
-            <span className={styles.filterControlTitleText}>Channel</span>
             <div className={styles.dropdownWrapperOverride}>
               <CustomDropdown 
                 options={sourceOptions}
@@ -134,7 +148,7 @@ export default function SystemLogs() {
           {isLoading ? (
             <SkeletonLoader type="div-table" rows={4} columns={5} />
           ) : (
-            filteredLogs.map(log => (
+            paginatedLogs.map(log => (
               <div 
                 key={log.id} 
                 className={`${styles.logsGridDataRowWrapper} ${activeInspectedLog?.id === log.id ? styles.activeInspectedRowHighlight : ""}`} 
@@ -172,6 +186,31 @@ export default function SystemLogs() {
           )}
         </div>
       </div>
+
+      {/* PAGINATION CONTROLS */}
+      {!isLoading && totalPages > 1 && (
+        <div className={styles.paginationControlsContainer}>
+          <button 
+            type="button"
+            className={styles.paginationBtn}
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <span className={styles.paginationStatusText}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button 
+            type="button"
+            className={styles.paginationBtn}
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* INSPECTION SLIDEOUT FOOTER PANEL */}
       {activeInspectedLog && (

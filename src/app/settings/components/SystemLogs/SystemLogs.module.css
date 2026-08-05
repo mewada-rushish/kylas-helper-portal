@@ -290,3 +290,43 @@
   height: 48px;
   stroke-width: 1.5;
 }
+/* Pagination Controls */
+.paginationControlsContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: var(--glass-border);
+  background: var(--card-bg);
+}
+
+.paginationBtn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #E2E8F0);
+  background: #FFFFFF;
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.paginationBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationStatusText {
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+}
