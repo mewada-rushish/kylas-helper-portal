@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { logSystemAction } from "@/lib/logger";
 
 export async function POST(request, { params }) {
   // We can construct the path from the slug, or just use request.nextUrl.pathname
@@ -39,6 +40,13 @@ export async function POST(request, { params }) {
         }
       });
     }
+
+    // Always log to System Logs so it shows up in the UI
+    await logSystemAction(
+      "Incoming Webhooks",
+      "success",
+      `Received payload from ${config.provider || "External Service"} at endpoint: ${pathname}`
+    );
 
     // (Future Step 5: Trigger Automation Workflows)
 

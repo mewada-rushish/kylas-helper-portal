@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { logSystemAction } from "@/lib/logger";
 
 export async function POST(request, { params }) {
   const { id } = params; // This matches the dynamic segment [id]
@@ -38,6 +39,13 @@ export async function POST(request, { params }) {
         }
       });
     }
+
+    // Always log to System Logs so it shows up in the UI
+    await logSystemAction(
+      "Incoming Webhooks",
+      "success",
+      `Received payload from ${config.provider || "External Service"} at endpoint: /api/webhooks/incoming/${id}`
+    );
 
     // (Future Step 5: Trigger Automation Workflows)
 
