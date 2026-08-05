@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiSave, FiCopy, FiLoader, FiShield } from "react-icons/fi";
+import { FiSave, FiCopy, FiLoader, FiShield, FiRefreshCw } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import toast from "react-hot-toast";
 import styles from "../WorkflowSettings/WorkflowSettings.module.css"; // Reuse existing styles
@@ -206,13 +206,23 @@ export default function IncomingWebhooks() {
                 <h5 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "600", color: "#0F172A" }}>Recent Test Payloads</h5>
                 <p style={{ margin: 0, fontSize: "13px", color: "#64748B" }}>Showing the last 50 payloads received by this endpoint.</p>
               </div>
-              <button 
-                type="button"
-                onClick={handleClearLogs}
-                style={{ backgroundColor: "#F1F5F9", color: "#475569", border: "1px solid #CBD5E1", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}
-              >
-                Clear Logs
-              </button>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button 
+                  type="button"
+                  onClick={fetchLogs}
+                  disabled={isFetchingLogs}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#F1F5F9", color: "#475569", border: "1px solid #CBD5E1", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}
+                >
+                  <FiRefreshCw size={12} className={isFetchingLogs ? styles.spinIcon : ""} /> Refresh
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleClearLogs}
+                  style={{ backgroundColor: "#FEE2E2", color: "#EF4444", border: "1px solid #FCA5A5", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}
+                >
+                  Clear Logs
+                </button>
+              </div>
             </div>
 
             {isFetchingLogs ? (
