@@ -29,19 +29,20 @@
 .searchInnerDecorativeIcon {
   position: absolute;
   left: 12px;
-  top: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #64748B;
   z-index: 2;
 }
 
 .logSearchInputField {
   width: 100%;
-  height: 38px;
+  height: 42px;
   padding-left: 36px;
   padding-right: 12px;
   background: var(--card-bg);
   border: var(--glass-border);
-  border-radius: 12px;
+  border-radius: 10px;
   font-family: var(--font-poppins), sans-serif;
   font-size: 12px;
   color: var(--foreground);
@@ -335,9 +336,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   background: #ffffff;
   border: 1px solid var(--border-color, #E2E8F0);
   color: #64748B;
