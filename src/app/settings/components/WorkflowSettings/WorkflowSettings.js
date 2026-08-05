@@ -982,15 +982,19 @@ export default function WorkflowSettings() {
                   onClick={() => setIsResponseExpanded(!isResponseExpanded)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <div className={styles.responseTabsGroup}>
+                  <div className={styles.macOsSegmentedControlBackground} onClick={(e) => e.stopPropagation()}>
                     <button 
-                      className={`${styles.responseTabLink} ${responseTab === "BODY" ? styles.responseTabLinkActive : ""}`}
-                      onClick={(e) => { e.stopPropagation(); setResponseTab("BODY"); setIsResponseExpanded(true); }}
-                    >Body</button>
+                      className={`${styles.segmentBtn} ${responseTab === "BODY" ? styles.segmentActive : ""}`}
+                      onClick={() => { setResponseTab("BODY"); setIsResponseExpanded(true); }}
+                    >
+                      Body
+                    </button>
                     <button 
-                      className={`${styles.responseTabLink} ${responseTab === "HEADERS" ? styles.responseTabLinkActive : ""}`}
-                      onClick={(e) => { e.stopPropagation(); setResponseTab("HEADERS"); setIsResponseExpanded(true); }}
-                    >Headers</button>
+                      className={`${styles.segmentBtn} ${responseTab === "HEADERS" ? styles.segmentActive : ""}`}
+                      onClick={() => { setResponseTab("HEADERS"); setIsResponseExpanded(true); }}
+                    >
+                      Headers
+                    </button>
                   </div>
                   <div className={styles.responseMetricsGroup}>
                     <span>Status: <span className={testMetrics.status === 200 ? styles.statusOk : styles.statusError}>
