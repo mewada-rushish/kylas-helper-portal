@@ -166,7 +166,7 @@ export default function SystemLogs() {
           
           {!isLoading && filteredLogs.length === 0 && (
             <div className={styles.logsEmptyDatasetAlertPlate}>
-              <FiTerminal size={24} />
+              <FiTerminal size={48} />
               <p>No diagnostic events match current pipeline filter sequence</p>
             </div>
           )}
