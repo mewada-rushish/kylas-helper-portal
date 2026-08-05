@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { FiSave, FiCopy, FiLoader, FiShield, FiRefreshCw, FiCheckSquare, FiSquare, FiPlus, FiSearch, FiArrowLeft, FiTrash2, FiActivity } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import toast from "react-hot-toast";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "../WorkflowSettings/WorkflowSettings.module.css"; // Reuse existing styles
 
 export default function IncomingWebhooks() {
@@ -297,7 +298,12 @@ export default function IncomingWebhooks() {
 
           <div className={styles.fullWidthCardsGrid}>
             {isLoading ? (
-              <div style={{ padding: "40px", textAlign: "center", width: "100%" }}><FiLoader className={styles.spinIcon} size={24} /></div>
+              <>
+                <SkeletonLoader type="card" />
+                <SkeletonLoader type="card" />
+                <SkeletonLoader type="card" />
+                <SkeletonLoader type="card" />
+              </>
             ) : (
               filteredWebhooks.map((hook) => (
                 <div 
