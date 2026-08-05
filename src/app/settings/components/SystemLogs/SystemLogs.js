@@ -119,15 +119,6 @@ export default function SystemLogs() {
         </div>
         
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
-            onClick={fetchLogs} 
-            className={styles.refreshBtn} 
-            title="Refresh Logs"
-            disabled={isLoading}
-          >
-            <FiRefreshCw size={14} className={isLoading ? styles.spinningIcon : ''} />
-          </button>
-          
           <div className={styles.selectFilterControlBlock}>
             <div className={styles.dropdownWrapperOverride}>
               <CustomDropdown 
@@ -150,6 +141,16 @@ export default function SystemLogs() {
             </div>
           </div>
         </div>
+
+        <button 
+          onClick={fetchLogs} 
+          className={styles.refreshBtn} 
+          style={{ marginLeft: 'auto' }}
+          title="Refresh Logs"
+          disabled={isLoading}
+        >
+          <FiRefreshCw size={14} className={isLoading ? styles.spinningIcon : ''} />
+        </button>
       </div>
 
       {/* RENDER DATA TABLE GRID CONTAINER */}
