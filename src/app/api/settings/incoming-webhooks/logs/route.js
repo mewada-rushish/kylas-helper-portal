@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request) {
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -11,8 +11,15 @@ export async function GET() {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const webhookId = searchParams.get("webhookId");
+
+    if (!webhookId) {
+       return NextResponse.json({ error: "Webhook ID is required" }, { status: 400 });
+    }
+
     const logs = await prisma.webhookLog.findMany({
-      where: { provider: "KYLAS" },
+      where: { webhookId: webhookId },
       orderBy: { createdAt: 'desc' },
       take: 50 // only fetch latest 50 for performance
     });
@@ -23,7 +30,7 @@ export async function GET() {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request) {
   const session = await getServerSession(authOptions);
   
   if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER" && session.user.role !== "WEB_DEVELOPER")) {
@@ -31,8 +38,15 @@ export async function DELETE() {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const webhookId = searchParams.get("webhookId");
+
+    if (!webhookId) {
+       return NextResponse.json({ error: "Webhook ID is required" }, { status: 400 });
+    }
+
     await prisma.webhookLog.deleteMany({
-      where: { provider: "KYLAS" }
+      where: { webhookId: webhookId }
     });
     return NextResponse.json({ message: "Logs cleared successfully" });
   } catch (error) {

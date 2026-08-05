@@ -101,8 +101,9 @@ model Webhook {
 
 model IncomingWebhookConfig {
   id                String   @id @default(cuid())
-  provider          String   @unique // e.g., "KYLAS"
-  endpointPath      String   // e.g., "/api/webhooks/kylas"
+  name              String   @default("Incoming Webhook") @db.VarChar(255)
+  provider          String   // e.g., "KYLAS", "CUSTOM"
+  endpointPath      String   @unique // e.g., "/api/webhooks/incoming/..."
   authType          String   @default("NO_AUTH") // NO_AUTH, BEARER_TOKEN, BASIC_AUTH
   authToken         String?  @db.VarChar(255)
   isActive          Boolean  @default(true)
@@ -114,7 +115,7 @@ model IncomingWebhookConfig {
 
 model WebhookLog {
   id        String   @id @default(cuid())
-  provider  String   @default("KYLAS")
+  webhookId String   @default("legacy_kylas") // ID of the IncomingWebhookConfig
   payload   String   @db.Text
   createdAt DateTime @default(now())
 }

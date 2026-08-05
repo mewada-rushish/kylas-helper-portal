@@ -32,36 +32,75 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { provider, endpointPath, authType, authToken, isActive, isTestMode, selectedVariables } = body;
+    const { id, name, provider, endpointPath, authType, authToken, isActive, isTestMode, selectedVariables } = body;
 
-    if (!provider || !endpointPath) {
-      return NextResponse.json({ error: "Provider and endpoint path are required" }, { status: 400 });
+    if (!name || !provider) {
+      return NextResponse.json({ error: "Name and Provider are required" }, { status: 400 });
     }
 
-    const config = await prisma.incomingWebhookConfig.upsert({
-      where: { provider: provider },
-      update: {
-        endpointPath,
-        authType,
-        authToken,
-        isActive: isActive !== undefined ? isActive : true,
-        isTestMode: isTestMode !== undefined ? isTestMode : false,
-        selectedVariables: selectedVariables !== undefined ? (typeof selectedVariables === 'string' ? selectedVariables : JSON.stringify(selectedVariables)) : null
-      },
-      create: {
-        provider,
-        endpointPath,
-        authType: authType || "NO_AUTH",
-        authToken,
-        isActive: isActive !== undefined ? isActive : true,
-        isTestMode: isTestMode !== undefined ? isTestMode : false,
-        selectedVariables: selectedVariables !== undefined ? (typeof selectedVariables === 'string' ? selectedVariables : JSON.stringify(selectedVariables)) : null
-      }
-    });
+    let config;
+    const selectedVarsStr = selectedVariables !== undefined ? (typeof selectedVariables === 'string' ? selectedVariables : JSON.stringify(selectedVariables)) : null;
+    const basePath = endpointPath || `/api/webhooks/incoming/${Math.random().toString(36).substr(2, 9)}`;
+
+    if (id) {
+      config = await prisma.incomingWebhookConfig.update({
+        where: { id },
+        data: {
+          name,
+          provider,
+          endpointPath: basePath,
+          authType,
+          authToken,
+          isActive: isActive !== undefined ? isActive : true,
+          isTestMode: isTestMode !== undefined ? isTestMode : false,
+          selectedVariables: selectedVarsStr
+        }
+      });
+    } else {
+      config = await prisma.incomingWebhookConfig.create({
+        data: {
+          name,
+          provider,
+          endpointPath: basePath,
+          authType: authType || "NO_AUTH",
+          authToken,
+          isActive: isActive !== undefined ? isActive : true,
+          isTestMode: isTestMode !== undefined ? isTestMode : false,
+          selectedVariables: selectedVarsStr
+        }
+      });
+    }
 
     return NextResponse.json(config);
   } catch (error) {
     console.error("POST /api/settings/incoming-webhooks error:", error);
     return NextResponse.json({ error: "Failed to save incoming webhook config" }, { status: 500 });
+  }
+}
+
+// DELETE /api/settings/incoming-webhooks
+export async function DELETE(request) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER" && session.user.role !== "WEB_DEVELOPER")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    await prisma.incomingWebhookConfig.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/settings/incoming-webhooks error:", error);
+    return NextResponse.json({ error: "Failed to delete incoming webhook config" }, { status: 500 });
   }
 }
