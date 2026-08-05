@@ -80,6 +80,7 @@ model SystemSetting {
   timeoutBound        String   @default("5000") @db.VarChar(50)
   alertEmail          String   @default("devops@asmita.society.io") @db.VarChar(255)
   logoUrl             String?  @db.Text
+  logRetentionDays    String   @default("0") @db.VarChar(10) // "0" means infinite
   updatedAt           DateTime @updatedAt
 }
 
@@ -117,5 +118,13 @@ model WebhookLog {
   id        String   @id @default(cuid())
   webhookId String   @default("legacy_kylas") // ID of the IncomingWebhookConfig
   payload   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  source    String   @db.VarChar(100)
+  severity  String   @default("info") @db.VarChar(20)
+  message   String   @db.Text
   createdAt DateTime @default(now())
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { logSystemAction } from "@/lib/logger";
 
 // PUT /api/settings/webhooks/[id]
 export async function PUT(request, { params }) {
@@ -40,6 +41,12 @@ export async function PUT(request, { params }) {
       data: updateData
     });
 
+    await logSystemAction(
+      "Automation Workflows",
+      "info",
+      `Updated automation workflow: ${webhook.name || id}`
+    );
+
     return NextResponse.json(webhook);
   } catch (error) {
     console.error("PUT /api/settings/webhooks/[id] error:", error);
@@ -60,6 +67,13 @@ export async function DELETE(request, { params }) {
     await prisma.webhook.delete({
       where: { id }
     });
+
+    await logSystemAction(
+      "Automation Workflows",
+      "warning",
+      `Deleted automation workflow with ID: ${id}`
+    );
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/settings/webhooks/[id] error:", error);

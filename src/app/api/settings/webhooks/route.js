@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { logSystemAction } from "@/lib/logger";
 
 // GET /api/settings/webhooks
 export async function GET(request) {
@@ -47,6 +48,12 @@ export async function POST(request) {
         selectedVariables: selectedVariables ? JSON.stringify(selectedVariables) : null,
       }
     });
+
+    await logSystemAction(
+      "Automation Workflows",
+      "info",
+      `Created new automation workflow: ${webhook.name}`
+    );
 
     return NextResponse.json(webhook);
   } catch (error) {

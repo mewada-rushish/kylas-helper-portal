@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
+import { logSystemAction } from "@/lib/logger";
 
 // Helper to save base64 logo to public/uploads
 function saveBase64Image(base64Data) {
@@ -94,8 +95,14 @@ export async function PUT(request) {
     const settings = await prisma.systemSetting.upsert({
       where: { id: "default" },
       update: updateData,
-      create: { id: "default", ...updateData }
+      create: { id: "default", ...updateData },
     });
+
+    await logSystemAction(
+      "General Settings",
+      "success",
+      `System configuration properties and runtime bounds were successfully updated by user.`
+    );
 
     return NextResponse.json(settings);
   } catch (error) {

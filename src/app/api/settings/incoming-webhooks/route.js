@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { logSystemAction } from "@/lib/logger";
 
 // GET /api/settings/incoming-webhooks
 export async function GET() {
@@ -55,6 +56,11 @@ export async function POST(request) {
           selectedVariables: selectedVarsStr
         }
       });
+      await logSystemAction(
+        "Incoming Webhooks",
+        "info",
+        `Updated incoming webhook config: ${safeName}`
+      );
     } else {
       config = await prisma.incomingWebhookConfig.create({
         data: {
@@ -68,6 +74,11 @@ export async function POST(request) {
           selectedVariables: selectedVarsStr
         }
       });
+      await logSystemAction(
+        "Incoming Webhooks",
+        "info",
+        `Created new incoming webhook config: ${safeName}`
+      );
     }
 
     return NextResponse.json(config);
@@ -96,6 +107,12 @@ export async function DELETE(request) {
     await prisma.incomingWebhookConfig.delete({
       where: { id }
     });
+
+    await logSystemAction(
+      "Incoming Webhooks",
+      "warning",
+      `Deleted incoming webhook config with ID: ${id}`
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

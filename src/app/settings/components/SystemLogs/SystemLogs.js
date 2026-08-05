@@ -7,12 +7,7 @@ import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
 import styles from "./SystemLogs.module.css";
 
-const INITIAL_LOGS = [
-  { id: "log_01", timestamp: "2026-06-30 10:15:22", source: "Kylas CRM", severity: "error", message: "Validation Gate intercepted: Trigger payload missing compulsory field property 'root.mpEntityId'." },
-  { id: "log_02", timestamp: "2026-06-30 10:14:05", source: "Core Render", severity: "success", message: "A4 Printable Account Statement Blueprint for INV-2026-089 rendered successfully within 142ms." },
-  { id: "log_03", timestamp: "2026-06-30 09:44:12", source: "BBPS Gateway", severity: "warning", message: "Outbound Webhook delayed response. Network socket pipe latency bounds exceeded threshold (800ms)." },
-  { id: "log_04", timestamp: "2026-06-30 08:12:59", source: "Kylas CRM", severity: "success", message: "Webhook hook 'wh_config_kylas_crm_leads' resolved successfully. Dynamic context data hydrated cleanly." }
-];
+// No INITIAL_LOGS anymore
 
 export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
@@ -22,12 +17,40 @@ export default function SystemLogs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeInspectedLog, setActiveInspectedLog] = useState(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLogs(INITIAL_LOGS);
+  const fetchLogs = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/settings/logs");
+      if (!res.ok) throw new Error("Failed to fetch logs");
+      const data = await res.json();
+      
+      const formattedLogs = data.map(log => {
+        const dateObj = new Date(log.createdAt);
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const hh = String(dateObj.getHours()).padStart(2, '0');
+        const min = String(dateObj.getMinutes()).padStart(2, '0');
+        const ss = String(dateObj.getSeconds()).padStart(2, '0');
+        
+        return {
+          id: log.id,
+          timestamp: `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`,
+          source: log.source,
+          severity: log.severity,
+          message: log.message
+        };
+      });
+      setLogs(formattedLogs);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
       setIsLoading(false);
-    }, 1200);
-    return () => clearTimeout(timer);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
   }, []);
 
   const severityOptions = [
@@ -39,9 +62,9 @@ export default function SystemLogs() {
 
   const sourceOptions = [
     { value: "all", label: "All Channels" },
-    { value: "Kylas CRM", label: "Kylas CRM" },
-    { value: "Core Render", label: "Core Render" },
-    { value: "BBPS Gateway", label: "BBPS Gateway" }
+    { value: "General Settings", label: "General Settings" },
+    { value: "Incoming Webhooks", label: "Incoming Webhooks" },
+    { value: "Automation Workflows", label: "Automation Workflows" }
   ];
 
   const filteredLogs = logs.filter(log => {

@@ -37,6 +37,7 @@ export default function GeneralSettings() {
   const [retryLimit, setRetryLimit] = useState("3");
   const [timeoutBound, setTimeoutBound] = useState("");
   const [alertEmail, setAlertEmail] = useState("");
+  const [logRetentionDays, setLogRetentionDays] = useState("0");
 
   const currentSystemYear = new Date().getFullYear();
 
@@ -63,6 +64,13 @@ export default function GeneralSettings() {
     { value: "5", label: "5 Max Retries Fault Tolerant" }
   ];
 
+  const logRetentionOptions = [
+    { value: "0", label: "No Pruning (Infinite)" },
+    { value: "7", label: "7 Days" },
+    { value: "30", label: "30 Days" },
+    { value: "90", label: "90 Days" }
+  ];
+
   // Fetch settings on mount
   useEffect(() => {
     async function fetchSettings() {
@@ -86,6 +94,7 @@ export default function GeneralSettings() {
         setRetryLimit(data.retryLimit || "3");
         setTimeoutBound(data.timeoutBound || "5000");
         setAlertEmail(data.alertEmail || "");
+        setLogRetentionDays(data.logRetentionDays || "0");
         setLogoPreview(data.logoUrl || null);
       } catch (err) {
         toast.error(err.message);
@@ -134,6 +143,7 @@ export default function GeneralSettings() {
           retryLimit,
           timeoutBound,
           alertEmail,
+          logRetentionDays,
           logoUrl: logoPreview
         })
       });
@@ -379,15 +389,26 @@ export default function GeneralSettings() {
                 </div>
               </div>
 
-              <div className={styles.formInputGroupField}>
-                <label className={styles.fieldLabel}>Pipeline Failure Log Notification Target</label>
-                <div className={styles.inputIconWrapperFrame}>
-                  <FiMail className={styles.fieldInputIconAddon} />
-                  <input
-                    type="email"
-                    value={alertEmail}
-                    onChange={(e) => setAlertEmail(e.target.value)}
-                    className={styles.primaryTextInputWithIcon}
+              <div className={styles.formFieldsInlineDoubleGridRow}>
+                <div className={styles.formInputGroupField}>
+                  <label className={styles.fieldLabel}>Pipeline Failure Log Notification Target</label>
+                  <div className={styles.inputIconWrapperFrame}>
+                    <FiMail className={styles.fieldInputIconAddon} />
+                    <input
+                      type="email"
+                      value={alertEmail}
+                      onChange={(e) => setAlertEmail(e.target.value)}
+                      className={styles.primaryTextInputWithIcon}
+                    />
+                  </div>
+                </div>
+                <div className={styles.formInputGroupField}>
+                  <label className={styles.fieldLabel}>System Log Retention Strategy</label>
+                  <CustomDropdown
+                    options={logRetentionOptions}
+                    selectedValue={logRetentionDays}
+                    onSelect={(val) => setLogRetentionDays(val)}
+                    icon={FiRefreshCw}
                   />
                 </div>
               </div>
