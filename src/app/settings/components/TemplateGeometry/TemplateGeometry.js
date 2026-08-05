@@ -243,9 +243,11 @@ export default function TemplateGeometry() {
             style={{ padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', flex: 1, fontSize: '0.85rem' }}
           >
             <option value="">-- Select Variable --</option>
-            {availableVars.map(v => (
-              <option key={v} value={v}>{v}</option>
-            ))}
+            {availableVars.map((v, i) => {
+              const label = v.customName ? `${v.customName} (${v.path})` : v.path || String(v);
+              const val = v.path || String(v);
+              return <option key={i} value={val}>{label}</option>;
+            })}
             <option value="OTHER">Other (Plain Text)</option>
           </select>
           {selectedOpt === "OTHER" && (
