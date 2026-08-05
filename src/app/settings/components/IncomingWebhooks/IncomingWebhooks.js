@@ -611,22 +611,9 @@ export default function IncomingWebhooks() {
                           <span style={{ color: "#3B82F6" }}>{log.id}</span>
                         </div>
                         {isExpanded && (
-                          <>
-                            <div style={{ padding: "16px", overflowX: "auto" }}>
-                              {renderResponsePayloadTreeNodes(JSON.parse(log.payload))}
-                            </div>
-                            <div style={{ padding: "16px", backgroundColor: "#0F172A", overflowX: "auto" }}>
-                              <pre style={{ margin: 0, color: "#E2E8F0", fontSize: "12px", fontFamily: "monospace" }}>
-                                {(() => {
-                                  try {
-                                    return JSON.stringify(JSON.parse(log.payload), null, 2);
-                                  } catch (e) {
-                                    return log.payload;
-                                  }
-                                })()}
-                              </pre>
-                            </div>
-                          </>
+                          <div style={{ padding: "16px", overflowX: "auto" }}>
+                            {renderResponsePayloadTreeNodes(JSON.parse(log.payload))}
+                          </div>
                         )}
                       </div>
                     );
