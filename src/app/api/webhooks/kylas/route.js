@@ -25,6 +25,16 @@ export async function POST(request) {
     console.log(JSON.stringify(body, null, 2));
     console.log("==========================================");
 
+    // 3. Log payload to DB if Test Mode is enabled
+    if (config && config.isTestMode) {
+      await prisma.webhookLog.create({
+        data: {
+          provider: "KYLAS",
+          payload: JSON.stringify(body)
+        }
+      });
+    }
+
     // Return a success response to acknowledge receipt
     return NextResponse.json({ message: 'Webhook received successfully' }, { status: 200 });
   } catch (error) {
