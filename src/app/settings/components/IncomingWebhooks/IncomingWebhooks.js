@@ -16,6 +16,7 @@ export default function IncomingWebhooks() {
   const [isSaving, setIsSaving] = useState(false);
   const [logs, setLogs] = useState([]);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState(null);
 
   const activeWebhook = useMemo(() => {
     return webhooks.find(h => h.id === selectedWebhookId) || null;
@@ -55,6 +56,9 @@ export default function IncomingWebhooks() {
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
+        if (data.length > 0 && !expandedLogId) {
+          setExpandedLogId(data[0].id);
+        }
       }
     } catch (error) {
       console.error("Failed to load webhook logs:", error);
@@ -592,44 +596,45 @@ export default function IncomingWebhooks() {
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px", opacity: isFetchingLogs ? 0.6 : 1, transition: "opacity 0.2s ease-in-out" }}>
-                  {logs.map((log) => (
-                    <div key={log.id} style={{ border: "1px solid #E2E8F0", borderRadius: "8px", overflow: "hidden" }}>
-                      <div style={{ backgroundColor: "#F8FAFC", padding: "10px 16px", borderBottom: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#475569", fontWeight: "500" }}>
-                        <span>Received at: {new Date(log.createdAt).toLocaleString()}</span>
-                        <span style={{ color: "#3B82F6" }}>{log.id}</span>
+                  {logs.map((log) => {
+                    const isExpanded = expandedLogId === log.id;
+                    return (
+                      <div key={log.id} style={{ border: "1px solid #E2E8F0", borderRadius: "8px", overflow: "hidden" }}>
+                        <div 
+                          onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
+                          style={{ backgroundColor: "#F8FAFC", padding: "10px 16px", borderBottom: isExpanded ? "1px solid #E2E8F0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: "#475569", fontWeight: "500", cursor: "pointer" }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>▶</span>
+                            <span>Received at: {new Date(log.createdAt).toLocaleString()}</span>
+                          </div>
+                          <span style={{ color: "#3B82F6" }}>{log.id}</span>
+                        </div>
+                        {isExpanded && (
+                          <>
+                            <div style={{ padding: "16px", overflowX: "auto" }}>
+                              {renderResponsePayloadTreeNodes(JSON.parse(log.payload))}
+                            </div>
+                            <div style={{ padding: "16px", backgroundColor: "#0F172A", overflowX: "auto" }}>
+                              <pre style={{ margin: 0, color: "#E2E8F0", fontSize: "12px", fontFamily: "monospace" }}>
+                                {(() => {
+                                  try {
+                                    return JSON.stringify(JSON.parse(log.payload), null, 2);
+                                  } catch (e) {
+                                    return log.payload;
+                                  }
+                                })()}
+                              </pre>
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <div style={{ padding: "16px", backgroundColor: "#0F172A", overflowX: "auto" }}>
-                        <pre style={{ margin: 0, color: "#E2E8F0", fontSize: "12px", fontFamily: "monospace" }}>
-                          {(() => {
-                            try {
-                              return JSON.stringify(JSON.parse(log.payload), null, 2);
-                            } catch (e) {
-                              return log.payload;
-                            }
-                          })()}
-                        </pre>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               
-              {logs.length > 0 && (
-                <div style={{ marginTop: "32px", borderTop: "1px solid #E2E8F0", paddingTop: "24px" }}>
-                  <h5 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "600", color: "#0F172A" }}>Payload Variable Mapping</h5>
-                  <p style={{ margin: "0 0 16px 0", fontSize: "13px", color: "#64748B" }}>Select nested keys from your most recent webhook payload to map them manually to your ecosystem configurations.</p>
-                  <div style={{ backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
-                    {(() => {
-                      try {
-                        const latestPayload = JSON.parse(logs[0].payload);
-                        return renderResponsePayloadTreeNodes(latestPayload);
-                      } catch(e) {
-                        return <div style={{ color: "#EF4444", fontSize: "13px" }}>Could not parse recent payload to map variables.</div>;
-                      }
-                    })()}
-                  </div>
-                </div>
-              )}
+
             </div>
           )}
         </div>
