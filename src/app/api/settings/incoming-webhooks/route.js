@@ -32,7 +32,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { provider, endpointPath, authType, authToken, isActive, isTestMode } = body;
+    const { provider, endpointPath, authType, authToken, isActive, isTestMode, selectedVariables } = body;
 
     if (!provider || !endpointPath) {
       return NextResponse.json({ error: "Provider and endpoint path are required" }, { status: 400 });
@@ -45,7 +45,8 @@ export async function POST(request) {
         authType,
         authToken,
         isActive: isActive !== undefined ? isActive : true,
-        isTestMode: isTestMode !== undefined ? isTestMode : false
+        isTestMode: isTestMode !== undefined ? isTestMode : false,
+        selectedVariables: selectedVariables !== undefined ? (typeof selectedVariables === 'string' ? selectedVariables : JSON.stringify(selectedVariables)) : null
       },
       create: {
         provider,
@@ -53,7 +54,8 @@ export async function POST(request) {
         authType: authType || "NO_AUTH",
         authToken,
         isActive: isActive !== undefined ? isActive : true,
-        isTestMode: isTestMode !== undefined ? isTestMode : false
+        isTestMode: isTestMode !== undefined ? isTestMode : false,
+        selectedVariables: selectedVariables !== undefined ? (typeof selectedVariables === 'string' ? selectedVariables : JSON.stringify(selectedVariables)) : null
       }
     });
 

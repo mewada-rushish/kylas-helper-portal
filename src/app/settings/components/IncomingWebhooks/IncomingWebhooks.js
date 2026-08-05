@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiSave, FiCopy, FiLoader, FiShield, FiRefreshCw } from "react-icons/fi";
+import { FiSave, FiCopy, FiLoader, FiShield, FiRefreshCw, FiCheckSquare, FiSquare } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import toast from "react-hot-toast";
 import styles from "../WorkflowSettings/WorkflowSettings.module.css"; // Reuse existing styles
@@ -16,6 +16,7 @@ export default function IncomingWebhooks() {
   const [authToken, setAuthToken] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [isTestMode, setIsTestMode] = useState(false);
+  const [selectedVariables, setSelectedVariables] = useState([]);
   const [logs, setLogs] = useState([]);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
 
@@ -47,6 +48,11 @@ export default function IncomingWebhooks() {
             setAuthToken(kylasConfig.authToken || "");
             setIsActive(kylasConfig.isActive);
             setIsTestMode(kylasConfig.isTestMode || false);
+            try {
+              setSelectedVariables(typeof kylasConfig.selectedVariables === 'string' ? JSON.parse(kylasConfig.selectedVariables) : (kylasConfig.selectedVariables || []));
+            } catch(e) {
+              setSelectedVariables([]);
+            }
           }
         }
       } catch (error) {
@@ -59,6 +65,76 @@ export default function IncomingWebhooks() {
     fetchConfig();
     fetchLogs();
   }, []);
+
+  const handleToggleResponseVariable = (path, valueType = "text") => {
+    const currentList = selectedVariables || [];
+    const exists = currentList.find(item => item.path === path);
+    let newList;
+    if (exists) {
+      newList = currentList.filter(item => item.path !== path);
+    } else {
+      const defaultName = path.split('.').pop() || "variable_name";
+      newList = [...currentList, { path, customName: defaultName, type: valueType }];
+    }
+    setSelectedVariables(newList);
+  };
+
+  const renderResponsePayloadTreeNodes = (node, parentPath = "") => {
+    if (typeof node !== "object" || node === null) return null;
+
+    return Object.entries(node).map(([key, value]) => {
+      const currentPath = parentPath ? `${parentPath}.${key}` : key;
+      const isObject = typeof value === "object" && value !== null && !Array.isArray(value);
+      const isArray = Array.isArray(value);
+      const hasChildren = typeof value === "object" && value !== null;
+      const isVariableSelected = selectedVariables?.some(v => v.path === currentPath);
+
+      return (
+        <div key={currentPath} style={{ marginLeft: "16px", display: "flex", flexDirection: "column" }}>
+          <div className={styles.treeNodeStructuralRowItemLine}>
+            <div className={styles.treeNodeLeafParameterRowFlexRowLayout}>
+              <div className={styles.treeLeafKeyNameReadoutFlexRowLayout}>
+                {hasChildren ? (
+                  <span className={styles.objectEnclosureFolderLabelTextCode}>❖ {key}:</span>
+                ) : (
+                  <>
+                    <span className={styles.treeLeafConnectorLinesLayoutGuideSpan}>└─</span>
+                    <span className={styles.primitiveKeyNameTextCode}>{key}:</span>
+                  </>
+                )}
+                
+                <span style={{ fontStyle: "italic", color: "#64748B", fontSize: "12px", marginLeft: hasChildren ? '8px' : '0' }}>
+                  {isArray ? `[Array (${value.length} items)]` : isObject ? `{Object (${Object.keys(value).length} keys)}` : `"${String(value)}"`}
+                </span>
+                <span className={styles.primitiveTypeNameTextBadge}>{isArray ? 'array' : typeof value}</span>
+              </div>
+              
+              <button 
+                type="button"
+                className={`${styles.checkboxInteractiveTreeGateToggleButtonLink} ${isVariableSelected ? styles.gateActiveStateTextCode : ""}`}
+                onClick={() => {
+                  let valType = "text";
+                  if (isArray) valType = "array";
+                  else if (typeof value === "number") valType = "number";
+                  else if (typeof value === "boolean") valType = "boolean";
+                  
+                  handleToggleResponseVariable(currentPath, valType);
+                }}
+              >
+                {isVariableSelected ? (
+                  <FiCheckSquare className={styles.checkboxIconActiveColor} size={14} />
+                ) : (
+                  <FiSquare size={14} />
+                )}
+                {isVariableSelected ? "Variable Active" : "Map Key"}
+              </button>
+            </div>
+          </div>
+          {hasChildren && renderResponsePayloadTreeNodes(value, currentPath)}
+        </div>
+      );
+    });
+  };
 
   const handleClearLogs = async () => {
     if (!confirm("Are you sure you want to clear all test logs?")) return;
@@ -85,7 +161,8 @@ export default function IncomingWebhooks() {
           authType,
           authToken,
           isActive,
-          isTestMode
+          isTestMode,
+          selectedVariables
         })
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -252,6 +329,23 @@ export default function IncomingWebhooks() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+            
+            {logs.length > 0 && (
+              <div style={{ marginTop: "32px", borderTop: "1px solid #E2E8F0", paddingTop: "24px" }}>
+                <h5 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "600", color: "#0F172A" }}>Payload Variable Mapping</h5>
+                <p style={{ margin: "0 0 16px 0", fontSize: "13px", color: "#64748B" }}>Select nested keys from your most recent webhook payload to map them manually to your ecosystem configurations.</p>
+                <div style={{ backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
+                  {(() => {
+                    try {
+                      const latestPayload = JSON.parse(logs[0].payload);
+                      return renderResponsePayloadTreeNodes(latestPayload);
+                    } catch(e) {
+                      return <div style={{ color: "#EF4444", fontSize: "13px" }}>Could not parse recent payload to map variables.</div>;
+                    }
+                  })()}
+                </div>
               </div>
             )}
           </div>
