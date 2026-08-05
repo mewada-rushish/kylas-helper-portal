@@ -384,9 +384,22 @@ export default function IncomingWebhooks() {
                 <p style={{ margin: 0, fontSize: "13px", color: "#64748B" }}>Paste this URL into the external system (e.g., Kylas portal).</p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <code style={{ backgroundColor: "#FFFFFF", padding: "10px 16px", borderRadius: "6px", border: "1px solid #E2E8F0", fontSize: "13px", color: "#334155", userSelect: "all" }}>
-                  {typeof window !== 'undefined' ? `${window.location.origin}${activeWebhook?.endpointPath}` : activeWebhook?.endpointPath}
-                </code>
+                <div style={{ display: "flex", alignItems: "center", borderRadius: "6px", border: "1px solid #E2E8F0", overflow: "hidden", backgroundColor: "#FFFFFF" }}>
+                  <span style={{ fontSize: "13px", color: "#64748B", backgroundColor: "#F1F5F9", padding: "10px 12px", borderRight: "1px solid #E2E8F0", userSelect: "none" }}>
+                    {typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/incoming/` : "/api/webhooks/incoming/"}
+                  </span>
+                  <input 
+                    type="text"
+                    value={(activeWebhook?.endpointPath || "").replace('/api/webhooks/incoming/', '')}
+                    onChange={(e) => {
+                      const cleanSlug = e.target.value.replace(/[^a-zA-Z0-9\-_/]/g, '');
+                      const newPath = `/api/webhooks/incoming/${cleanSlug}`;
+                      setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, endpointPath: newPath } : h));
+                    }}
+                    placeholder="custom/path"
+                    style={{ width: "200px", padding: "10px 12px", border: "none", fontSize: "13px", outline: "none", color: "#0F172A", fontWeight: "500" }}
+                  />
+                </div>
                 <button 
                   type="button"
                   onClick={() => {
@@ -396,7 +409,7 @@ export default function IncomingWebhooks() {
                   }}
                   style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "#0F172A", color: "white", border: "none", padding: "10px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}
                 >
-                  <FiCopy size={14} /> Copy URL
+                  <FiCopy size={14} /> Copy
                 </button>
               </div>
             </div>
