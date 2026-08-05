@@ -477,14 +477,43 @@ export default function IncomingWebhooks() {
             <div style={{ marginBottom: "24px" }}>
               <h5 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#0F172A" }}>Mapped Variables ({activeWebhook?.selectedVariables?.length || 0})</h5>
               {activeWebhook?.selectedVariables?.length > 0 ? (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", backgroundColor: "#F8FAFC", padding: "16px", borderRadius: "8px", border: "1px solid #E2E8F0" }}>
                   {activeWebhook.selectedVariables.map(v => (
-                    <div key={v.path} style={{ backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", padding: "6px 10px", borderRadius: "6px", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontWeight: "600", color: "#475569" }}>{v.path}</span>
-                      <span style={{ color: "#94A3B8" }}>({v.type})</span>
-                      <button type="button" onClick={() => handleToggleResponseVariable(v.path, v.type)} style={{ background: "none", border: "none", color: "#EF4444", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }} title="Remove mapping">
-                        <FiTrash2 size={12} />
-                      </button>
+                    <div key={v.path} className={styles.treeNodeStructuralRowItemLine}>
+                      <div className={styles.treeNodeLeafParameterRowFlexRowLayout}>
+                        <div className={styles.treeLeafKeyNameReadoutFlexRowLayout}>
+                          <span className={styles.treeLeafConnectorLinesLayoutGuideSpan}>└─</span>
+                          <span className={styles.primitiveKeyNameTextCode}>{v.path}:</span>
+                          <span className={styles.primitiveTypeNameTextBadge}>{v.type}</span>
+                        </div>
+                        
+                        <div style={{ flexGrow: 1, borderBottom: "1px dashed #CBD5E1", margin: "0 16px" }} />
+                        
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <input 
+                            type="text"
+                            value={v.customName || ""}
+                            placeholder="Variable Name"
+                            onChange={(e) => {
+                              const newName = e.target.value;
+                              setWebhooks(prev => prev.map(h => {
+                                if (h.id !== selectedWebhookId) return h;
+                                const newVars = h.selectedVariables.map(sv => sv.path === v.path ? { ...sv, customName: newName } : sv);
+                                return { ...h, selectedVariables: newVars };
+                              }));
+                            }}
+                            style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid #CBD5E1", fontSize: "12px", outline: "none", width: "160px" }}
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => handleToggleResponseVariable(v.path, v.type)} 
+                            style={{ background: "none", border: "none", color: "#EF4444", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", borderRadius: "4px" }} 
+                            title="Remove mapping"
+                          >
+                            <FiTrash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
