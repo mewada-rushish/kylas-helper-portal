@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiPlay, FiAlertCircle, FiTerminal } from "react-icons/fi";
+import { FiSearch, FiPlay, FiAlertCircle, FiTerminal, FiRefreshCw } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
@@ -119,6 +119,15 @@ export default function SystemLogs() {
         </div>
         
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            onClick={fetchLogs} 
+            className={styles.refreshBtn} 
+            title="Refresh Logs"
+            disabled={isLoading}
+          >
+            <FiRefreshCw size={14} className={isLoading ? styles.spinningIcon : ''} />
+          </button>
+          
           <div className={styles.selectFilterControlBlock}>
             <div className={styles.dropdownWrapperOverride}>
               <CustomDropdown 
