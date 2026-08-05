@@ -459,14 +459,30 @@ export default function IncomingWebhooks() {
                  {activeWebhook?.authType === "BEARER_TOKEN" && (
                    <div style={{ flex: 2 }}>
                      <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "8px" }}>Expected Token Secret</label>
-                     <input 
-                       type="text"
-                       value={activeWebhook?.authToken || ""}
-                       onChange={(e) => setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, authToken: e.target.value } : h))}
-                       placeholder="e.g. sk_live_123456789"
-                       style={{ width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #E2E8F0", fontSize: "13px", outline: "none" }}
-                     />
-                     <p style={{ margin: "6px 0 0 0", fontSize: "11px", color: "#64748B" }}>Incoming requests must include the header: <code>Authorization: Bearer {activeWebhook?.authToken || "..."}</code></p>
+                     <div style={{ display: "flex", gap: "8px" }}>
+                       <input 
+                         type="text"
+                         value={activeWebhook?.authToken || ""}
+                         onChange={(e) => setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, authToken: e.target.value } : h))}
+                         placeholder="e.g. sk_live_123456789"
+                         style={{ flex: 1, padding: "10px 12px", borderRadius: "6px", border: "1px solid #E2E8F0", fontSize: "13px", outline: "none", height: "42px", boxSizing: "border-box" }}
+                       />
+                       <button 
+                         type="button"
+                         onClick={() => {
+                           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                           let token = '';
+                           for (let i = 0; i < 30; i++) {
+                             token += chars.charAt(Math.floor(Math.random() * chars.length));
+                           }
+                           setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, authToken: token } : h));
+                         }}
+                         style={{ width: "42px", height: "42px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", borderRadius: "6px", cursor: "pointer", color: "#475569", boxSizing: "border-box" }}
+                         title="Generate Random Token"
+                       >
+                         <FiRefreshCw size={16} />
+                       </button>
+                     </div>
                    </div>
                  )}
                </div>
