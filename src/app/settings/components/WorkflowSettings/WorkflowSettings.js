@@ -927,30 +927,18 @@ export default function WorkflowSettings() {
                             <div className={styles.treeLeafKeyNameReadoutFlexRowLayout}>
                               <span className={styles.treeLeafConnectorLinesLayoutGuideSpan}>└─</span>
                               <span className={styles.primitiveKeyNameTextCode}>{variableObj.path}:</span>
+                              <span className={styles.primitiveTypeNameTextBadge}>{(variableObj.type || "TEXT").toUpperCase()}</span>
                             </div>
                             
                             <div style={{ flexGrow: 1, borderBottom: "1px dashed #CBD5E1", margin: "0 16px" }} />
                             
                             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                              <div style={{ width: "120px" }}>
-                                <CustomDropdown 
-                                  options={[
-                                    { label: "Text", value: "text" },
-                                    { label: "Number", value: "number" },
-                                    { label: "Boolean", value: "boolean" },
-                                    { label: "Array", value: "array" },
-                                    { label: "JSON Array", value: "json array" }
-                                  ]}
-                                  selectedValue={variableObj.type || "text"}
-                                  onSelect={(val) => handleUpdateCustomVariableType(variableObj.path, val)}
-                                />
-                              </div>
                               <input 
                                 type="text"
                                 value={variableObj.customName || ""}
                                 placeholder="Custom Variable Name"
                                 onChange={(e) => handleUpdateCustomVariableName(variableObj.path, e.target.value)}
-                                style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid #CBD5E1", fontSize: "12px", outline: "none", width: "180px" }}
+                                style={{ padding: "6px 10px", borderRadius: "4px", border: "1px solid #CBD5E1", fontSize: "12px", outline: "none", width: "160px" }}
                               />
                               <button 
                                 type="button" 
