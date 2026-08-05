@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import Link from "next/link";
 import React, { Suspense } from "react";
 import { FiCheck, FiSliders, FiFileText, FiGitBranch, FiActivity } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
@@ -21,10 +22,6 @@ function SettingsDashboardContent() {
   const searchParams = useSearchParams();
   
   const activeTab = searchParams.get("tab") || "general";
-
-  const setActiveTab = (tab) => {
-    router.replace(`${pathname}?tab=${tab}`, { scroll: false });
-  };
 
   // Deterministic UI view renderer switcher map
   const renderActiveSubPage = () => {
@@ -62,46 +59,51 @@ function SettingsDashboardContent() {
 
           {/* HORIZONTAL SUB-NAVIGATION ROW RAIL */}
           <nav className={styles.horizontalTopTabNavigationBarRail}>
-            <button 
-              type="button" 
+            <Link 
+              href={`${pathname}?tab=general`}
+              replace
+              scroll={false}
               className={`${styles.horizontalTabLinkBtn} ${activeTab === "general" ? styles.tabActiveState : ""}`} 
-              onClick={() => setActiveTab("general")}
             >
               <FiSliders size={14} />
               <span>General Configs</span>
-            </button>
-            <button 
-              type="button" 
+            </Link>
+            <Link 
+              href={`${pathname}?tab=templates`}
+              replace
+              scroll={false}
               className={`${styles.horizontalTabLinkBtn} ${activeTab === "templates" ? styles.tabActiveState : ""}`} 
-              onClick={() => setActiveTab("templates")}
             >
               <FiFileText size={14} />
               <span>Template Geometry</span>
-            </button>
-            <button 
-              type="button" 
+            </Link>
+            <Link 
+              href={`${pathname}?tab=incoming-webhooks`}
+              replace
+              scroll={false}
               className={`${styles.horizontalTabLinkBtn} ${activeTab === "incoming-webhooks" ? styles.tabActiveState : ""}`} 
-              onClick={() => setActiveTab("incoming-webhooks")}
             >
               <FiGitBranch size={14} />
               <span>Incoming Webhooks</span>
-            </button>
-            <button 
-              type="button" 
+            </Link>
+            <Link 
+              href={`${pathname}?tab=workflows`}
+              replace
+              scroll={false}
               className={`${styles.horizontalTabLinkBtn} ${activeTab === "workflows" ? styles.tabActiveState : ""}`} 
-              onClick={() => setActiveTab("workflows")}
             >
               <FiGitBranch size={14} />
               <span>Automation Workflows</span>
-            </button>
-            <button 
-              type="button" 
+            </Link>
+            <Link 
+              href={`${pathname}?tab=logs`}
+              replace
+              scroll={false}
               className={`${styles.horizontalTabLinkBtn} ${activeTab === "logs" ? styles.tabActiveState : ""}`} 
-              onClick={() => setActiveTab("logs")}
             >
               <FiActivity size={14} />
               <span>System Logs</span>
-            </button>
+            </Link>
           </nav>
 
           {/* RENDER STAGE VIEWPORT CANVAS CONTAINER */}
