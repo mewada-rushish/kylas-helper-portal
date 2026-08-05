@@ -72,7 +72,7 @@
   color: #FFFFFF;
   border: 1px solid var(--cta-bg);
   border-radius: 12px;
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -95,7 +95,7 @@
 }
 
 .centeredRegistryHeader h4 {
-  font-family: var(--font-montserrat), sans-serif;
+  
   color: #202223;
   font-size: 16px;
   font-weight: 700;
@@ -144,7 +144,7 @@
 }
 
 .webhookDisplayTitleName {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 16px;
   font-weight: 700;
   color: #0F172A;
@@ -202,7 +202,7 @@
   color: #475569;
   padding: 8px 16px;
   border-radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -221,7 +221,7 @@
 
 .editingContextTitleBreadcrumb {
   font-size: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   color: #64748B;
   font-weight: 500;
   display: flex;
@@ -255,7 +255,7 @@
 }
 
 .workbenchLeftSidebarConfigurationForm h4 {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 11px;
   font-weight: 700;
   color: #202223;
@@ -273,7 +273,7 @@
 }
 
 .fieldLabelTextPrimitive {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 10px;
   font-weight: 700;
   color: #64748B;
@@ -328,7 +328,7 @@
 
 .methodSelectionPillDropdown {
   background-color: var(--active-bg);
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-weight: 700;
   font-size: 12px;
   padding: 0 10px 0 20px;
@@ -379,7 +379,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   padding: 10px 18px;
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 12px;
   font-weight: 700;
   color: #64748B;
@@ -437,7 +437,7 @@
   background-color: #F8FAFC;
   border-bottom: var(--glass-border);
   border-radius: 12px 12px 0 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   font-size: 11px;
   font-weight: 700;
   color: #64748B;
@@ -568,7 +568,7 @@
   background: #F8FAFC;
   border: none;
   border-top: var(--glass-border);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -605,7 +605,7 @@
 }
 
 .activePostmanRadioIndicatorDot {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   font-size: 13px;
   font-weight: 600;
   color: #64748B;
@@ -642,7 +642,7 @@
 
 .unverifiedTextWrapColumn h5 {
   margin: 0 0 4px 0;
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 13px;
   color: #92400E;
   font-weight: 700;
@@ -680,7 +680,7 @@
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -752,7 +752,7 @@
 .responseTabLink {
   background: none;
   border: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   font-size: 13px;
   color: #64748B;
   cursor: pointer;
@@ -773,7 +773,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   font-size: 13px;
 }
 
@@ -804,7 +804,7 @@
 }
 
 .postmanResponseStatusReadoutFlexLine {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 12px;
   font-weight: 700;
   color: #475569;
@@ -885,7 +885,7 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -901,7 +901,7 @@
 
 /* ==================== 7. DESIGN SYSTEM PILLS & UTILITIES ==================== */
 .httpMethodPillBadge {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
@@ -931,7 +931,7 @@
 }
 
 .categoryPillTagLabel {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 10px;
   font-weight: 700;
   padding: 4px 10px;
@@ -1033,7 +1033,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1085,7 +1085,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
 }
 
 .responseHeaderTitle {
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-weight: 700;
   font-size: 13px;
   color: #0F172A;
@@ -1116,7 +1116,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
 
 .authTypeLabelSmall {
   display: block;
-  font-family: var(--font-montserrat), sans-serif;
+  
   font-size: 10px;
   font-weight: 700;
   color: #64748B;
@@ -1416,7 +1416,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
 }
 
 .applePropertyInput {
@@ -1427,7 +1427,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
   color: #0F172A;
   font-weight: 500;
   width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   padding: 0;
   margin: 0;
 }
@@ -1488,7 +1488,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
   background: transparent;
   outline: none;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
   color: #0F172A;
   padding: 0 12px;
   cursor: pointer;
@@ -1501,7 +1501,7 @@ input:checked+.nativeSwitchToggleSliderNode:before {
   height: 100% !important;
   min-height: 100% !important;
   padding: 0 12px !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  
   color: #0F172A !important;
   border-radius: 6px 0 0 6px !important;
 }

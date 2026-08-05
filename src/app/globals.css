@@ -35,11 +35,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-button, a {
+button, a, input, textarea, select {
   font-family: inherit;
   cursor: pointer;
   text-decoration: none;
   transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input, textarea {
+  cursor: text;
 }
 
 button:hover:not(:disabled) {
