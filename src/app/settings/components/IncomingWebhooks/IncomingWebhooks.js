@@ -15,6 +15,9 @@ export default function IncomingWebhooks() {
   const [authType, setAuthType] = useState("NO_AUTH");
   const [authToken, setAuthToken] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [isTestMode, setIsTestMode] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [isFetchingLogs, setIsFetchingLogs] = useState(false);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -28,6 +31,7 @@ export default function IncomingWebhooks() {
             setAuthType(kylasConfig.authType);
             setAuthToken(kylasConfig.authToken || "");
             setIsActive(kylasConfig.isActive);
+            setIsTestMode(kylasConfig.isTestMode || false);
           }
         }
       } catch (error) {
@@ -36,8 +40,38 @@ export default function IncomingWebhooks() {
         setIsLoading(false);
       }
     };
+    
+    const fetchLogs = async () => {
+      setIsFetchingLogs(true);
+      try {
+        const res = await fetch("/api/settings/incoming-webhooks/logs");
+        if (res.ok) {
+          const data = await res.json();
+          setLogs(data);
+        }
+      } catch (error) {
+        console.error("Failed to load webhook logs:", error);
+      } finally {
+        setIsFetchingLogs(false);
+      }
+    };
+
     fetchConfig();
+    fetchLogs();
   }, []);
+
+  const handleClearLogs = async () => {
+    if (!confirm("Are you sure you want to clear all test logs?")) return;
+    try {
+      const res = await fetch("/api/settings/incoming-webhooks/logs", { method: "DELETE" });
+      if (res.ok) {
+        setLogs([]);
+        toast.success("Logs cleared successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to clear logs");
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -50,7 +84,8 @@ export default function IncomingWebhooks() {
           endpointPath: "/api/webhooks/kylas",
           authType,
           authToken,
-          isActive
+          isActive,
+          isTestMode
         })
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -137,7 +172,21 @@ export default function IncomingWebhooks() {
              </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <label className={styles.nativeSwitchToggleTrackLabel}>
+                <input 
+                  type="checkbox" 
+                  checked={isTestMode} 
+                  onChange={(e) => setIsTestMode(e.target.checked)} 
+                />
+                <span className={styles.nativeSwitchToggleSliderNode}></span>
+              </label>
+              <div>
+                <span style={{ display: "block", fontSize: "14px", fontWeight: "600", color: "#0F172A" }}>Test Mode</span>
+                <span style={{ fontSize: "12px", color: "#64748B" }}>Enable to record and display incoming payloads below.</span>
+              </div>
+            </div>
             <button 
               type="button"
               onClick={handleSave}
@@ -149,6 +198,54 @@ export default function IncomingWebhooks() {
           </div>
 
         </div>
+
+        {isTestMode && (
+          <div style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: "12px", padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div>
+                <h5 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "600", color: "#0F172A" }}>Recent Test Payloads</h5>
+                <p style={{ margin: 0, fontSize: "13px", color: "#64748B" }}>Showing the last 50 payloads received by this endpoint.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={handleClearLogs}
+                style={{ backgroundColor: "#F1F5F9", color: "#475569", border: "1px solid #CBD5E1", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}
+              >
+                Clear Logs
+              </button>
+            </div>
+
+            {isFetchingLogs ? (
+              <div style={{ textAlign: "center", padding: "20px" }}><FiLoader className={styles.spinIcon} size={20} color="#64748B" /></div>
+            ) : logs.length === 0 ? (
+              <div style={{ backgroundColor: "#F8FAFC", padding: "30px", textAlign: "center", borderRadius: "8px", border: "1px dashed #CBD5E1" }}>
+                <p style={{ color: "#64748B", fontSize: "13px", margin: 0 }}>No payloads recorded yet. Send a test webhook from Kylas to see it here.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {logs.map((log) => (
+                  <div key={log.id} style={{ border: "1px solid #E2E8F0", borderRadius: "8px", overflow: "hidden" }}>
+                    <div style={{ backgroundColor: "#F8FAFC", padding: "10px 16px", borderBottom: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#475569", fontWeight: "500" }}>
+                      <span>Received at: {new Date(log.createdAt).toLocaleString()}</span>
+                      <span style={{ color: "#3B82F6" }}>{log.id}</span>
+                    </div>
+                    <div style={{ padding: "16px", backgroundColor: "#0F172A", overflowX: "auto" }}>
+                      <pre style={{ margin: 0, color: "#E2E8F0", fontSize: "12px", fontFamily: "monospace" }}>
+                        {(() => {
+                          try {
+                            return JSON.stringify(JSON.parse(log.payload), null, 2);
+                          } catch (e) {
+                            return log.payload;
+                          }
+                        })()}
+                      </pre>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
