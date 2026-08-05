@@ -77,7 +77,7 @@ export default function WorkflowSettings() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       setSelectedWebhookId(id || null);
-      const tab = params.get('tab');
+      const tab = params.get('innerTab');
       if (tab) {
         setActiveTab(tab);
       }
@@ -95,7 +95,7 @@ export default function WorkflowSettings() {
   useEffect(() => {
     const url = new URL(window.location);
     const currentId = url.searchParams.get('id');
-    const currentTab = url.searchParams.get('tab');
+    const currentTab = url.searchParams.get('innerTab');
     
     let changed = false;
     
@@ -104,16 +104,16 @@ export default function WorkflowSettings() {
       changed = true;
     } else if (!selectedWebhookId && currentId) {
       url.searchParams.delete('id');
-      url.searchParams.delete('tab'); // Clear tab when returning to list
+      url.searchParams.delete('innerTab'); // Clear tab when returning to list
       changed = true;
     }
     
     // Only sync tab if we have a webhook open
     if (selectedWebhookId && activeTab && activeTab !== currentTab) {
-      url.searchParams.set('tab', activeTab);
+      url.searchParams.set('innerTab', activeTab);
       changed = true;
     } else if (selectedWebhookId && !activeTab && currentTab) {
-      url.searchParams.delete('tab');
+      url.searchParams.delete('innerTab');
       changed = true;
     }
 

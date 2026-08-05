@@ -26,6 +26,8 @@ function SettingsDashboardContent() {
     setActiveTabState(tab);
     const params = new URLSearchParams(searchParams);
     params.set("tab", tab);
+    params.delete("id");
+    params.delete("innerTab");
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
