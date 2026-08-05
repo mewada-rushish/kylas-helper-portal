@@ -8,6 +8,20 @@ const KYLAS_PRODUCTS = [
   { value: "prod_devops_supp", label: "Dedicated Cloud DevOps Maintenance Hours" }
 ];
 
+const getValueFromPath = (obj, path) => {
+  if (!obj || !path) return undefined;
+  // Convert bracket notation to dot notation: phoneNumbers[0].value -> phoneNumbers.0.value
+  const normalizedPath = path.replace(/\[(\w+)\]/g, '.$1');
+  const properties = normalizedPath.split('.');
+  
+  let current = obj;
+  for (const prop of properties) {
+    if (current === undefined || current === null) return undefined;
+    current = current[prop];
+  }
+  return current;
+};
+
 export const resolveToken = (content, context = {}) => {
   if (!content) return "";
   
@@ -26,9 +40,22 @@ export const resolveToken = (content, context = {}) => {
     "{{current.date}}": escapeHtml(context.date || new Date().toISOString().split("T")[0])
   };
 
+  // 1. Resolve explicit known legacy tokens first
   let resolved = content;
   Object.keys(tokens).forEach((token) => {
     resolved = resolved.replace(new RegExp(token, "g"), tokens[token]);
+  });
+
+  // 2. Resolve dynamic dot-notation tokens based on the context object
+  resolved = resolved.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
+    const value = getValueFromPath(context, path.trim());
+    if (value !== undefined) {
+      if (typeof value === 'object') {
+        return escapeHtml(JSON.stringify(value));
+      }
+      return escapeHtml(String(value));
+    }
+    return match; // Leave untouched if not found in context
   });
 
   return DOMPurify.sanitize(resolved);
