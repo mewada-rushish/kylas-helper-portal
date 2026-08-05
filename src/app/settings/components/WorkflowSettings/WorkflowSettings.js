@@ -69,25 +69,56 @@ export default function WorkflowSettings() {
   
   const [selectedWebhookId, setSelectedWebhookId] = useState(null);
 
-  // Read from URL on mount
+  // Read from URL on mount and handle back button
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    if (id) {
-      setSelectedWebhookId(id);
-    }
+    const handleUrlChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      setSelectedWebhookId(id || null);
+      const tab = params.get('tab');
+      if (tab) {
+        setActiveTab(tab);
+      }
+    };
+    
+    // Check initially
+    handleUrlChange();
+    
+    // Listen for back/forward buttons
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
   }, []);
 
-  // Sync to URL when it changes
+  // Sync to URL when state changes
   useEffect(() => {
     const url = new URL(window.location);
-    if (selectedWebhookId) {
+    const currentId = url.searchParams.get('id');
+    const currentTab = url.searchParams.get('tab');
+    
+    let changed = false;
+    
+    if (selectedWebhookId && selectedWebhookId !== currentId) {
       url.searchParams.set('id', selectedWebhookId);
-    } else {
+      changed = true;
+    } else if (!selectedWebhookId && currentId) {
       url.searchParams.delete('id');
+      url.searchParams.delete('tab'); // Clear tab when returning to list
+      changed = true;
     }
-    window.history.replaceState(null, '', url);
-  }, [selectedWebhookId]);
+    
+    // Only sync tab if we have a webhook open
+    if (selectedWebhookId && activeTab && activeTab !== currentTab) {
+      url.searchParams.set('tab', activeTab);
+      changed = true;
+    } else if (selectedWebhookId && !activeTab && currentTab) {
+      url.searchParams.delete('tab');
+      changed = true;
+    }
+
+    if (changed) {
+      window.history.pushState(null, '', url);
+    }
+  }, [selectedWebhookId, activeTab]);
 
   const [activeTab, setActiveTab] = useState("PARAMS"); 
   const [responseTab, setResponseTab] = useState("BODY");

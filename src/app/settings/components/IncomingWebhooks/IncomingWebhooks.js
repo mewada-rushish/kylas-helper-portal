@@ -14,24 +14,40 @@ export default function IncomingWebhooks() {
   
   const [selectedWebhookId, setSelectedWebhookId] = useState(null);
 
-  // Read from URL on mount
+  // Read from URL on mount and handle back button
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    if (id) {
-      setSelectedWebhookId(id);
-    }
+    const handleUrlChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      setSelectedWebhookId(id || null);
+    };
+    
+    // Check initially
+    handleUrlChange();
+    
+    // Listen for back/forward buttons
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
   }, []);
 
-  // Sync to URL when it changes
+  // Sync to URL when state changes
   useEffect(() => {
     const url = new URL(window.location);
-    if (selectedWebhookId) {
+    const currentId = url.searchParams.get('id');
+    
+    let changed = false;
+    
+    if (selectedWebhookId && selectedWebhookId !== currentId) {
       url.searchParams.set('id', selectedWebhookId);
-    } else {
+      changed = true;
+    } else if (!selectedWebhookId && currentId) {
       url.searchParams.delete('id');
+      changed = true;
     }
-    window.history.replaceState(null, '', url);
+
+    if (changed) {
+      window.history.pushState(null, '', url);
+    }
   }, [selectedWebhookId]);
 
   
