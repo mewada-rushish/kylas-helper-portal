@@ -225,6 +225,8 @@ export default function IncomingWebhooks() {
                 <span className={styles.primitiveTypeNameTextBadge}>{isArray ? 'array' : typeof value}</span>
               </div>
               
+              <div style={{ flexGrow: 1, borderBottom: "1px dashed #CBD5E1", margin: "0 16px" }} />
+              
               <button 
                 type="button"
                 className={`${styles.checkboxInteractiveTreeGateToggleButtonLink} ${isVariableSelected ? styles.gateActiveStateTextCode : ""}`}
@@ -468,6 +470,27 @@ export default function IncomingWebhooks() {
                    </div>
                  )}
                </div>
+            </div>
+
+            <hr style={{ border: "0", borderTop: "1px solid #E2E8F0", margin: "0 0 24px 0" }} />
+
+            <div style={{ marginBottom: "24px" }}>
+              <h5 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#0F172A" }}>Mapped Variables ({activeWebhook?.selectedVariables?.length || 0})</h5>
+              {activeWebhook?.selectedVariables?.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {activeWebhook.selectedVariables.map(v => (
+                    <div key={v.path} style={{ backgroundColor: "#F1F5F9", border: "1px solid #E2E8F0", padding: "6px 10px", borderRadius: "6px", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontWeight: "600", color: "#475569" }}>{v.path}</span>
+                      <span style={{ color: "#94A3B8" }}>({v.type})</span>
+                      <button type="button" onClick={() => handleToggleResponseVariable(v.path, v.type)} style={{ background: "none", border: "none", color: "#EF4444", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }} title="Remove mapping">
+                        <FiTrash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ margin: 0, fontSize: "13px", color: "#64748B" }}>No variables mapped. Enable Test Mode to record a payload and map keys.</p>
+              )}
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
