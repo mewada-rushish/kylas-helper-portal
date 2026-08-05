@@ -227,29 +227,30 @@ export default function TemplateGeometry() {
             ))}
           </div>
         )}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <select 
-            value={selectedOpt} 
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "OTHER") {
-                setSelectedOpt("OTHER");
-              } else if (val) {
-                handleAdd(val);
-              } else {
-                setSelectedOpt("");
-              }
-            }}
-            style={{ padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', flex: 1, fontSize: '0.85rem' }}
-          >
-            <option value="">-- Select Variable --</option>
-            {availableVars.map((v, i) => {
-              const label = v.customName ? `${v.customName} (${v.path})` : v.path || String(v);
-              const val = v.path || String(v);
-              return <option key={i} value={val}>{label}</option>;
-            })}
-            <option value="OTHER">Other (Plain Text)</option>
-          </select>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>
+            <CustomDropdown 
+              options={[
+                { value: "", label: "-- Select Variable --" },
+                ...availableVars.map(v => {
+                  const label = v.customName ? `${v.customName} (${v.path})` : v.path || String(v);
+                  const val = v.path || String(v);
+                  return { value: val, label: label };
+                }),
+                { value: "OTHER", label: "Other (Plain Text)" }
+              ]}
+              selectedValue={selectedOpt}
+              onSelect={(val) => {
+                if (val === "OTHER") {
+                  setSelectedOpt("OTHER");
+                } else if (val) {
+                  handleAdd(val);
+                } else {
+                  setSelectedOpt("");
+                }
+              }}
+            />
+          </div>
           {selectedOpt === "OTHER" && (
             <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
               <input 
