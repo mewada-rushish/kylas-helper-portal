@@ -10,6 +10,32 @@ import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import styles from "./TemplateGeometry.module.css";
 
+const DEFAULT_TOKENS = [
+  "receipt_no",
+  "date",
+  "member_id",
+  "customer.name",
+  "customer.phone",
+  "basic_amount",
+  "cgst",
+  "sgst",
+  "total_amount",
+  "amount_in_words",
+  "payment_for",
+  "payment_mode",
+  "cheque_no",
+  "bank_name",
+  "dated",
+  "user_name"
+];
+
+const createDefaultMapping = () => {
+  return DEFAULT_TOKENS.reduce((acc, token) => {
+    acc[token] = "";
+    return acc;
+  }, {});
+};
+
 export default function TemplateGeometry() {
   // Component layout state configuration
   const [defaultPageSize, setDefaultPageSize] = useState("A4");
@@ -20,28 +46,15 @@ export default function TemplateGeometry() {
   
   const [isFetching, setIsFetching] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [newVariableKey, setNewVariableKey] = useState("");
+  const [webhookConfigs, setWebhookConfigs] = useState([]);
   const [webhookProfileOptions, setWebhookProfileOptions] = useState([
     { value: "wh_kylas_lead_capture", label: "Kylas CRM Lead Webhook Pipeline (META_LEAD)" },
     { value: "wh_invoice_manual_trigger", label: "Manual Invoice Generator API Dispatch Hook" }
   ]);
 
   // Webhook-specific dynamic token mapping values
-  const [allWebhookMappings, setAllWebhookMappings] = useState({
-    wh_kylas_lead_capture: {
-      "customer.name": "payload.lead.primary_contact.full_name",
-      "customer.email": "payload.lead.primary_contact.email_address",
-      "customer.billing_address": "payload.lead.company_profile.registered_address",
-      "summary.subtotal": "payload.financials.order_breakdown.gross_amount",
-      "summary.final_payable": "payload.financials.settlement.net_payable_token"
-    },
-    wh_invoice_manual_trigger: {
-      "customer.name": "body.customer_data.billing_name",
-      "customer.email": "body.customer_data.delivery_email",
-      "customer.billing_address": "body.customer_data.billing_destination",
-      "summary.subtotal": "body.invoice_summary.gross_subtotal",
-      "summary.final_payable": "body.invoice_summary.absolute_payable"
-    }
-  });
+  const [allWebhookMappings, setAllWebhookMappings] = useState({});
 
   useEffect(() => {
     async function fetchSettings() {
@@ -59,6 +72,7 @@ export default function TemplateGeometry() {
         const hooksRes = await fetch("/api/settings/incoming-webhooks");
         if (hooksRes.ok) {
           const hooksData = await hooksRes.json();
+          setWebhookConfigs(hooksData);
           if (hooksData && hooksData.length > 0) {
             const dynamicOptions = hooksData.map(h => ({
               value: h.id,
@@ -125,16 +139,131 @@ export default function TemplateGeometry() {
   ];
 
   const handleUpdateMappingPath = (tokenKey, updatedPath) => {
-    setAllWebhookMappings(prev => ({
-      ...prev,
-      [activeWebhookSource]: {
-        ...prev[activeWebhookSource],
-        [tokenKey]: updatedPath
-      }
-    }));
+    setAllWebhookMappings(prev => {
+      const sourceMap = prev[activeWebhookSource] || createDefaultMapping();
+      return {
+        ...prev,
+        [activeWebhookSource]: {
+          ...sourceMap,
+          [tokenKey]: updatedPath
+        }
+      };
+    });
   };
 
-  const activeMappings = allWebhookMappings[activeWebhookSource] || {};
+  const handleAddCustomVariable = () => {
+    if (!newVariableKey.trim()) return;
+    
+    // Convert to token friendly format (lowercase, replace spaces with underscores)
+    const formattedKey = newVariableKey.trim().toLowerCase().replace(/\s+/g, '_');
+    
+    setAllWebhookMappings(prev => {
+      const sourceMap = prev[activeWebhookSource] || createDefaultMapping();
+      if (sourceMap[formattedKey] !== undefined) {
+        toast.error("Variable already exists");
+        return prev;
+      }
+      return {
+        ...prev,
+        [activeWebhookSource]: {
+          ...sourceMap,
+          [formattedKey]: ""
+        }
+      };
+    });
+    setNewVariableKey("");
+  };
+
+  const handleRemoveCustomVariable = (tokenKey) => {
+    setAllWebhookMappings(prev => {
+      const sourceMap = { ...(prev[activeWebhookSource] || createDefaultMapping()) };
+      delete sourceMap[tokenKey];
+      return {
+        ...prev,
+        [activeWebhookSource]: sourceMap
+      };
+    });
+  };
+
+  const activeMappings = allWebhookMappings[activeWebhookSource] || createDefaultMapping();
+  const activeWebhookConfig = webhookConfigs.find(w => w.id === activeWebhookSource);
+  let availableVariables = [];
+  if (activeWebhookConfig && activeWebhookConfig.selectedVariables) {
+    try {
+      availableVariables = JSON.parse(activeWebhookConfig.selectedVariables);
+    } catch (e) {
+      availableVariables = [];
+    }
+  }
+
+  const MultiVariableSelector = ({ value, onChange, availableVars }) => {
+    const selectedItems = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const [selectedOpt, setSelectedOpt] = useState("");
+    const [customText, setCustomText] = useState("");
+
+    const handleAdd = (valToAdd) => {
+      if (!valToAdd) return;
+      const newItems = [...selectedItems, valToAdd];
+      onChange(newItems.join(", "));
+      setSelectedOpt("");
+      setCustomText("");
+    };
+
+    const handleRemove = (idx) => {
+      const newItems = [...selectedItems];
+      newItems.splice(idx, 1);
+      onChange(newItems.join(", "));
+    };
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+        {selectedItems.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {selectedItems.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', background: '#e2e8f0', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                {item}
+                <button onClick={() => handleRemove(idx)} style={{ border: 'none', background: 'transparent', marginLeft: '6px', cursor: 'pointer', color: '#64748b', padding: 0 }}>&times;</button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <select 
+            value={selectedOpt} 
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "OTHER") {
+                setSelectedOpt("OTHER");
+              } else if (val) {
+                handleAdd(val);
+              } else {
+                setSelectedOpt("");
+              }
+            }}
+            style={{ padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', flex: 1, fontSize: '0.85rem' }}
+          >
+            <option value="">-- Select Variable --</option>
+            {availableVars.map(v => (
+              <option key={v} value={v}>{v}</option>
+            ))}
+            <option value="OTHER">Other (Plain Text)</option>
+          </select>
+          {selectedOpt === "OTHER" && (
+            <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
+              <input 
+                type="text" 
+                value={customText} 
+                onChange={(e) => setCustomText(e.target.value)} 
+                placeholder="Enter text..." 
+                style={{ padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '4px', flex: 1, fontSize: '0.85rem' }}
+              />
+              <button onClick={() => handleAdd(customText)} style={{ padding: '6px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Add</button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.settingsFormViewNode}>
@@ -273,9 +402,9 @@ export default function TemplateGeometry() {
 
             <div className={styles.variableMappingRowsStackList}>
               {Object.entries(activeMappings).map(([tokenKey, expressionPath]) => (
-                <div key={tokenKey} className={styles.variableMappingRecordInteractionRow}>
+                <div key={tokenKey} className={styles.variableMappingRecordInteractionRow} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   
-                  <div className={styles.templateTokenIdentifierMetadataBlock}>
+                  <div className={styles.templateTokenIdentifierMetadataBlock} style={{ flex: '0 0 250px' }}>
                     <FiCode size={14} className={styles.tokenTagDecorativeIcon} />
                     <span className={styles.tokenTextLiteralLabel}>{"{{"}{tokenKey}{"}}"}</span>
                   </div>
@@ -284,18 +413,45 @@ export default function TemplateGeometry() {
                     <FiLink size={13} className={styles.connectorLinkChainIcon} />
                   </div>
 
-                  <div className={styles.jsonExpressionInputTrackingFlexWrapper}>
-                    <input 
-                      type="text" 
+                  <div className={styles.jsonExpressionInputTrackingFlexWrapper} style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
+                    <MultiVariableSelector 
                       value={expressionPath} 
-                      onChange={(e) => handleUpdateMappingPath(tokenKey, e.target.value)}
-                      placeholder="e.g. root.property_name"
-                      className={styles.monospaceJsonPathFieldInput}
+                      onChange={(newVal) => handleUpdateMappingPath(tokenKey, newVal)}
+                      availableVars={availableVariables}
                     />
                   </div>
 
+                  {!DEFAULT_TOKENS.includes(tokenKey) && (
+                    <button 
+                      className={styles.removeVariableBtn} 
+                      onClick={() => handleRemoveCustomVariable(tokenKey)}
+                      style={{ padding: '8px 12px', background: '#ffebee', color: '#d32f2f', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                  {DEFAULT_TOKENS.includes(tokenKey) && (
+                    <div style={{ width: '70px', textAlign: 'center', fontSize: '0.75rem', color: '#999', fontWeight: 'bold' }}>DEFAULT</div>
+                  )}
                 </div>
               ))}
+            </div>
+
+            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', padding: '1.5rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Add Custom Variable</label>
+                <input 
+                  type="text" 
+                  value={newVariableKey}
+                  onChange={(e) => setNewVariableKey(e.target.value)}
+                  placeholder="custom_variable_name"
+                  style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '6px', fontFamily: 'monospace' }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddCustomVariable()}
+                />
+              </div>
+              <AdminButton variant="secondary" onClick={handleAddCustomVariable}>
+                + Add Variable
+              </AdminButton>
             </div>
           </div>
 
