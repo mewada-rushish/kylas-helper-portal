@@ -8,7 +8,7 @@ import {
 import toast from "react-hot-toast";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
-import MultiSelectDropdown from '@/components/ui/dropdown/multi-select-dropdown';
+import MultiSelectDropdown from "@/components/ui/multi-select-dropdown/multi-select-dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./TemplateGeometry.module.css";
 
