@@ -110,7 +110,7 @@
   box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px; /* Increased gap */
   backdrop-filter: blur(10px);
   box-sizing: border-box;
   max-height: 300px;
@@ -151,8 +151,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  font-size: 13px;
+  padding: 10px 14px; /* Increased padding */
+  font-size: 13.5px; /* Slightly larger font */
   color: var(--foreground);
   border-radius: 8px;
   cursor: pointer;
