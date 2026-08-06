@@ -177,7 +177,7 @@ export class AutomationEngine {
       try {
         if (node.type === 'trigger') {
           // just pass through
-        } else if (node.type === 'condition') {
+        } else if (node.type === 'condition_router') {
           nextNodeId = await this.evaluateConditionNode(node, context);
         } else if (node.type === 'action') {
           const stepResult = await this.executeActionNode(node, context);
@@ -199,10 +199,10 @@ export class AutomationEngine {
         });
         
         // Find next node via edges if not a condition (which calculates it dynamically)
-        if (node.type !== 'condition') {
-          const outgoingEdges = this.edges.filter(e => e.source === node.id);
+        if (node.type !== 'condition_router') {
+          const outgoingEdges = this.edges.filter(e => e.fromPlug?.includes(node.id));
           if (outgoingEdges.length > 0) {
-            nextNodeId = outgoingEdges[0].target; // Simple linear fallback
+            nextNodeId = outgoingEdges[0].toPlug?.replace('target-', ''); // Simple linear fallback
           }
         }
 
@@ -239,8 +239,8 @@ export class AutomationEngine {
       if (branch.isFallback) {
         // Only evaluate fallback if we haven't found a match
         if (!nextNodeId) {
-           const outEdge = this.edges.find(e => e.source === node.id && (e.sourceHandle || "").includes(branch.branchId));
-           if (outEdge) nextNodeId = outEdge.target;
+           const outEdge = this.edges.find(e => e.fromPlug?.includes(node.id) && e.fromPlug?.includes(branch.branchId));
+           if (outEdge) nextNodeId = outEdge.toPlug?.replace('target-', '');
         }
         continue;
       }
@@ -271,9 +271,9 @@ export class AutomationEngine {
       }
 
       if (isMatch) {
-        const outEdge = this.edges.find(e => e.source === node.id && (e.sourceHandle || "").includes(branch.branchId));
+        const outEdge = this.edges.find(e => e.fromPlug?.includes(node.id) && e.fromPlug?.includes(branch.branchId));
         if (outEdge) {
-          nextNodeId = outEdge.target;
+          nextNodeId = outEdge.toPlug?.replace('target-', '');
           await this.appendLog(`Condition branch ${branch.branchId} matched.`);
           break;
         }
