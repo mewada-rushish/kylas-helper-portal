@@ -13,19 +13,40 @@ import toast from "react-hot-toast";
 import styles from "./WorkflowSettings.module.css";
 
 
-const generateSmartDefaultName = (path) => {
-  const parts = path.split('.');
+const generateSmartDefaultName = (path, currentList = []) => {
+  let parts = path.split('.');
   let defaultName = parts.pop() || "variable_name";
-  if (defaultName === 'id' && parts.length > 0) {
+  
+  if (!isNaN(defaultName) && parts.length > 0) {
+    defaultName = parts.pop() + '_' + defaultName;
+  }
+  
+  let uniqueName = defaultName;
+  let usedParts = [];
+  
+  while (currentList.some(item => item.customName === uniqueName) && parts.length > 0) {
     let prev = parts.pop();
     if (!isNaN(prev) && parts.length > 0) {
         prev = parts.pop() + '_' + prev;
     }
-    defaultName = prev + (prev.includes('_') ? '_id' : 'Id'); 
-  } else if (!isNaN(defaultName) && parts.length > 0) {
-    defaultName = parts.pop() + '_' + defaultName;
+    usedParts.unshift(prev);
+    
+    let prefix = usedParts.join('_');
+    if (defaultName.toLowerCase() === 'id') {
+       uniqueName = prefix + (prefix.includes('_') ? '_id' : 'Id');
+    } else {
+       uniqueName = prefix + (prefix.includes('_') ? '_' + defaultName : defaultName.charAt(0).toUpperCase() + defaultName.slice(1));
+    }
   }
-  return defaultName;
+  
+  let counter = 1;
+  let finalName = uniqueName;
+  while (currentList.some(item => item.customName === finalName)) {
+    finalName = `${uniqueName}_${counter}`;
+    counter++;
+  }
+
+  return finalName;
 };
 
 const MOCK_RESPONSE_PAYLOAD_TREE = {
@@ -171,12 +192,23 @@ export default function WorkflowSettings() {
       const res = await fetch("/api/settings/webhooks");
       if (!res.ok) throw new Error("Failed to load webhooks");
       const data = await res.json();
-      const parsedData = data.map(hook => ({
-        ...hook,
-        headers: safeParseArray(hook.headers),
-        queryParams: safeParseArray(hook.queryParams),
-        selectedVariables: safeParseArray(hook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: generateSmartDefaultName(v), type: 'text' } : v),
-      }));
+      const parsedData = data.map(hook => {
+        let updatedSelectedVars = [];
+        safeParseArray(hook.selectedVariables).forEach(v => {
+          if (typeof v === 'string') {
+            updatedSelectedVars.push({ path: v, customName: generateSmartDefaultName(v, updatedSelectedVars), type: 'text' });
+          } else {
+            updatedSelectedVars.push(v);
+          }
+        });
+        
+        return {
+          ...hook,
+          headers: safeParseArray(hook.headers),
+          queryParams: safeParseArray(hook.queryParams),
+          selectedVariables: updatedSelectedVars,
+        };
+      });
       setWebhooks(parsedData);
     } catch (err) {
       toast.error(err.message);
@@ -210,7 +242,16 @@ export default function WorkflowSettings() {
       const newHook = await res.json();
       newHook.headers = safeParseArray(newHook.headers);
       newHook.queryParams = safeParseArray(newHook.queryParams);
-      newHook.selectedVariables = safeParseArray(newHook.selectedVariables).map(v => typeof v === 'string' ? { path: v, customName: generateSmartDefaultName(v), type: 'text' } : v);
+      
+      let updatedSelectedVars = [];
+      safeParseArray(newHook.selectedVariables).forEach(v => {
+        if (typeof v === 'string') {
+          updatedSelectedVars.push({ path: v, customName: generateSmartDefaultName(v, updatedSelectedVars), type: 'text' });
+        } else {
+          updatedSelectedVars.push(v);
+        }
+      });
+      newHook.selectedVariables = updatedSelectedVars;
       setWebhooks(prev => [newHook, ...prev]);
       setSelectedWebhookId(newHook.id);
       setHasTested(false);
@@ -304,7 +345,7 @@ export default function WorkflowSettings() {
     if (exists) {
       newList = currentList.filter(item => item.path !== path);
     } else {
-      const defaultName = generateSmartDefaultName(path);
+      const defaultName = generateSmartDefaultName(path, currentList);
       newList = [...currentList, { path, customName: defaultName, type: valueType }];
     }
     

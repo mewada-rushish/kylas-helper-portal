@@ -231,18 +231,44 @@ export default function IncomingWebhooks() {
     if (exists) {
       newList = currentList.filter(item => item.path !== path);
     } else {
-      const parts = path.split('.');
+      let parts = path.split('.');
       let defaultName = parts.pop() || "variable_name";
-      if (defaultName === 'id' && parts.length > 0) {
+      
+      // Handle trailing array indices directly
+      if (!isNaN(defaultName) && parts.length > 0) {
+        defaultName = parts.pop() + '_' + defaultName;
+      }
+      
+      let uniqueName = defaultName;
+      let usedParts = [];
+      
+      // Check for collisions and prepend path segments until unique
+      while (currentList.some(item => item.customName === uniqueName) && parts.length > 0) {
         let prev = parts.pop();
         if (!isNaN(prev) && parts.length > 0) {
             prev = parts.pop() + '_' + prev;
         }
-        defaultName = prev + (prev.includes('_') ? '_id' : 'Id'); 
-      } else if (!isNaN(defaultName) && parts.length > 0) {
-        defaultName = parts.pop() + '_' + defaultName;
+        usedParts.unshift(prev);
+        
+        let prefix = usedParts.join('_');
+        
+        // Formatting rules (camelCase vs snake_case based on context)
+        if (defaultName.toLowerCase() === 'id') {
+           uniqueName = prefix + (prefix.includes('_') ? '_id' : 'Id');
+        } else {
+           uniqueName = prefix + (prefix.includes('_') ? '_' + defaultName : defaultName.charAt(0).toUpperCase() + defaultName.slice(1));
+        }
       }
-      newList = [...currentList, { path, customName: defaultName, type: valueType }];
+      
+      // Fallback: if somehow STILL not unique, append an incrementing number
+      let counter = 1;
+      let finalName = uniqueName;
+      while (currentList.some(item => item.customName === finalName)) {
+        finalName = `${uniqueName}_${counter}`;
+        counter++;
+      }
+
+      newList = [...currentList, { path, customName: finalName, type: valueType }];
     }
     setWebhooks(prev => prev.map(h => h.id === selectedWebhookId ? { ...h, selectedVariables: newList } : h));
   };

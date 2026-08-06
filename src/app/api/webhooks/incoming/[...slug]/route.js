@@ -49,9 +49,50 @@ export async function POST(request, { params }) {
       JSON.stringify(payload, null, 2)
     );
 
-    // (Future Step 5: Trigger Automation Workflows)
+    // 5. Trigger Automation Workflows
+    // Find all active workflows for this trigger OR workflows that are currently in test mode
+    const activeWorkflows = await prisma.workflowRule.findMany({
+      where: {
+        trigger: pathname,
+        status: 'active'
+      }
+    });
 
-    return NextResponse.json({ status: "SUCCESS", message: "Webhook processed" });
+    const pendingTests = await prisma.workflowExecution.findMany({
+      where: {
+        status: 'PENDING_TEST',
+        workflow: {
+          trigger: pathname
+        }
+      },
+      include: { workflow: true }
+    });
+
+    // Execute active workflows normally (we would normally do this async, but doing await here for simplicity)
+    const { AutomationEngine } = await import('@/lib/AutomationEngine');
+    
+    for (const rule of activeWorkflows) {
+      try {
+        const engine = new AutomationEngine(rule.id);
+        await engine.init(config.id);
+        await engine.run(payload);
+      } catch (err) {
+        console.error(`Workflow ${rule.id} failed:`, err);
+      }
+    }
+
+    // Execute pending tests
+    for (const testExecution of pendingTests) {
+      try {
+        const engine = new AutomationEngine(testExecution.workflowId);
+        await engine.init(config.id, testExecution.id); // pass the existing executionId
+        await engine.run(payload);
+      } catch (err) {
+        console.error(`Test execution ${testExecution.id} failed:`, err);
+      }
+    }
+
+    return NextResponse.json({ status: "SUCCESS", message: "Webhook processed and workflows triggered" });
   } catch (error) {
     console.error(`POST ${pathname} error:`, error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

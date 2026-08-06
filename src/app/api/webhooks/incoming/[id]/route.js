@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { logSystemAction } from "@/lib/logger";
 
 export async function POST(request, { params }) {
-  const { id } = params; // This matches the dynamic segment [id]
+  const { id } = await params; // This matches the dynamic segment [id]
 
   try {
     // 1. Look up the configuration by ID
@@ -48,9 +48,29 @@ export async function POST(request, { params }) {
       JSON.stringify(payload, null, 2)
     );
 
-    // (Future Step 5: Trigger Automation Workflows)
+    // 5. Trigger Automation Workflows
+    const workflows = await prisma.workflowRule.findMany({
+      where: {
+        trigger: config.endpointPath,
+        status: "active"
+      }
+    });
 
-    return NextResponse.json({ status: "SUCCESS", message: "Webhook processed" });
+    if (workflows.length > 0) {
+      const { AutomationEngine } = await import("@/lib/AutomationEngine");
+      for (const workflow of workflows) {
+        try {
+          const engine = new AutomationEngine(workflow.id);
+          await engine.init(config.id);
+          // Run asynchronously
+          engine.run(payload).catch(err => console.error("Workflow background error:", err));
+        } catch (e) {
+          console.error(`Failed to start workflow ${workflow.id}:`, e);
+        }
+      }
+    }
+
+    return NextResponse.json({ status: "SUCCESS", message: `Webhook processed and triggered ${workflows.length} workflows` });
   } catch (error) {
     console.error(`POST /api/webhooks/incoming/${id} error:`, error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

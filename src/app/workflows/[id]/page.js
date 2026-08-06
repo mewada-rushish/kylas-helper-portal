@@ -14,18 +14,14 @@ import Dropdown from "@/components/ui/dropdown/dropdown";
 import toast from "react-hot-toast";
 import styles from "./workflows.module.css";
 
-const TRIGGER_OPTIONS = [
+// Dynamic trigger options will be loaded from Incoming Webhooks
+const DEFAULT_TRIGGER_OPTIONS = [
   { label: "Lead is Created", value: "lead.created" },
-  { label: "Lead is Updated", value: "lead.updated" },
-  { label: "Deal is Won", value: "deal.won" },
-  { label: "Contact is Updated", value: "contact.updated" }
+  { label: "Lead is Updated", value: "lead.updated" }
 ];
 
-const TRIGGER_FIELDS = [
-  { value: "payload.stage", label: "Lead Pipeline Stage" },
-  { value: "payload.leadTemperature", label: "Lead Temperature" },
-  { value: "payload.interestedIn", label: "Interested In" },
-  { value: "payload.city", label: "Lead City" }
+const DEFAULT_TRIGGER_FIELDS = [
+  { value: "payload.id", label: "ID" }
 ];
 
 const OPERATOR_OPTIONS = [
@@ -35,12 +31,20 @@ const OPERATOR_OPTIONS = [
 ];
 
 const ACTION_OPTIONS = [
+  { value: "api_call", label: "External: HTTP API Call" },
+  { value: "transform_concat", label: "Data: Concat Variables" },
+  { value: "transform_trim", label: "Data: Trim Whitespace" },
+  { value: "transform_filter", label: "Data: Filter Array" },
   { value: "update_owner", label: "Kylas: Assign Owner" },
   { value: "create_task", label: "Kylas: Create Task" },
   { value: "send_whatsapp", label: "WhatsApp: Broadcast Alert" }
 ];
 
 const DEFAULT_ACTION_PAYLOADS = {
+  api_call: { url: "https://api.example.com", method: "GET", headers: "{\n  \"Authorization\": \"Bearer TOKEN\"\n}", body: "" },
+  transform_concat: { varA: "{{trigger.payload.firstName}}", varB: "{{trigger.payload.lastName}}", separator: " " },
+  transform_trim: { input: "{{trigger.payload.name}}" },
+  transform_filter: { inputArray: "{{trigger.payload.products}}", filterKey: "type", filterValue: "subscription" },
   update_owner: { ownerId: "usr_default_01", assignmentMode: "round_robin", backupOwnerId: "usr_backup_99", notifyTeam: true },
   create_task: { taskTitle: "Follow up with client", dueDateOffsetDays: 2, priority: "high", description: "Automated task setup rules." },
   send_whatsapp: { templateId: "default_welcome_alert", languageCode: "en_IN", fallbackChannel: "sms", retryCount: 3 }
@@ -67,6 +71,59 @@ const calculateBezierPath = (startX, startY, endX, endY) => {
   return `M ${startX} ${startY} C ${startX + controlPointOffset} ${startY}, ${endX - controlPointOffset} ${endY}, ${endX} ${endY}`;
 };
 
+const getAncestors = (nodeId, allNodes, allEdges, visited = new Set()) => {
+  if (visited.has(nodeId)) return [];
+  visited.add(nodeId);
+  
+  const parentEdges = allEdges.filter(e => e.target.startsWith(`target-${nodeId}`));
+  let ancestors = [];
+  
+  for (const edge of parentEdges) {
+    const parentIdMatch = edge.source.match(/source-(node_\w+)/);
+    if (parentIdMatch) {
+      const parentId = parentIdMatch[1];
+      ancestors.push(parentId);
+      ancestors = ancestors.concat(getAncestors(parentId, allNodes, allEdges, visited));
+    }
+  }
+  return [...new Set(ancestors)];
+};
+
+const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks) => {
+  const ancestors = getAncestors(nodeId, allNodes, allEdges);
+  const ancestorNodes = allNodes.filter(n => ancestors.includes(n.id) || n.type === 'trigger');
+  
+  let allFields = [];
+  const activeTriggerEvents = ancestorNodes.filter(n => n.type === 'trigger').map(n => n.event);
+  
+  activeTriggerEvents.forEach(evt => {
+    const hook = webhooks.find(h => h.endpointPath === evt);
+    if (hook && hook.selectedVariables) {
+      try {
+        const vars = JSON.parse(hook.selectedVariables);
+        if (Array.isArray(vars)) {
+          vars.forEach(v => {
+            if (v && v.path) {
+              if (!allFields.some(f => f.value === `payload.${v.path}`)) {
+                allFields.push({ value: `payload.${v.path}`, label: `${hook.name}: ${v.customName || v.path}` });
+              }
+            }
+          });
+        }
+      } catch(e) {}
+    }
+  });
+
+  ancestorNodes.filter(n => n.type === 'action' && n.outputVariableName).forEach(n => {
+    allFields.push({ 
+      value: `step_${n.id}.${n.outputVariableName}`, 
+      label: `${n.title || 'Action'}: ${n.outputVariableName}` 
+    });
+  });
+
+  return allFields.length > 0 ? allFields : DEFAULT_TRIGGER_FIELDS;
+};
+
 export default function WorkflowCanvasEngine() {
   const router = useRouter();
   const params = useParams();
@@ -77,48 +134,75 @@ export default function WorkflowCanvasEngine() {
   const [workflowStatus, setWorkflowStatus] = useState("draft");
   const [isFetching, setIsFetching] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const [triggerOptions, setTriggerOptions] = useState(DEFAULT_TRIGGER_OPTIONS);
+  const [triggerFields, setTriggerFields] = useState(DEFAULT_TRIGGER_FIELDS);
+  const [availableWebhooks, setAvailableWebhooks] = useState([]);
+  const [availableOutgoingWebhooks, setAvailableOutgoingWebhooks] = useState([]);
+  const [invoiceTemplates, setInvoiceTemplates] = useState([]);
 
   const [nodes, setNodes] = useState([
-    { id: "node_1", type: "trigger", title: "Workflow Trigger", x: 40, y: 220, event: "lead.created" },
-    { 
-      id: "node_2", 
-      type: "condition_router", 
-      title: "Hybrid Evaluation Router", 
-      x: 560, 
-      y: 60, 
-      branches: [
-        { 
-          branchId: "branch_hot_gym", 
-          name: "Path 1: Hot Gym Prospects", 
-          grouped: true,
-          conditions: { 
-            rules: [
-              { field: "payload.stage", operator: "equals", value: "Qualified", joinOperator: "AND" },
-              { field: "payload.leadTemperature", operator: "equals", value: "Hot", joinOperator: "AND" },
-              { field: "payload.interestedIn", operator: "equals", value: "Gym", joinOperator: "AND" }
-            ] 
-          } 
-        },
-        { branchId: "branch_fallback", name: "Path 2: Else (Fallback)", isFallback: true, grouped: true }
-      ] 
-    },
-    { id: "node_3", type: "action", title: "Assign Close Team", x: 1160, y: 60, actionType: "update_owner", payloadOverrides: [{ key: "ownerId", value: "usr_closers_99" }] },
-    { id: "node_4", type: "action", title: "Send WhatsApp Alert", x: 1160, y: 420, actionType: "send_whatsapp", payloadOverrides: [{ key: "templateId", value: "unrouted_stage_notification" }] }
+    { id: "node_1", type: "trigger", title: "Workflow Trigger", x: 40, y: 220, event: "lead.created" }
   ]);
 
-  const [edges, setEdges] = useState([
-    { id: "edge_1", fromPlug: "source-node_1-main", toPlug: "target-node_2", label: "Evaluate Data" },
-    { id: "edge_2", fromPlug: "source-node_2-branch_hot_gym-grouped", toPlug: "target-node_3", label: "True Branch" },
-    { id: "edge_3", fromPlug: "source-node_2-branch_fallback-grouped", toPlug: "target-node_4", label: "Fallback Path" }
-  ]);
+  const [edges, setEdges] = useState([]);
 
   const [activeTab, setActiveTab] = useState("builder");
   const [saveStatus, setSaveStatus] = useState("All changes saved");
   const canvasRef = useRef(null);
 
+  // Testing & History States
+  const [isTestingMode, setIsTestingMode] = useState(false);
+  const [testExecution, setTestExecution] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [versions, setVersions] = useState([]);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const pollIntervalRef = useRef(null);
+
   // Fetch Workflow data on mount
   useEffect(() => {
     async function fetchWorkflow() {
+      // Fetch incoming webhooks first to populate trigger options
+      try {
+        const hooksRes = await fetch("/api/webhooks/incoming");
+        if (hooksRes.ok) {
+          const hooksData = await hooksRes.json();
+          if (hooksData && hooksData.length > 0) {
+            setAvailableWebhooks(hooksData);
+            setTriggerOptions(hooksData.map(h => ({
+              label: h.name || "Unnamed Webhook",
+              value: h.endpointPath
+            })));
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load webhooks", e);
+      }
+      
+      // Fetch outgoing webhooks
+      try {
+        const outHooksRes = await fetch("/api/webhooks/outgoing");
+        if (outHooksRes.ok) {
+          const outHooksData = await outHooksRes.json();
+          if (outHooksData && outHooksData.length > 0) {
+            setAvailableOutgoingWebhooks(outHooksData);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load outgoing webhooks", e);
+      }
+
+      // Fetch Invoice Templates
+      try {
+        const tplRes = await fetch("/api/invoices/templates");
+        if (tplRes.ok) {
+          const tplData = await tplRes.json();
+          setInvoiceTemplates(tplData || []);
+        }
+      } catch (e) {
+        console.error("Failed to load templates", e);
+      }
+
       if (!params.id) return;
       if (params.id.startsWith("wf_new_")) {
         setIsFetching(false);
@@ -147,8 +231,102 @@ export default function WorkflowCanvasEngine() {
     fetchWorkflow();
   }, [params.id]);
 
-  const [logs] = useState(INITIAL_LOGS);
-  const [selectedLog, setSelectedLog] = useState(null);
+  const fetchLogs = async () => {
+    if (!params.id || params.id.startsWith("wf_new_")) return;
+    try {
+      const res = await fetch(`/api/workflows/${params.id}/logs`);
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch logs", e);
+    }
+  };
+
+  const fetchVersions = async () => {
+    if (!params.id) return;
+    try {
+      const res = await fetch(`/api/workflows/${params.id}/versions`);
+      if (res.ok) {
+        const data = await res.json();
+        setVersions(data.versions || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch versions", e);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "logs") fetchLogs();
+    if (activeTab === "versions") fetchVersions();
+  }, [activeTab]);
+
+  const getExecutedNodeIds = () => {
+    if (!testExecution || !testExecution.logs) return [];
+    try {
+      const parsedLogs = JSON.parse(testExecution.logs);
+      const executedIds = [];
+      parsedLogs.forEach(log => {
+        const match = log.message.match(/Executing node: (node_\w+)/);
+        if (match) {
+          executedIds.push(match[1]);
+        }
+      });
+      return executedIds;
+    } catch(e) {
+      return [];
+    }
+  };
+
+  const executedNodeIds = getExecutedNodeIds();
+
+  const handleTestWorkflow = async () => {
+    if (!params.id) {
+      toast.error("Invalid workflow ID.");
+      return;
+    }
+    
+    try {
+      setIsTestingMode(true);
+      setTestExecution(null);
+      const testStartTime = Date.now();
+      
+      const res = await fetch(`/api/workflows/${params.id}/test/init`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to initialize test mode");
+      
+      toast.success("Testing mode activated. Trigger your webhook now!");
+
+      pollIntervalRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/workflows/${params.id}/test/status?since=${testStartTime}`);
+          if (pollRes.ok) {
+            const data = await pollRes.json();
+            if (data.hasResult && data.execution && data.execution.status !== "PENDING_TEST" && data.execution.status !== "RUNNING") {
+              // Webhook hit completed
+              setTestExecution(data.execution);
+              setIsTestingMode(false);
+              clearInterval(pollIntervalRef.current);
+              toast.success("Webhook hit received and workflow executed!");
+              if (activeTab === "logs") fetchLogs();
+            }
+          }
+        } catch (e) {
+          console.error("Test polling error", e);
+        }
+      }, 2000);
+      
+    } catch (e) {
+      toast.error(e.message);
+      setIsTestingMode(false);
+    }
+  };
+
+  const cancelTestWorkflow = () => {
+    setIsTestingMode(false);
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    toast.info("Testing cancelled.");
+  };
 
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -228,6 +406,44 @@ export default function WorkflowCanvasEngine() {
     }, 2000);
     return () => clearTimeout(debounceTimer);
   }, [nodes, edges, workflowName, workflowTrigger, workflowStatus, params.id]);
+
+  // Dynamically update available fields in Condition Router based on selected triggers
+  useEffect(() => {
+    if (availableWebhooks.length === 0) return;
+    const activeTriggerEvents = nodes.filter(n => n.type === 'trigger').map(n => n.event);
+    
+    let allFields = [];
+    activeTriggerEvents.forEach(evt => {
+      const hook = availableWebhooks.find(h => h.endpointPath === evt);
+      if (hook && hook.selectedVariables) {
+        try {
+          const vars = JSON.parse(hook.selectedVariables);
+          if (Array.isArray(vars)) {
+            vars.forEach(v => {
+              if (v && v.path) {
+                if (!allFields.some(f => f.value === `payload.${v.path}`)) {
+                  allFields.push({ value: `payload.${v.path}`, label: `${hook.name}: ${v.customName || v.path}` });
+                }
+              }
+            });
+          }
+        } catch(e) {}
+      }
+    });
+
+    nodes.filter(n => n.type === 'action' && n.outputVariableName).forEach(n => {
+      allFields.push({ 
+        value: `step_${n.id}.${n.outputVariableName}`, 
+        label: `${n.title || 'Action'}: ${n.outputVariableName}` 
+      });
+    });
+
+    if (allFields.length === 0) {
+      setTriggerFields(DEFAULT_TRIGGER_FIELDS);
+    } else {
+      setTriggerFields(allFields);
+    }
+  }, [nodes, availableWebhooks]);
 
   useEffect(() => {
     const canvasElement = canvasRef.current;
@@ -317,9 +533,19 @@ export default function WorkflowCanvasEngine() {
 
   const handleSpawnNodeFromMenu = (type) => {
     const nextId = `node_${Date.now()}`;
-    const spawnedNode = type === "condition_router" 
-      ? { id: nextId, type: "condition_router", title: "Condition Router", x: contextMenu.spawnX, y: contextMenu.spawnY, branches: [{ branchId: `b_${Date.now()}`, name: "Path 1", grouped: true, conditions: { rules: [{ field: "payload.stage", operator: "equals", value: "", joinOperator: "AND" }] } }, { branchId: `bf_${Date.now()}`, name: "Else", isFallback: true, grouped: true }] }
-      : { id: nextId, type: "action", title: "New Action Step", x: contextMenu.spawnX, y: contextMenu.spawnY, actionType: "update_owner", payloadOverrides: [] };
+    let spawnedNode;
+    
+    if (type === "condition_router") {
+      spawnedNode = { id: nextId, type: "condition_router", title: "Condition Router", x: contextMenu.spawnX, y: contextMenu.spawnY, branches: [{ branchId: `b_${Date.now()}`, name: "Path 1", grouped: true, conditions: { rules: [{ field: "payload.stage", operator: "equals", value: "", joinOperator: "AND" }] } }, { branchId: `bf_${Date.now()}`, name: "Else", isFallback: true, grouped: true }] };
+    } else if (type === "trigger") {
+      spawnedNode = { id: nextId, type: "trigger", title: "Additional Trigger", x: contextMenu.spawnX, y: contextMenu.spawnY, event: "lead.created" };
+    } else if (type === "transform_trim" || type === "transform_concat" || type === "transform_filter") {
+      spawnedNode = { id: nextId, type: "action", title: "Data Transform", x: contextMenu.spawnX, y: contextMenu.spawnY, actionType: type, payloadOverrides: [] };
+    } else if (type === "generate_invoice") {
+      spawnedNode = { id: nextId, type: "generate_invoice", title: "Generate Invoice", x: contextMenu.spawnX, y: contextMenu.spawnY, mappings: {} };
+    } else {
+      spawnedNode = { id: nextId, type: "action", title: "New Action Step", x: contextMenu.spawnX, y: contextMenu.spawnY, actionType: "api_call", payloadOverrides: [] };
+    }
 
     setNodes(prev => [...prev, spawnedNode]);
     closeContextMenu();
@@ -485,6 +711,7 @@ export default function WorkflowCanvasEngine() {
     setSaveStatus("Saving workflow...");
     setIsSaving(true);
     try {
+      const configStr = JSON.stringify({ nodes, edges });
       const res = await fetch(`/api/workflows/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -493,14 +720,26 @@ export default function WorkflowCanvasEngine() {
           trigger: workflowTrigger,
           status: status,
           nodesCount: nodes.length,
-          config: JSON.stringify({ nodes, edges })
+          config: configStr
         })
       });
 
       if (!res.ok) throw new Error("Failed to save workflow");
+      
+      // Auto-save a version
+      await fetch(`/api/workflows/${params.id}/versions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          config: { nodes, edges },
+          description: `User triggered save as ${status}`
+        })
+      });
+
       setWorkflowStatus(status);
       setSaveStatus("Workflow successfully saved");
       toast.success(`Workflow configuration has been saved as ${status}.`);
+      fetchVersions(); // Refresh versions list
     } catch (err) {
       setSaveStatus("Failed to save");
       toast.error(err.message);
@@ -560,25 +799,30 @@ export default function WorkflowCanvasEngine() {
               </div>
             </div>
             <div className={styles.headerActions}>
-              <AdminButton variant="secondary" icon={FiFileText} onClick={() => handleManualSave("draft")} disabled={isSaving}>
+              <AdminButton variant="secondary" icon={FiPlayCircle} onClick={isTestingMode ? cancelTestWorkflow : handleTestWorkflow} disabled={isSaving}>
+                {isTestingMode ? "Listening... (Cancel)" : "Test Workflow"}
+              </AdminButton>
+              <AdminButton variant="secondary" icon={FiFileText} onClick={() => handleManualSave("draft")} disabled={isSaving || isTestingMode}>
                 Save Draft
               </AdminButton>
-              <AdminButton variant="primary" icon={FiSave} onClick={() => handleManualSave("active")} disabled={isSaving}>
+              <AdminButton variant="primary" icon={FiSave} onClick={() => handleManualSave("active")} disabled={isSaving || isTestingMode}>
                 Save Workflow
               </AdminButton>
             </div>
           </header>
 
-          <div className={styles.tabBar}>
-            <button className={`${styles.tabBtn} ${activeTab === "builder" ? styles.tabActive : ""}`} onClick={() => setActiveTab("builder")}>
-              <FiGrid /> Workflow
-            </button>
-            <button className={`${styles.tabBtn} ${activeTab === "history" ? styles.tabActive : ""}`} onClick={() => setActiveTab("history")}>
-              <FiClock /> Version history
-            </button>
-            <button className={`${styles.tabBtn} ${activeTab === "logs" ? styles.tabActive : ""}`} onClick={() => setActiveTab("logs")}>
-              <FiList /> Logs
-            </button>
+          <div className={styles.macOsSegmentedControlContainer}>
+            <div className={styles.macOsSegmentedControlBackground}>
+              <button className={`${styles.segmentBtn} ${activeTab === "builder" ? styles.segmentActive : ""}`} onClick={() => setActiveTab("builder")}>
+                <FiGrid /> Workflow
+              </button>
+              <button className={`${styles.segmentBtn} ${activeTab === "versions" ? styles.segmentActive : ""}`} onClick={() => setActiveTab("versions")}>
+                <FiClock /> Version history
+              </button>
+              <button className={`${styles.segmentBtn} ${activeTab === "logs" ? styles.segmentActive : ""}`} onClick={() => setActiveTab("logs")}>
+                <FiList /> Logs
+              </button>
+            </div>
           </div>
 
           <div className={styles.tabContentFrame}>
@@ -644,19 +888,25 @@ export default function WorkflowCanvasEngine() {
                     })()}
                   </svg>
 
-                  {nodes.map((node) => (
-                    <div 
-                      key={node.id}
-                      className={`${styles.canvasNodeBlockCard} ${styles[`node_${node.type}`]} ${draggingNodeId === node.id ? styles.nodeActiveDraggingState : ""}`}
-                      style={{ left: `${node.x}px`, top: `${node.y}px` }}
-                      onMouseDown={(e) => handleNodeDragStart(e, node.id)}
-                    >
+                  {nodes.map((node) => {
+                    const isExecuted = executedNodeIds.includes(node.id);
+                    return (
+                      <div 
+                        key={node.id}
+                        className={`${styles.canvasNodeBlockCard} ${styles[`node_${node.type}`]} ${draggingNodeId === node.id ? styles.nodeActiveDraggingState : ""}`}
+                        style={{ 
+                          left: `${node.x}px`, 
+                          top: `${node.y}px`,
+                          ...(isExecuted ? { border: '2px solid #10b981', boxShadow: '0 0 15px rgba(16,185,129,0.3)' } : {})
+                        }}
+                        onMouseDown={(e) => handleNodeDragStart(e, node.id)}
+                      >
                       <div className={styles.nodeCardDragHeader}>
                         <div className={styles.nodeCardHeaderLeftTitle}>
                           <FiMove className={styles.dragHandleIconVector} />
                           <h4>{node.title}</h4>
                         </div>
-                        {node.type !== "trigger" && (
+                        {(node.type !== "trigger" || nodes.filter(n => n.type === "trigger").length > 1) && (
                           <button className={styles.deleteNodeBtn} onClick={() => handleDeleteNode(node.id)}><FiX /></button>
                         )}
                       </div>
@@ -667,7 +917,7 @@ export default function WorkflowCanvasEngine() {
                             <label>Incoming Event Channel</label>
                             <div className="dropdownContainerParent">
                               <Dropdown 
-                                options={TRIGGER_OPTIONS}
+                                options={triggerOptions}
                                 selectedValue={node.event}
                                 onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, event: val } : n))}
                               />
@@ -748,7 +998,7 @@ export default function WorkflowCanvasEngine() {
                                           </div>
                                           <div className="dropdownContainerParent" style={{ marginBottom: '10px' }}>
                                             <Dropdown 
-                                              options={TRIGGER_FIELDS} selectedValue={rule.field}
+                                              options={triggerFields.length > 0 ? triggerFields : DEFAULT_TRIGGER_FIELDS} selectedValue={rule.field}
                                               onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
                                             />
                                           </div>
@@ -815,60 +1065,178 @@ export default function WorkflowCanvasEngine() {
                               />
                             </div>
 
+                            {["transform_trim", "transform_concat", "transform_filter", "api_call"].includes(node.actionType) && (
+                              <div style={{ marginTop: '8px' }}>
+                                <label>Save Output As Variable</label>
+                                <input 
+                                  type="text" 
+                                  className={styles.canvasBlockTextInputCond} 
+                                  placeholder="e.g. filtered_array" 
+                                  style={{ marginTop: '4px', width: '100%' }}
+                                  value={node.outputVariableName || ""} 
+                                  onChange={(e) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, outputVariableName: e.target.value } : n))}
+                                />
+                                <p className={styles.nodeHelpText} style={{ marginTop: '4px' }}>This variable will be available to subsequent blocks.</p>
+                              </div>
+                            )}
+
                             <div className={styles.actionPayloadBox}>
                               <div className={styles.actionPayloadHeader}>
-                                <span>JSON Blueprint Mapping Layer</span>
+                                <span>{node.actionType === 'api_call' ? "Outgoing API Mapping" : "JSON Blueprint Mapping Layer"}</span>
                               </div>
                               
-                              <div className={styles.nestedRulesStack}>
-                                {node.payloadOverrides?.map((override, oIdx) => {
-                                  const blueprintKeys = Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).map(k => ({
-                                    label: `${k}`,
-                                    value: k
-                                  }));
+                              {node.actionType === 'api_call' ? (
+                                <div className={styles.nestedRulesStack}>
+                                  <div className={styles.blockFieldRowContent}>
+                                    <label>Select Outgoing API</label>
+                                    <div className="dropdownContainerParent">
+                                      <Dropdown 
+                                        options={availableOutgoingWebhooks.map(h => ({ label: h.name || h.url, value: h.id }))}
+                                        selectedValue={node.externalApiId || ""}
+                                        onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, externalApiId: val, mappings: n.mappings || {} } : n))}
+                                      />
+                                    </div>
+                                  </div>
                                   
-                                  return (
-                                    <div key={oIdx} className={styles.nestedRuleRow}>
-                                      <div className={styles.ruleRowHeader}>
-                                        <span className={styles.ruleLabel}>Override Parameter {oIdx + 1}</span>
-                                        <button 
-                                          className={styles.deleteClauseRuleMiniBtn} 
-                                          onClick={() => handleDeleteActionOverride(node.id, oIdx)}
-                                        >
-                                          <FiX />
-                                        </button>
+                                  {node.externalApiId && (() => {
+                                    const selectedApi = availableOutgoingWebhooks.find(h => h.id === node.externalApiId);
+                                    const apiStr = selectedApi ? ((selectedApi.url || "") + (selectedApi.headers || "") + (selectedApi.bodyPayload || "")) : "";
+                                    const extractedTokens = Array.from(new Set([...apiStr.matchAll(/\{\{\s*(?:#each\s+|#with\s+)?([a-zA-Z0-9_.-]+)\s*\}\}/g)].map(m => m[1])));
+                                    const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks);
+                                    
+                                    if (extractedTokens.length === 0) {
+                                      return (
+                                        <div style={{ marginTop: '12px', fontSize: '12px', color: '#64748b', fontStyle: 'italic' }}>
+                                          No variables required by this API configuration.
+                                        </div>
+                                      );
+                                    }
+
+                                    return (
+                                      <div style={{ marginTop: '12px' }}>
+                                        <label>Map Variables</label>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                                          {extractedTokens.map(token => (
+                                            <div key={token} style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px' }}>
+                                              <div style={{ flex: '0 0 calc(50% - 4px)', fontSize: '11px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '8px' }}>{token}</div>
+                                              <div style={{ flex: '0 0 calc(50% - 4px)' }} className="dropdownContainerParent">
+                                                <Dropdown 
+                                                  options={nodeFields.length > 0 ? nodeFields : [{ label: "No variables available", value: "" }]}
+                                                  selectedValue={node.mappings?.[token] || ""}
+                                                  onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { 
+                                                    ...n, 
+                                                    mappings: { ...(n.mappings || {}), [token]: val } 
+                                                  } : n))}
+                                                />
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
                                       </div>
-                                      <div className={styles.flexInputsRowAction}>
-                                        <div className="dropdownContainerParent">
-                                          <Dropdown 
-                                            options={blueprintKeys}
-                                            selectedValue={override.key}
-                                            onSelect={(val) => handleUpdateActionOverride(node.id, oIdx, "key", val)}
+                                    );
+                                  })()}
+                                </div>
+                              ) : (
+                                <div className={styles.nestedRulesStack}>
+                                  {node.payloadOverrides?.map((override, oIdx) => {
+                                    const blueprintKeys = Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).map(k => ({
+                                      label: `${k}`,
+                                      value: k
+                                    }));
+                                    
+                                    return (
+                                      <div key={oIdx} className={styles.nestedRuleRow}>
+                                        <div className={styles.ruleRowHeader}>
+                                          <span className={styles.ruleLabel}>Override Parameter {oIdx + 1}</span>
+                                          <button 
+                                            className={styles.deleteClauseRuleMiniBtn} 
+                                            onClick={() => handleDeleteActionOverride(node.id, oIdx)}
+                                          >
+                                            <FiX />
+                                          </button>
+                                        </div>
+                                        <div className={styles.flexInputsRowAction}>
+                                          <div className="dropdownContainerParent">
+                                            <Dropdown 
+                                              options={blueprintKeys}
+                                              selectedValue={override.key}
+                                              onSelect={(val) => handleUpdateActionOverride(node.id, oIdx, "key", val)}
+                                            />
+                                          </div>
+                                          <input 
+                                            type="text"
+                                            className={styles.canvasBlockTextInputAction}
+                                            placeholder="Value..."
+                                            value={override.value}
+                                            onChange={(e) => handleUpdateActionOverride(node.id, oIdx, "value", e.target.value)}
                                           />
                                         </div>
-                                        <input 
-                                          type="text"
-                                          className={styles.canvasBlockTextInputAction}
-                                          placeholder="Value..."
-                                          value={override.value}
-                                          onChange={(e) => handleUpdateActionOverride(node.id, oIdx, "value", e.target.value)}
-                                        />
                                       </div>
-                                    </div>
-                                  );
-                                })}
+                                    );
+                                  })}
 
-                                {Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).length > (node.payloadOverrides?.length || 0) && (
-                                  <button 
-                                    className={styles.addClauseRuleTextLink} 
-                                    onClick={() => handleAddActionOverride(node.id)}
-                                  >
-                                    <FiPlus /> Add mapping parameter
-                                  </button>
-                                )}
-                              </div>
+                                  {Object.keys(DEFAULT_ACTION_PAYLOADS[node.actionType] || {}).length > (node.payloadOverrides?.length || 0) && (
+                                    <button 
+                                      className={styles.addClauseRuleTextLink} 
+                                      onClick={() => handleAddActionOverride(node.id)}
+                                    >
+                                      <FiPlus /> Add mapping parameter
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
 
+                            <div 
+                              className={styles.socketAnchorPlugSource}
+                              data-plug-id={`source-${node.id}-main`}
+                              onMouseDown={(e) => handlePlugMouseDown(e, `source-${node.id}-main`, 'source')}
+                              onMouseUp={(e) => handlePlugMouseUp(e, `source-${node.id}-main`, 'source')}
+                            />
+                          </div>
+                        )}
+
+                        {node.type === "generate_invoice" && (
+                          <div className={styles.blockFieldRowContent}>
+                            <label>Invoice Template</label>
+                            <div className="dropdownContainerParent">
+                              <Dropdown 
+                                options={invoiceTemplates.map(t => ({ label: t.name, value: t.id }))}
+                                selectedValue={node.templateId || ""}
+                                onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, templateId: val, mappings: n.mappings || {} } : n))}
+                              />
+                            </div>
+                            
+                            {node.templateId && (() => {
+                              const selectedTemplate = invoiceTemplates.find(t => t.id === node.templateId);
+                              const templateStr = selectedTemplate ? ((selectedTemplate.theme || "") + (selectedTemplate.config || "")) : "";
+                              const extractedTokens = Array.from(new Set([...templateStr.matchAll(/\{\{\s*(?:#each\s+|#with\s+)?([a-zA-Z0-9_.-]+)\s*\}\}/g)].map(m => m[1])));
+                              const displayTokens = extractedTokens.length > 0 ? extractedTokens : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"];
+                              
+                              return (
+                                <div style={{ marginTop: '12px' }}>
+                                  <label>Variable Mappings (Tokens)</label>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                                    {displayTokens.map(token => (
+                                      <div key={token} style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px' }}>
+                                        <div style={{ flex: '0 0 calc(50% - 4px)', fontSize: '11px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '8px' }}>{token}</div>
+                                        <div style={{ flex: '0 0 calc(50% - 4px)' }} className="dropdownContainerParent">
+                                          <Dropdown 
+                                            options={triggerFields.length > 0 ? triggerFields : [{ label: "No variables", value: "" }]}
+                                            selectedValue={node.mappings?.[token] || ""}
+                                            onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { 
+                                              ...n, 
+                                              mappings: { ...(n.mappings || {}), [token]: val } 
+                                            } : n))}
+                                          />
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                            
                             <div 
                               className={styles.socketAnchorPlugSource}
                               data-plug-id={`source-${node.id}-main`}
@@ -887,8 +1255,9 @@ export default function WorkflowCanvasEngine() {
                           onMouseUp={(e) => handlePlugMouseUp(e, `target-${node.id}`, 'target')}
                         />
                       )}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className={styles.zoomControlsPanel}>
@@ -901,29 +1270,37 @@ export default function WorkflowCanvasEngine() {
                 {contextMenu.visible && (
                   <ul className={styles.contextMenuContainer} style={{ left: contextMenu.menuX, top: contextMenu.menuY }}>
                     <li className={styles.contextMenuLabel}>Create Element</li>
-                    <li onClick={() => handleSpawnNodeFromMenu("condition_router")}><FiGitBranch /> Hybrid Condition Router</li>
-                    <li onClick={() => handleSpawnNodeFromMenu("action")}><FiPlayCircle /> Execution Action Block</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("trigger")}><FiZap /> New Workflow Trigger</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("condition_router")}><FiGitBranch /> Condition Router</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("action")}><FiPlayCircle /> External Action / API</li>
+                    <li className={styles.contextMenuLabel}>Data Transformations</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("transform_concat")}><FiPlus /> Concat Variables</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("transform_trim")}><FiMinus /> Trim Whitespace</li>
+                    <li onClick={() => handleSpawnNodeFromMenu("transform_filter")}><FiList /> Filter Data Array</li>
+                    <div style={{ height: '1px', background: '#E2E8F0', margin: '4px 0' }} />
+                    <li onClick={() => handleSpawnNodeFromMenu("generate_invoice")}><FiFileText /> Generate Invoice</li>
                   </ul>
                 )}
               </div>
             )}
 
-            {activeTab === "history" && (
+            {activeTab === "versions" && (
               <div className={styles.historyListFrame}>
                 <div className={styles.infoAlertBanner}>
                   <FiClock /> <span>Graph compilation engine automatically tracks visual coordinate offsets and node expression logic maps.</span>
                 </div>
                 <div className={styles.timelineContainer}>
-                  {MOCK_VERSIONS.map((ver) => (
-                    <div key={ver.versionId} className={styles.timelineItem}>
+                  {versions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No versions saved yet.</p>}
+                  {versions.map((ver) => (
+                    <div key={ver.id} className={styles.timelineItem}>
                       <div className={styles.timelineMarker}><div className={styles.markerCircle} /><div className={styles.markerLine} /></div>
                       <div className={styles.versionCard}>
                         <div className={styles.versionMetaRow}>
-                          <span className={styles.versionBadgeName}>{ver.versionId.toUpperCase()}</span>
-                          <span className={styles.versionTimestampStamp}>{new Date(ver.timestamp).toLocaleString()}</span>
+                          <span className={styles.versionBadgeName}>{ver.versionName.toUpperCase()}</span>
+                          <span className={styles.versionTimestampStamp}>{new Date(ver.createdAt).toLocaleString()}</span>
                         </div>
                         <p className={styles.versionDescText}>{ver.description}</p>
-                        <span className={styles.versionAuthorTag}>Modified by: <strong>{ver.Author}</strong></span>
+                        <span className={styles.versionAuthorTag}>Modified by: <strong>{ver.author}</strong></span>
                       </div>
                     </div>
                   ))}
@@ -936,20 +1313,21 @@ export default function WorkflowCanvasEngine() {
                 <div className={styles.logsListBlockColumn}>
                   <h3>Recent Trigger Events</h3>
                   <div className={styles.logsListStack}>
+                    {logs.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No logs recorded.</p>}
                     {logs.map((log) => (
                       <div 
-                        key={log.logId} 
-                        className={`${styles.logRowItemSummary} ${selectedLog?.logId === log.logId ? styles.logRowActiveSelected : ""}`}
+                        key={log.id} 
+                        className={`${styles.logRowItemSummary} ${selectedLog?.id === log.id ? styles.logRowActiveSelected : ""}`}
                         onClick={() => setSelectedLog(log)}
                       >
                         <div className={styles.logLeftIndicatorMeta}>
-                          {log.status === "success" ? <FiCheckCircle className={styles.logSuccessStatusIcon} /> : <FiAlertCircle className={styles.logFailStatusIcon} />}
+                          {log.status === "SUCCESS" ? <FiCheckCircle className={styles.logSuccessStatusIcon} /> : (log.status === "FAILED" ? <FiAlertCircle className={styles.logFailStatusIcon} /> : <FiClock className={styles.logFailStatusIcon} style={{color: '#3b82f6'}} />)}
                           <div className={styles.logTextLabelStack}>
-                            <span className={styles.logEventTitle}>{log.event}</span>
-                            <span className={styles.logIdHashSub}>{log.logId}</span>
+                            <span className={styles.logEventTitle}>{log.status === "PENDING_TEST" ? "Test Listening" : "Execution"}</span>
+                            <span className={styles.logIdHashSub}>{log.id}</span>
                           </div>
                         </div>
-                        <span className={styles.logTimeBadgeStamp}>{formatDate(log.timestamp)}</span>
+                        <span className={styles.logTimeBadgeStamp}>{formatDate(log.createdAt)}</span>
                       </div>
                     ))}
                   </div>
@@ -960,23 +1338,29 @@ export default function WorkflowCanvasEngine() {
                     <div className={styles.inspectorCanvasCard}>
                       <div className={styles.inspectorHeaderTitleRow}>
                         <h4>Payload Data Inspector</h4>
-                        <span className={`${styles.statusPillLabel} ${selectedLog.status === "success" ? styles.pillSuccessColor : styles.pillFailColor}`}>
+                        <span className={`${styles.statusPillLabel} ${selectedLog.status === "SUCCESS" ? styles.pillSuccessColor : (selectedLog.status === "FAILED" ? styles.pillFailColor : "")}`} style={{ backgroundColor: selectedLog.status === "PENDING_TEST" ? "#dbeafe" : undefined, color: selectedLog.status === "PENDING_TEST" ? "#1e40af" : undefined }}>
                           {selectedLog.status.toUpperCase()}
                         </span>
                       </div>
-                      <p className={styles.inspectorHelpGuideText}>Review the incoming parameter block received from Kylas and the resulting data passed downstream.</p>
+                      <p className={styles.inspectorHelpGuideText}>Review the step-by-step logs and variable context below.</p>
                       
                       <div className={styles.jsonBlockWrapperContainer}>
-                        <div className={styles.jsonBlockTitleLabel}><FiCode /> Incoming Data Payload (Trigger Entered)</div>
+                        <div className={styles.jsonBlockTitleLabel}><FiCode /> Context Data</div>
                         <pre className={styles.jsonPreformattingBlock}>
-                          {JSON.stringify(selectedLog.incomingPayload, null, 2)}
+                          {(() => {
+                            try { return JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
+                            catch(e) { return selectedLog.context; }
+                          })()}
                         </pre>
                       </div>
 
                       <div className={styles.jsonBlockWrapperContainer}>
-                        <div className={styles.jsonBlockTitleLabel}><FiGrid /> Outgoing Target Actions Data (Passed)</div>
+                        <div className={styles.jsonBlockTitleLabel}><FiGrid /> Execution Trace Logs</div>
                         <pre className={styles.jsonPreformattingBlock}>
-                          {JSON.stringify(selectedLog.passedData, null, 2)}
+                          {(() => {
+                            try { return JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
+                            catch(e) { return selectedLog.logs; }
+                          })()}
                         </pre>
                       </div>
                     </div>

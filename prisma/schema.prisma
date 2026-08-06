@@ -28,6 +28,33 @@ model WorkflowRule {
   config      String?  @db.Text         
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  executions  WorkflowExecution[]
+  versions    WorkflowVersion[]
+}
+
+model WorkflowVersion {
+  id          String       @id @default(cuid())
+  workflowId  String
+  workflow    WorkflowRule @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  versionName String       @db.VarChar(50) // e.g. "v1", "v2"
+  config      String       @db.Text
+  description String?      @db.VarChar(255)
+  author      String       @default("Admin") @db.VarChar(100)
+  createdAt   DateTime     @default(now())
+}
+
+model WorkflowExecution {
+  id               String       @id @default(cuid())
+  workflowId       String       
+  workflow         WorkflowRule @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  triggerWebhookId String?      @db.VarChar(100)
+  status           String       @default("PENDING") @db.VarChar(50) // PENDING, RUNNING, SUCCESS, FAILED
+  currentStepIndex Int          @default(0)
+  context          String       @db.LongText // Stores the aggregated data state across steps
+  logs             String       @db.LongText // Step-by-step execution logs and errors
+  errorMessage     String?      @db.Text
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model SyncLog {

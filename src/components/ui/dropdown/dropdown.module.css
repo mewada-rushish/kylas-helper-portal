@@ -79,6 +79,10 @@
 .labelText {
   display: inline-block;
   color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .arrowIcon {
