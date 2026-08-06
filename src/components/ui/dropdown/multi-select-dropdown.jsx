@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { FiChevronDown, FiCheck } from "react-icons/fi";
 import styles from "./dropdown.module.css";
 
-export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName, placeholder }) {
+export default function MultiSelectDropdown({ options, selectedValues = [], onSelect, icon: Icon, triggerClassName, placeholder, itemStyle, itemClassName }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
@@ -30,8 +30,7 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
     }
   }, [isOpen]);
 
-  const selectedOption = options.find(opt => opt.value === selectedValue);
-  const displayLabel = selectedOption ? selectedOption.label : (placeholder || (options[0] ? options[0].label : "Select..."));
+  const displayLabel = placeholder || (options[0] ? options[0].label : "Select...");
 
   const filteredOptions = options.filter(opt => 
     opt.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -46,7 +45,7 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
       >
         <span className={styles.triggerContent}>
           {Icon && <Icon className={styles.iconPrefix} />}
-          <span className={styles.labelText} style={!selectedOption && placeholder ? { color: 'var(--text-muted)' } : {}}>
+          <span className={styles.labelText} style={{ color: 'var(--text-muted)' }}>
             {displayLabel}
           </span>
         </span>
@@ -72,14 +71,14 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
             filteredOptions.map((opt) => (
               <li 
                 key={opt.value} 
-                className={`${styles.dropdownItem} ${opt.value === selectedValue ? styles.itemSelected : ""}`}
+                className={`${styles.dropdownItem} ${selectedValues.includes(opt.value) ? styles.itemSelected : ""} ${itemClassName || ""}`}
+                style={itemStyle}
                 onClick={() => {
                   onSelect(opt.value);
-                  setIsOpen(false);
                 }}
               >
                 <span className={styles.itemLabel}>{opt.label}</span>
-                {opt.value === selectedValue && <FiCheck className={styles.checkIcon} />}
+                {selectedValues.includes(opt.value) && <FiCheck className={styles.checkIcon} />}
               </li>
             ))
           ) : (

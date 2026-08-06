@@ -8,6 +8,7 @@ import {
 import toast from "react-hot-toast";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
+import MultiSelectDropdown from '@/components/ui/dropdown/multi-select-dropdown';
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./TemplateGeometry.module.css";
 
@@ -230,7 +231,7 @@ export default function TemplateGeometry() {
         )}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>
-            <CustomDropdown 
+            <MultiSelectDropdown 
               placeholder="-- Select Variable --"
               options={[
                 ...availableVars.map(v => {
@@ -240,9 +241,8 @@ export default function TemplateGeometry() {
                 }),
                 { value: "OTHER", label: "Other (Plain Text)" }
               ]}
-              selectedValue={selectedOpt}
-              activeValues={selectedItems}
-              keepOpenOnSelect={true}
+              selectedValues={selectedItems}
+              itemStyle={{ padding: "14px 16px" }}
               onSelect={(val) => {
                 if (val === "OTHER") {
                   setSelectedOpt("OTHER");
