@@ -1,5 +1,4 @@
 import { prisma } from "./prisma";
-import puppeteer from "puppeteer";
 import Handlebars from "handlebars";
 
 /**
@@ -392,6 +391,7 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via Puppeteer
+    const puppeteer = (await import("puppeteer")).default;
     const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(htmlOutput);
