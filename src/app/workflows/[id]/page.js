@@ -325,7 +325,7 @@ export default function WorkflowCanvasEngine() {
   const cancelTestWorkflow = () => {
     setIsTestingMode(false);
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-    toast.info("Testing cancelled.");
+    toast("Testing cancelled.");
   };
 
   const [zoom, setZoom] = useState(1);
