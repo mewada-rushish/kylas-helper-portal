@@ -6,7 +6,8 @@ import {
   FiZap, FiGitBranch, FiPlayCircle, FiSave, FiTrash2, 
   FiLayout, FiCreditCard, FiSettings, FiArrowLeft, FiClock, 
   FiMove, FiGrid, FiPlus, FiList, FiCheckCircle, FiAlertCircle,
-  FiCode, FiFileText, FiMinus, FiX
+  FiCode, FiFileText, FiMinus, FiX, FiLoader, FiMoreVertical,
+  FiActivity, FiChevronDown, FiCheck
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -909,6 +910,7 @@ export default function WorkflowCanvasEngine() {
                           <FiMove className={styles.dragHandleIconVector} />
                           <h4>{node.title}</h4>
                         </div>
+                        {isExecuted && <FiCheckCircle style={{ color: '#10b981', marginLeft: 'auto', marginRight: '8px', flexShrink: 0 }} size={16} />}
                         {(node.type !== "trigger" || nodes.filter(n => n.type === "trigger").length > 1) && (
                           <button className={styles.deleteNodeBtn} onClick={() => handleDeleteNode(node.id)}><FiX /></button>
                         )}
