@@ -291,9 +291,23 @@ export default function WorkflowCanvasEngine() {
     }
     
     try {
+      // Force save before testing so the DB has the latest trigger
+      const triggerNode = nodes.find(n => n.type === "trigger");
+      const currentTrigger = triggerNode?.event || workflowTrigger;
+      await fetch(`/api/workflows/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: workflowName,
+          trigger: currentTrigger,
+          status: workflowStatus,
+          nodesCount: nodes.length,
+          config: JSON.stringify({ nodes, edges })
+        })
+      });
+
       setIsTestingMode(true);
       setTestExecution(null);
-      const testStartTime = Date.now();
       
       const res = await fetch(`/api/workflows/${params.id}/test/init`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to initialize test mode");
@@ -409,12 +423,14 @@ export default function WorkflowCanvasEngine() {
     setSaveStatus("Compiling node modifications...");
     const debounceTimer = setTimeout(async () => {
       try {
+        const triggerNode = nodes.find(n => n.type === "trigger");
+        const currentTrigger = triggerNode?.event || workflowTrigger;
         await fetch(`/api/workflows/${params.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: workflowName,
-            trigger: workflowTrigger,
+            trigger: currentTrigger,
             status: workflowStatus,
             nodesCount: nodes.length,
             config: JSON.stringify({ nodes, edges })
