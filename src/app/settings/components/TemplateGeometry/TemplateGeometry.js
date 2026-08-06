@@ -8,6 +8,7 @@ import {
 import toast from "react-hot-toast";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
+import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./TemplateGeometry.module.css";
 
 const DEFAULT_TOKENS = [
@@ -289,178 +290,184 @@ export default function TemplateGeometry() {
       </div>
       <hr className={styles.sectionDivider} />
 
-      <div className={styles.premiumDashboardFormGridCanvas}>
-        
-        {/* Layout Geometry Configuration */}
-        <div className={styles.formSectionGridBlockCard}>
-          <h3>Print Layout Geometry</h3>
+      {isFetching ? (
+        <div className={styles.premiumDashboardFormGridCanvas}>
+          <SkeletonLoader type="card" />
+          <SkeletonLoader type="card" />
+        </div>
+      ) : (
+        <div className={styles.premiumDashboardFormGridCanvas}>
           
-          <div className={styles.canvasConfigRow}>
-            <div className={`${styles.formInputGroupField} ${styles.canvasDropdownColumn}`}>
-              <label className={styles.fieldLabel}>Inherent Canvas Profile Standard</label>
+          {/* Layout Geometry Configuration */}
+          <div className={styles.formSectionGridBlockCard}>
+            <h3>Print Layout Geometry</h3>
+            
+            <div className={styles.canvasConfigRow}>
+              <div className={`${styles.formInputGroupField} ${styles.canvasDropdownColumn}`}>
+                <label className={styles.fieldLabel}>Inherent Canvas Profile Standard</label>
+                <CustomDropdown 
+                  options={canvasOptions}
+                  selectedValue={defaultPageSize}
+                  onSelect={(val) => setDefaultPageSize(val)}
+                  icon={FiMaximize}
+                />
+              </div>
+
+              <div className={`${styles.formInputGroupField} ${styles.paddingInputColumn}`}>
+                <label className={styles.fieldLabel}>Bleed (px)</label>
+                <div className={styles.inputIconWrapperFrame}>
+                  <FiHash className={styles.fieldInputIconAddon} />
+                  <input 
+                    type="number" 
+                    min="0"
+                    max="200"
+                    value={globalMargin} 
+                    onChange={(e) => setGlobalMargin(Number(e.target.value))} 
+                    className={styles.primaryTextInputWithIcon} 
+                    placeholder="24"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.formInputGroupField}>
+              <label className={styles.fieldLabel}>Base Blueprint Sheet Orientation</label>
+              <div className={styles.flexRadioSelectionContainerRow}>
+                <label className={styles.radioElementOptionLabel}>
+                  <input 
+                    type="radio" 
+                    name="orientation" 
+                    value="portrait" 
+                    checked={defaultOrientation === "portrait"} 
+                    onChange={() => setDefaultOrientation("portrait")} 
+                  />
+                  <span className={styles.radioCustomCircle} />
+                  <span className={styles.radioTextLabel}>Vertical Portrait Layout</span>
+                </label>
+                <label className={styles.radioElementOptionLabel}>
+                  <input 
+                    type="radio" 
+                    name="orientation" 
+                    value="landscape" 
+                    checked={defaultOrientation === "landscape"} 
+                    onChange={() => setDefaultOrientation("landscape")} 
+                  />
+                  <span className={styles.radioCustomCircle} />
+                  <span className={styles.radioTextLabel}>Horizontal Landscape Layout</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Runtime Controls Configuration */}
+          <div className={styles.formSectionGridBlockCard}>
+            <h3>Data Fallback & Compilation Governance</h3>
+            
+            <div className={styles.formInputGroupField}>
+              <label className={styles.fieldLabel}>Active Data Hydration Source Hook</label>
               <CustomDropdown 
-                options={canvasOptions}
-                selectedValue={defaultPageSize}
-                onSelect={(val) => setDefaultPageSize(val)}
-                icon={FiMaximize}
+                options={webhookProfileOptions}
+                selectedValue={activeWebhookSource}
+                onSelect={(val) => setActiveWebhookSource(val)}
+                icon={FiLayers}
               />
             </div>
 
-            <div className={`${styles.formInputGroupField} ${styles.paddingInputColumn}`}>
-              <label className={styles.fieldLabel}>Bleed (px)</label>
-              <div className={styles.inputIconWrapperFrame}>
-                <FiHash className={styles.fieldInputIconAddon} />
-                <input 
-                  type="number" 
-                  min="0"
-                  max="200"
-                  value={globalMargin} 
-                  onChange={(e) => setGlobalMargin(Number(e.target.value))} 
-                  className={styles.primaryTextInputWithIcon} 
-                  placeholder="24"
-                />
-              </div>
+            <div className={styles.formInputGroupField}>
+              <label className={styles.fieldLabel}>Null / Missing Path Extraction Strategy</label>
+              <CustomDropdown 
+                options={nullStrategyOptions}
+                selectedValue={nullStrategy}
+                onSelect={(val) => setNullStrategy(val)}
+                icon={FiAlertCircle}
+              />
+            </div>
+
+            <div className={styles.informationalNoticeAlertRow}>
+              <FiInfo size={16} className={styles.noticeIcon} />
+              <p>
+                Modifying the source hook switch context above allows you to map isolated parameter fields for separate webhook streams independently.
+              </p>
             </div>
           </div>
 
-          <div className={styles.formInputGroupField}>
-            <label className={styles.fieldLabel}>Base Blueprint Sheet Orientation</label>
-            <div className={styles.flexRadioSelectionContainerRow}>
-              <label className={styles.radioElementOptionLabel}>
-                <input 
-                  type="radio" 
-                  name="orientation" 
-                  value="portrait" 
-                  checked={defaultOrientation === "portrait"} 
-                  onChange={() => setDefaultOrientation("portrait")} 
-                />
-                <span className={styles.radioCustomCircle} />
-                <span className={styles.radioTextLabel}>Vertical Portrait Layout</span>
-              </label>
-              <label className={styles.radioElementOptionLabel}>
-                <input 
-                  type="radio" 
-                  name="orientation" 
-                  value="landscape" 
-                  checked={defaultOrientation === "landscape"} 
-                  onChange={() => setDefaultOrientation("landscape")} 
-                />
-                <span className={styles.radioCustomCircle} />
-                <span className={styles.radioTextLabel}>Horizontal Landscape Layout</span>
-              </label>
+          {/* Variable Mapping Dynamic Matrix Grid */}
+          <div className={`${styles.formSectionGridBlockCard} ${styles.fullWidthGridSpanCard}`}>
+            <div className={styles.matrixHeadingRow}>
+              <h3>Dynamic Webhook Payload Variable Matrix Mappings</h3>
+              <span className={styles.activeHookBadge}>
+                Configuring: {webhookProfileOptions.find(opt => opt.value === activeWebhookSource)?.label}
+              </span>
             </div>
-          </div>
-        </div>
-
-        {/* Runtime Controls Configuration */}
-        <div className={styles.formSectionGridBlockCard}>
-          <h3>Data Fallback & Compilation Governance</h3>
-          
-          <div className={styles.formInputGroupField}>
-            <label className={styles.fieldLabel}>Active Data Hydration Source Hook</label>
-            <CustomDropdown 
-              options={webhookProfileOptions}
-              selectedValue={activeWebhookSource}
-              onSelect={(val) => setActiveWebhookSource(val)}
-              icon={FiLayers}
-            />
-          </div>
-
-          <div className={styles.formInputGroupField}>
-            <label className={styles.fieldLabel}>Null / Missing Path Extraction Strategy</label>
-            <CustomDropdown 
-              options={nullStrategyOptions}
-              selectedValue={nullStrategy}
-              onSelect={(val) => setNullStrategy(val)}
-              icon={FiAlertCircle}
-            />
-          </div>
-
-          <div className={styles.informationalNoticeAlertRow}>
-            <FiInfo size={16} className={styles.noticeIcon} />
-            <p>
-              Modifying the source hook switch context above allows you to map isolated parameter fields for separate webhook streams independently.
+            <p className={styles.tableInstructionalBody}>
+              Bind standard system interpolation parameters to specific inbound JSON dot-notation expressions parsed from execution webhooks.
             </p>
-          </div>
-        </div>
 
-        {/* Variable Mapping Dynamic Matrix Grid */}
-        <div className={`${styles.formSectionGridBlockCard} ${styles.fullWidthGridSpanCard}`}>
-          <div className={styles.matrixHeadingRow}>
-            <h3>Dynamic Webhook Payload Variable Matrix Mappings</h3>
-            <span className={styles.activeHookBadge}>
-              Configuring: {webhookProfileOptions.find(opt => opt.value === activeWebhookSource)?.label}
-            </span>
-          </div>
-          <p className={styles.tableInstructionalBody}>
-            Bind standard system interpolation parameters to specific inbound JSON dot-notation expressions parsed from execution webhooks.
-          </p>
-
-          <div className={styles.matrixContainerFrameWrapper}>
-            <div className={styles.variableMappingStructuredGridHeader}>
-              <span className={styles.headerColTokenKey}>Target Template Variable Token</span>
-              <span className={styles.headerColDirectionIcon}></span>
-              <span className={styles.headerColJsonExpressionPath}>Inbound Webhook Payload Source Expression Path</span>
-            </div>
-
-            <div className={styles.variableMappingRowsStackList}>
-              {Object.entries(activeMappings).map(([tokenKey, expressionPath]) => (
-                <div key={tokenKey} className={styles.variableMappingRecordInteractionRow} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  
-                  <div className={styles.templateTokenIdentifierMetadataBlock} style={{ flex: '0 0 250px' }}>
-                    <FiCode size={14} className={styles.tokenTagDecorativeIcon} />
-                    <span className={styles.tokenTextLiteralLabel}>{"{{"}{tokenKey}{"}}"}</span>
-                  </div>
-
-                  <div className={styles.connectorDirectionalIndicatorColumn}>
-                    <FiLink size={13} className={styles.connectorLinkChainIcon} />
-                  </div>
-
-                  <div className={styles.jsonExpressionInputTrackingFlexWrapper} style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
-                    <MultiVariableSelector 
-                      value={expressionPath} 
-                      onChange={(newVal) => handleUpdateMappingPath(tokenKey, newVal)}
-                      availableVars={availableVariables}
-                    />
-                  </div>
-
-                  {!DEFAULT_TOKENS.includes(tokenKey) && (
-                    <button 
-                      className={styles.removeVariableBtn} 
-                      onClick={() => handleRemoveCustomVariable(tokenKey)}
-                      style={{ padding: '8px 12px', background: '#ffebee', color: '#d32f2f', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                  {DEFAULT_TOKENS.includes(tokenKey) && (
-                    <div style={{ width: '70px', textAlign: 'center', fontSize: '0.75rem', color: '#999', fontWeight: 'bold' }}>DEFAULT</div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', padding: '1.5rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Add Custom Variable</label>
-                <input 
-                  type="text" 
-                  value={newVariableKey}
-                  onChange={(e) => setNewVariableKey(e.target.value)}
-                  placeholder="custom_variable_name"
-                  style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '6px', fontFamily: 'monospace' }}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddCustomVariable()}
-                />
+            <div className={styles.matrixContainerFrameWrapper}>
+              <div className={styles.variableMappingStructuredGridHeader}>
+                <span className={styles.headerColTokenKey}>Target Template Variable Token</span>
+                <span className={styles.headerColDirectionIcon}></span>
+                <span className={styles.headerColJsonExpressionPath}>Inbound Webhook Payload Source Expression Path</span>
               </div>
-              <AdminButton variant="secondary" onClick={handleAddCustomVariable}>
-                + Add Variable
-              </AdminButton>
+
+              <div className={styles.variableMappingRowsStackList}>
+                {Object.entries(activeMappings).map(([tokenKey, expressionPath]) => (
+                  <div key={tokenKey} className={styles.variableMappingRecordInteractionRow} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    
+                    <div className={styles.templateTokenIdentifierMetadataBlock} style={{ flex: '0 0 250px' }}>
+                      <FiCode size={14} className={styles.tokenTagDecorativeIcon} />
+                      <span className={styles.tokenTextLiteralLabel}>{"{{"}{tokenKey}{"}}"}</span>
+                    </div>
+
+                    <div className={styles.connectorDirectionalIndicatorColumn}>
+                      <FiLink size={13} className={styles.connectorLinkChainIcon} />
+                    </div>
+
+                    <div className={styles.jsonExpressionInputTrackingFlexWrapper} style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
+                      <MultiVariableSelector 
+                        value={expressionPath} 
+                        onChange={(newVal) => handleUpdateMappingPath(tokenKey, newVal)}
+                        availableVars={availableVariables}
+                      />
+                    </div>
+
+                    {!DEFAULT_TOKENS.includes(tokenKey) && (
+                      <button 
+                        className={styles.removeVariableBtn} 
+                        onClick={() => handleRemoveCustomVariable(tokenKey)}
+                        style={{ padding: '8px 12px', background: '#ffebee', color: '#d32f2f', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                      >
+                        Remove
+                      </button>
+                    )}
+                    {DEFAULT_TOKENS.includes(tokenKey) && (
+                      <div style={{ width: '70px', textAlign: 'center', fontSize: '0.75rem', color: '#999', fontWeight: 'bold' }}>DEFAULT</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', padding: '1.5rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Add Custom Variable</label>
+                  <input 
+                    type="text" 
+                    value={newVariableKey}
+                    onChange={(e) => setNewVariableKey(e.target.value)}
+                    placeholder="custom_variable_name"
+                    style={{ padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '6px', fontFamily: 'monospace' }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddCustomVariable()}
+                  />
+                </div>
+                <AdminButton variant="secondary" onClick={handleAddCustomVariable}>
+                  + Add Variable
+                </AdminButton>
+              </div>
             </div>
+
           </div>
-
         </div>
-
-      </div>
+      )}
     </div>
   );
 }
