@@ -253,12 +253,29 @@ export class AutomationEngine {
         const rightValue = rule.value;
         let ruleMatch = false;
 
+        await this.appendLog(`Evaluating rule: ${rule.field} ${rule.operator} ${rule.value}`, {
+          leftValue,
+          rightValue,
+          leftType: typeof leftValue,
+          rightType: typeof rightValue
+        });
+
         switch (rule.operator) {
-          case '==': ruleMatch = String(leftValue) === rightValue; break;
-          case '!=': ruleMatch = String(leftValue) !== rightValue; break;
-          case 'includes': ruleMatch = String(leftValue).includes(rightValue); break;
-          case '>': ruleMatch = Number(leftValue) > Number(rightValue); break;
-          case '<': ruleMatch = Number(leftValue) < Number(rightValue); break;
+          case '==': 
+          case 'equals': 
+            ruleMatch = String(leftValue) === rightValue; break;
+          case '!=': 
+          case 'not_equals':
+            ruleMatch = String(leftValue) !== rightValue; break;
+          case 'includes': 
+          case 'contains':
+            ruleMatch = String(leftValue).includes(rightValue); break;
+          case '>': 
+          case 'greater_than':
+            ruleMatch = Number(leftValue) > Number(rightValue); break;
+          case '<': 
+          case 'less_than':
+            ruleMatch = Number(leftValue) < Number(rightValue); break;
           default: ruleMatch = false;
         }
 
