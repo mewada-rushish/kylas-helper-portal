@@ -297,12 +297,14 @@ export default function WorkflowCanvasEngine() {
       
       const res = await fetch(`/api/workflows/${params.id}/test/init`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to initialize test mode");
+      const initData = await res.json();
+      const executionId = initData.execution.id;
       
       toast.success("Testing mode activated. Trigger your webhook now!");
 
       pollIntervalRef.current = setInterval(async () => {
         try {
-          const pollRes = await fetch(`/api/workflows/${params.id}/test/status?since=${testStartTime}`);
+          const pollRes = await fetch(`/api/workflows/${params.id}/test/status?executionId=${executionId}`);
           if (pollRes.ok) {
             const data = await pollRes.json();
             if (data.hasResult && data.execution && data.execution.status !== "PENDING_TEST" && data.execution.status !== "RUNNING") {
@@ -379,6 +381,22 @@ export default function WorkflowCanvasEngine() {
 
     return () => resizeObserver.disconnect();
   }, [nodes, zoom, pan]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const zoomChange = e.deltaY > 0 ? -0.05 : 0.05;
+        setZoom(prev => Math.min(Math.max(0.2, prev + zoomChange), 2.5));
+      }
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, [activeTab]);
 
   const isInitialMount = useRef(true);
   useEffect(() => {

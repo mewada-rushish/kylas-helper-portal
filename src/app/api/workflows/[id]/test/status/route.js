@@ -5,23 +5,14 @@ export async function GET(request, { params }) {
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const sinceStr = searchParams.get('since');
+    const executionId = searchParams.get('executionId');
     
-    if (!sinceStr) {
-      return NextResponse.json({ success: false, error: "Missing 'since' parameter" }, { status: 400 });
+    if (!executionId) {
+      return NextResponse.json({ success: false, error: "Missing 'executionId' parameter" }, { status: 400 });
     }
 
-    const sinceDate = new Date(parseInt(sinceStr, 10));
-
-    // Find the first execution for this workflow created AFTER the 'since' timestamp
-    const execution = await prisma.workflowExecution.findFirst({
-      where: { 
-        workflowId: id,
-        createdAt: {
-          gt: sinceDate
-        }
-      },
-      orderBy: { createdAt: 'desc' }
+    const execution = await prisma.workflowExecution.findUnique({
+      where: { id: executionId }
     });
 
     if (execution) {
