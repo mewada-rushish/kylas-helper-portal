@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { FiChevronDown, FiCheck } from "react-icons/fi";
 import styles from "./dropdown.module.css";
 
-export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName }) {
+export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName, placeholder }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
@@ -30,7 +30,8 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
     }
   }, [isOpen]);
 
-  const selectedOption = options.find(opt => opt.value === selectedValue) || options[0];
+  const selectedOption = options.find(opt => opt.value === selectedValue);
+  const displayLabel = selectedOption ? selectedOption.label : (placeholder || (options[0] ? options[0].label : "Select..."));
 
   const filteredOptions = options.filter(opt => 
     opt.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -45,7 +46,9 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
       >
         <span className={styles.triggerContent}>
           {Icon && <Icon className={styles.iconPrefix} />}
-          <span className={styles.labelText}>{selectedOption.label}</span>
+          <span className={styles.labelText} style={!selectedOption && placeholder ? { color: 'var(--text-muted)' } : {}}>
+            {displayLabel}
+          </span>
         </span>
         <FiChevronDown className={`${styles.arrowIcon} ${isOpen ? styles.arrowRotate : ""}`} />
       </button>

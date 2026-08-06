@@ -231,8 +231,8 @@ export default function TemplateGeometry() {
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>
             <CustomDropdown 
+              placeholder="-- Select Variable --"
               options={[
-                { value: "", label: "-- Select Variable --" },
                 ...availableVars.map(v => {
                   const label = v.customName ? `${v.customName} (${v.path})` : v.path || String(v);
                   const val = v.path || String(v);
