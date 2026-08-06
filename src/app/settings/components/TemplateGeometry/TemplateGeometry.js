@@ -241,11 +241,18 @@ export default function TemplateGeometry() {
                 { value: "OTHER", label: "Other (Plain Text)" }
               ]}
               selectedValue={selectedOpt}
+              activeValues={selectedItems}
+              keepOpenOnSelect={true}
               onSelect={(val) => {
                 if (val === "OTHER") {
                   setSelectedOpt("OTHER");
                 } else if (val) {
-                  handleAdd(val);
+                  const idx = selectedItems.indexOf(val);
+                  if (idx > -1) {
+                    handleRemove(idx);
+                  } else {
+                    handleAdd(val);
+                  }
                 } else {
                   setSelectedOpt("");
                 }

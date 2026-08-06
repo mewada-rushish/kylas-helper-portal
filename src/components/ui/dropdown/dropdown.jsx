@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { FiChevronDown, FiCheck } from "react-icons/fi";
 import styles from "./dropdown.module.css";
 
-export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName, placeholder }) {
+export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName, placeholder, activeValues = [], keepOpenOnSelect = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
@@ -72,14 +72,14 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
             filteredOptions.map((opt) => (
               <li 
                 key={opt.value} 
-                className={`${styles.dropdownItem} ${opt.value === selectedValue ? styles.itemSelected : ""}`}
+                className={`${styles.dropdownItem} ${(opt.value === selectedValue || activeValues.includes(opt.value)) ? styles.itemSelected : ""}`}
                 onClick={() => {
                   onSelect(opt.value);
-                  setIsOpen(false);
+                  if (!keepOpenOnSelect) setIsOpen(false);
                 }}
               >
                 <span className={styles.itemLabel}>{opt.label}</span>
-                {opt.value === selectedValue && <FiCheck className={styles.checkIcon} />}
+                {(opt.value === selectedValue || activeValues.includes(opt.value)) && <FiCheck className={styles.checkIcon} />}
               </li>
             ))
           ) : (
