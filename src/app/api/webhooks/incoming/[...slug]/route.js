@@ -23,7 +23,8 @@ export async function POST(request, { params }) {
     // 2. Authenticate the request based on config
     if (config.authType === "BEARER_TOKEN" && config.authToken) {
       const authHeader = request.headers.get("authorization");
-      if (!authHeader || authHeader !== `Bearer ${config.authToken}`) {
+      if (!authHeader || (authHeader !== `Bearer ${config.authToken}` && authHeader !== config.authToken)) {
+        console.error(`Webhook auth failed for ${pathname}. Expected: Bearer ${config.authToken}, Got: ${authHeader}`);
         return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
       }
     }
