@@ -1317,17 +1317,19 @@ export default function WorkflowCanvasEngine() {
                   <FiClock /> <span>Graph compilation engine automatically tracks visual coordinate offsets and node expression logic maps.</span>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '4px' }}>Start Date</label>
-                    <input type="date" value={versionsDateRange.start} onChange={e => setVersionsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '6px 12px' }} />
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>Start Date</label>
+                    <input type="date" value={versionsDateRange.start} onChange={e => setVersionsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.canvasBlockTextInputCond} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '4px' }}>End Date</label>
-                    <input type="date" value={versionsDateRange.end} onChange={e => setVersionsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '6px 12px' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>End Date</label>
+                    <input type="date" value={versionsDateRange.end} onChange={e => setVersionsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.canvasBlockTextInputCond} />
                   </div>
                   {(versionsDateRange.start || versionsDateRange.end) && (
-                    <button type="button" onClick={() => setVersionsDateRange({ start: '', end: '' })} style={{ marginTop: '18px', background: 'transparent', border: 'none', color: '#E21F26', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Clear Filters</button>
+                    <button type="button" onClick={() => setVersionsDateRange({ start: '', end: '' })} className={styles.deleteClauseRuleMiniBtn} style={{ padding: '0 12px', minHeight: '38px' }}>
+                      <FiX style={{ marginRight: '4px' }}/> Clear
+                    </button>
                   )}
                 </div>
 
@@ -1358,19 +1360,21 @@ export default function WorkflowCanvasEngine() {
                   </div>
                   
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <label style={{ fontSize: '10px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '2px' }}>Start</label>
-                        <input type="date" value={logsDateRange.start} onChange={e => setLogsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '4px 8px', fontSize: '12px' }} />
+                        <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>Start</label>
+                        <input type="date" value={logsDateRange.start} onChange={e => setLogsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ padding: '0 8px', fontSize: '12px' }} />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <label style={{ fontSize: '10px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '2px' }}>End</label>
-                        <input type="date" value={logsDateRange.end} onChange={e => setLogsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '4px 8px', fontSize: '12px' }} />
+                        <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>End</label>
+                        <input type="date" value={logsDateRange.end} onChange={e => setLogsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ padding: '0 8px', fontSize: '12px' }} />
                       </div>
+                      {(logsDateRange.start || logsDateRange.end) && (
+                        <button type="button" onClick={() => setLogsDateRange({ start: '', end: '' })} className={styles.deleteClauseRuleMiniBtn} style={{ padding: '0 8px', minHeight: '38px', flexShrink: 0 }}>
+                          <FiX />
+                        </button>
+                      )}
                     </div>
-                    {(logsDateRange.start || logsDateRange.end) && (
-                      <button type="button" onClick={() => setLogsDateRange({ start: '', end: '' })} style={{ alignSelf: 'flex-start', background: 'transparent', border: 'none', color: '#E21F26', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Clear Filters</button>
-                    )}
                   </div>
 
                   <div className={styles.logsListStack}>
