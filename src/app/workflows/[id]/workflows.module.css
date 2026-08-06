@@ -875,10 +875,13 @@
 .versionDescText { font-size: 13px; color: #202223; margin: 0 0 8px 0; font-weight: 500; }
 .versionAuthorTag { font-size: 11px; color: #6d7175; }
 
-.logsDashboardSplitView { display: grid; grid-template-columns: 340px 1fr; gap: 32px; align-items: start; overflow-y: auto; height: 100%; }
-.logsListBlockColumn h3 { font-family: var(--font-montserrat), sans-serif; font-size: 12px; font-weight: 700; color: #6d7175; text-transform: uppercase; margin: 0 0 16px 0; }
-.logsListStack { display: flex; flex-direction: column; gap: 8px; }
-.logRowItemSummary { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--card-bg); border: var(--glass-border); border-radius: 12px; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+.historyListFrame { flex: 1; overflow-y: auto; padding-right: 16px; padding-bottom: 24px; }
+.logsDashboardSplitView { display: grid; grid-template-columns: 340px 1fr; gap: 32px; align-items: start; height: 100%; overflow: hidden; }
+.logsListBlockColumn { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.logsListBlockColumn h3 { font-family: var(--font-montserrat), sans-serif; font-size: 12px; font-weight: 700; color: #6d7175; text-transform: uppercase; margin: 0 0 16px 0; flex-shrink: 0; }
+.logsListStack { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 8px; padding-bottom: 24px; flex: 1; }
+.logPayloadInspectorColumn { height: 100%; overflow-y: auto; padding-right: 8px; padding-bottom: 24px; }
+.logRowItemSummary { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--card-bg); border: var(--glass-border); border-radius: 12px; cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); flex-shrink: 0; }
 .logRowItemSummary:hover { border-color: var(--deep-navy, #27347B); background-color: #fafbfc; }
 .logRowActiveSelected { border-color: var(--deep-navy, #27347B) !important; box-shadow: var(--shadow-raised); background-color: #f4f6f8 !important; }
 .logLeftIndicatorMeta { display: flex; align-items: center; gap: 12px; }

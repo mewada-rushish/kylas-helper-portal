@@ -157,6 +157,8 @@ export default function WorkflowCanvasEngine() {
   const [testExecution, setTestExecution] = useState(null);
   const [logs, setLogs] = useState([]);
   const [versions, setVersions] = useState([]);
+  const [logsDateRange, setLogsDateRange] = useState({ start: '', end: '' });
+  const [versionsDateRange, setVersionsDateRange] = useState({ start: '', end: '' });
   const [selectedLog, setSelectedLog] = useState(null);
   const pollIntervalRef = useRef(null);
 
@@ -765,6 +767,26 @@ export default function WorkflowCanvasEngine() {
     { id: "settings", label: "Settings", icon: FiSettings, disabled: true }
   ];
 
+  const filteredLogs = logs.filter(log => {
+    if (!logsDateRange.start && !logsDateRange.end) return true;
+    const logDate = new Date(log.createdAt);
+    const start = logsDateRange.start ? new Date(logsDateRange.start) : null;
+    const end = logsDateRange.end ? new Date(logsDateRange.end) : null;
+    if (start && logDate < start) return false;
+    if (end && logDate > new Date(end.getTime() + 86400000)) return false;
+    return true;
+  });
+
+  const filteredVersions = versions.filter(ver => {
+    if (!versionsDateRange.start && !versionsDateRange.end) return true;
+    const verDate = new Date(ver.createdAt);
+    const start = versionsDateRange.start ? new Date(versionsDateRange.start) : null;
+    const end = versionsDateRange.end ? new Date(versionsDateRange.end) : null;
+    if (start && verDate < start) return false;
+    if (end && verDate > new Date(end.getTime() + 86400000)) return false;
+    return true;
+  });
+
   return (
     <div className={styles.adminLayout} onClick={closeContextMenu}>
       <Sidebar items={sidebarMenuItems} activeId="workflows" />
@@ -1294,9 +1316,24 @@ export default function WorkflowCanvasEngine() {
                 <div className={styles.infoAlertBanner}>
                   <FiClock /> <span>Graph compilation engine automatically tracks visual coordinate offsets and node expression logic maps.</span>
                 </div>
+                
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '4px' }}>Start Date</label>
+                    <input type="date" value={versionsDateRange.start} onChange={e => setVersionsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '6px 12px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '4px' }}>End Date</label>
+                    <input type="date" value={versionsDateRange.end} onChange={e => setVersionsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '6px 12px' }} />
+                  </div>
+                  {(versionsDateRange.start || versionsDateRange.end) && (
+                    <button type="button" onClick={() => setVersionsDateRange({ start: '', end: '' })} style={{ marginTop: '18px', background: 'transparent', border: 'none', color: '#E21F26', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Clear Filters</button>
+                  )}
+                </div>
+
                 <div className={styles.timelineContainer}>
-                  {versions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No versions saved yet.</p>}
-                  {versions.map((ver) => (
+                  {filteredVersions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No versions match the filter.</p>}
+                  {filteredVersions.map((ver) => (
                     <div key={ver.id} className={styles.timelineItem}>
                       <div className={styles.timelineMarker}><div className={styles.markerCircle} /><div className={styles.markerLine} /></div>
                       <div className={styles.versionCard}>
@@ -1316,10 +1353,29 @@ export default function WorkflowCanvasEngine() {
             {activeTab === "logs" && (
               <div className={styles.logsDashboardSplitView}>
                 <div className={styles.logsListBlockColumn}>
-                  <h3>Recent Trigger Events</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3>Recent Trigger Events</h3>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                        <label style={{ fontSize: '10px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '2px' }}>Start</label>
+                        <input type="date" value={logsDateRange.start} onChange={e => setLogsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '4px 8px', fontSize: '12px' }} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                        <label style={{ fontSize: '10px', fontWeight: '600', color: '#6d7175', textTransform: 'uppercase', marginBottom: '2px' }}>End</label>
+                        <input type="date" value={logsDateRange.end} onChange={e => setLogsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.blockFieldInput} style={{ padding: '4px 8px', fontSize: '12px' }} />
+                      </div>
+                    </div>
+                    {(logsDateRange.start || logsDateRange.end) && (
+                      <button type="button" onClick={() => setLogsDateRange({ start: '', end: '' })} style={{ alignSelf: 'flex-start', background: 'transparent', border: 'none', color: '#E21F26', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Clear Filters</button>
+                    )}
+                  </div>
+
                   <div className={styles.logsListStack}>
-                    {logs.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No logs recorded.</p>}
-                    {logs.map((log) => (
+                    {filteredLogs.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No logs match the filter.</p>}
+                    {filteredLogs.map((log) => (
                       <div 
                         key={log.id} 
                         className={`${styles.logRowItemSummary} ${selectedLog?.id === log.id ? styles.logRowActiveSelected : ""}`}
