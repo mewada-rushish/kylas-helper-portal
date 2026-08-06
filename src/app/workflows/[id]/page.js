@@ -1318,13 +1318,13 @@ export default function WorkflowCanvasEngine() {
                 </div>
                 
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'flex-end' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '240px' }}>
                     <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>Start Date</label>
-                    <input type="date" value={versionsDateRange.start} onChange={e => setVersionsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.canvasBlockTextInputCond} />
+                    <input type="date" value={versionsDateRange.start} onChange={e => setVersionsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ width: '100%' }} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', width: '240px' }}>
                     <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>End Date</label>
-                    <input type="date" value={versionsDateRange.end} onChange={e => setVersionsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.canvasBlockTextInputCond} />
+                    <input type="date" value={versionsDateRange.end} onChange={e => setVersionsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ width: '100%' }} />
                   </div>
                   {(versionsDateRange.start || versionsDateRange.end) && (
                     <button type="button" onClick={() => setVersionsDateRange({ start: '', end: '' })} className={styles.deleteClauseRuleMiniBtn} style={{ padding: '0 12px', minHeight: '38px' }}>
@@ -1359,22 +1359,22 @@ export default function WorkflowCanvasEngine() {
                     <h3>Recent Trigger Events</h3>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>Start</label>
-                        <input type="date" value={logsDateRange.start} onChange={e => setLogsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ padding: '0 8px', fontSize: '12px' }} />
+                        <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>Start Date</label>
+                        <input type="date" value={logsDateRange.start} onChange={e => setLogsDateRange(p => ({ ...p, start: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ width: '100%', padding: '0 8px' }} />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>End</label>
-                        <input type="date" value={logsDateRange.end} onChange={e => setLogsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ padding: '0 8px', fontSize: '12px' }} />
+                        <label className={styles.ruleLabel} style={{ marginBottom: '6px' }}>End Date</label>
+                        <input type="date" value={logsDateRange.end} onChange={e => setLogsDateRange(p => ({ ...p, end: e.target.value }))} className={styles.canvasBlockTextInputCond} style={{ width: '100%', padding: '0 8px' }} />
                       </div>
-                      {(logsDateRange.start || logsDateRange.end) && (
-                        <button type="button" onClick={() => setLogsDateRange({ start: '', end: '' })} className={styles.deleteClauseRuleMiniBtn} style={{ padding: '0 8px', minHeight: '38px', flexShrink: 0 }}>
-                          <FiX />
-                        </button>
-                      )}
                     </div>
+                    {(logsDateRange.start || logsDateRange.end) && (
+                      <button type="button" onClick={() => setLogsDateRange({ start: '', end: '' })} className={styles.deleteClauseRuleMiniBtn} style={{ alignSelf: 'flex-end', padding: '0 12px', minHeight: '32px' }}>
+                        <FiX style={{ marginRight: '4px' }} /> Clear
+                      </button>
+                    )}
                   </div>
 
                   <div className={styles.logsListStack}>
