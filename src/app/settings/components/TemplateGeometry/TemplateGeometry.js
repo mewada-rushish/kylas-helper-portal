@@ -242,7 +242,6 @@ export default function TemplateGeometry() {
                 { value: "OTHER", label: "Other (Plain Text)" }
               ]}
               selectedValues={selectedItems}
-              itemStyle={{ padding: "14px 16px" }}
               onSelect={(val) => {
                 if (val === "OTHER") {
                   setSelectedOpt("OTHER");

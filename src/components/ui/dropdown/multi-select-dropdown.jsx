@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { FiChevronDown, FiCheck } from "react-icons/fi";
-import styles from "./dropdown.module.css";
+import styles from "./multi-select-dropdown.module.css";
 
 export default function MultiSelectDropdown({ options, selectedValues = [], onSelect, icon: Icon, triggerClassName, placeholder, itemStyle, itemClassName }) {
   const [isOpen, setIsOpen] = useState(false);

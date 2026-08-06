@@ -1,0 +1,203 @@
+/* --- ATOMIC DROPDOWN ELEMENT CONTAINER --- */
+.dropdownContainer {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+/* --- THE TRIGGER BUTTON WRAPPER --- */
+.dropdownTrigger {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: #ffffff;
+  color: var(--foreground);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+  min-height: 42px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.dropdownTrigger::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--active-bg);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+  border-radius: inherit;
+}
+
+.dropdownTrigger:hover {
+  border-color: var(--border-hover);
+}
+
+.dropdownTrigger:hover::before {
+  transform: translateX(0);
+}
+
+.dropdownActive {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+  background-color: #EBF5FF;
+}
+
+.dropdownActive::before {
+  transform: translateX(0);
+  background-color: transparent;
+}
+
+/* --- VERTICAL BASELINE PROTECTION LAYER --- */
+.triggerContent {
+  display: inline-flex;
+  align-items: center; /* Enforces strict mid-point centering */
+  gap: 6px;
+  height: 100%;
+}
+
+.iconPrefix {
+  font-size: 16px;
+  color: var(--text-muted);
+  display: block; /* Strips browser-native font descriptor spacing variants */
+  flex-shrink: 0;
+}
+
+.labelText {
+  display: inline-block;
+  color: var(--foreground);
+}
+
+.arrowIcon {
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  display: block;
+}
+
+.arrowRotate {
+  transform: rotate(180deg);
+}
+
+/* --- THE FLOATING MENU CANVAS --- */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  z-index: 200;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  /* Multi-layered drop shadow */
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* --- SEARCH INPUT --- */
+.searchInputWrapper {
+  padding: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: -8px; /* Offset menu padding */
+  background: white;
+  z-index: 10;
+  margin: -8px -8px 0 -8px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+.searchInput:focus {
+  border-color: #007AFF;
+}
+
+/* --- ITEM INTERACTION NODES --- */
+.dropdownItem {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--foreground);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.dropdownItem::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--active-bg);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+  border-radius: inherit;
+}
+
+.dropdownItem:hover {
+  color: var(--foreground);
+}
+
+.dropdownItem:hover::before {
+  transform: translateX(0);
+}
+
+.itemSelected {
+  font-weight: 600;
+  color: #007AFF;
+  background-color: #EBF5FF;
+}
+
+.itemSelected::before {
+  transform: translateX(0);
+  background-color: transparent;
+}
+
+.itemLabel {
+  display: inline-block;
+  line-height: 14px;
+}
+
+.checkIcon {
+  color: #007AFF;
+  font-size: 14px;
+  flex-shrink: 0;
+}
