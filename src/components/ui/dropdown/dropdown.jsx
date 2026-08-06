@@ -6,7 +6,9 @@ import styles from "./dropdown.module.css";
 
 export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -18,7 +20,21 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery("");
+      // Focus search input on next tick if possible
+      setTimeout(() => {
+        if (searchInputRef.current) searchInputRef.current.focus();
+      }, 50);
+    }
+  }, [isOpen]);
+
   const selectedOption = options.find(opt => opt.value === selectedValue) || options[0];
+
+  const filteredOptions = options.filter(opt => 
+    opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className={styles.dropdownContainer} ref={dropdownRef}>
@@ -36,19 +52,38 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
 
       {isOpen && (
         <ul className={styles.dropdownMenu}>
-          {options.map((opt) => (
-            <li 
-              key={opt.value} 
-              className={`${styles.dropdownItem} ${opt.value === selectedValue ? styles.itemSelected : ""}`}
-              onClick={() => {
-                onSelect(opt.value);
-                setIsOpen(false);
-              }}
-            >
-              <span className={styles.itemLabel}>{opt.label}</span>
-              {opt.value === selectedValue && <FiCheck className={styles.checkIcon} />}
+          {options.length > 5 && (
+            <div className={styles.searchInputWrapper}>
+              <input 
+                ref={searchInputRef}
+                type="text" 
+                className={styles.searchInput} 
+                placeholder="Search..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((opt) => (
+              <li 
+                key={opt.value} 
+                className={`${styles.dropdownItem} ${opt.value === selectedValue ? styles.itemSelected : ""}`}
+                onClick={() => {
+                  onSelect(opt.value);
+                  setIsOpen(false);
+                }}
+              >
+                <span className={styles.itemLabel}>{opt.label}</span>
+                {opt.value === selectedValue && <FiCheck className={styles.checkIcon} />}
+              </li>
+            ))
+          ) : (
+            <li className={styles.dropdownItem} style={{ justifyContent: 'center', color: '#94a3b8' }}>
+              No results found
             </li>
-          ))}
+          )}
         </ul>
       )}
     </div>

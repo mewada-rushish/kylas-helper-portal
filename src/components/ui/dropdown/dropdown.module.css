@@ -113,6 +113,34 @@
   gap: 4px;
   backdrop-filter: blur(10px);
   box-sizing: border-box;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* --- SEARCH INPUT --- */
+.searchInputWrapper {
+  padding: 4px 8px 8px 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: -6px; /* Offset menu padding */
+  background: white;
+  z-index: 10;
+  margin: -6px -6px 4px -6px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+.searchInput:focus {
+  border-color: #007AFF;
 }
 
 /* --- ITEM INTERACTION NODES --- */
