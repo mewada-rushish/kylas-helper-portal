@@ -96,6 +96,6 @@ export async function POST(request, { params }) {
     return NextResponse.json({ status: "SUCCESS", message: "Webhook processed and workflows triggered" });
   } catch (error) {
     console.error(`POST ${pathname} error:`, error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error", message: error.message, stack: error.stack }, { status: 500 });
   }
 }
