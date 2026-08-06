@@ -1155,6 +1155,7 @@ export default function WorkflowCanvasEngine() {
                                         options={availableOutgoingWebhooks.map(h => ({ label: h.name || h.url, value: h.id }))}
                                         selectedValue={node.externalApiId || ""}
                                         onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, externalApiId: val, mappings: n.mappings || {} } : n))}
+                                        placeholder="Select API..."
                                       />
                                     </div>
                                   </div>
@@ -1188,6 +1189,7 @@ export default function WorkflowCanvasEngine() {
                                                     ...n, 
                                                     mappings: { ...(n.mappings || {}), [token]: val } 
                                                   } : n))}
+                                                  placeholder="Select field..."
                                                 />
                                               </div>
                                             </div>
@@ -1265,6 +1267,7 @@ export default function WorkflowCanvasEngine() {
                                 options={invoiceTemplates.map(t => ({ label: t.name, value: t.id }))}
                                 selectedValue={node.templateId || ""}
                                 onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, templateId: val, mappings: n.mappings || {} } : n))}
+                                placeholder="Select Template..."
                               />
                             </div>
                             
