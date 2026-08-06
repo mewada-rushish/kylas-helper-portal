@@ -711,13 +711,16 @@ export default function WorkflowCanvasEngine() {
     setSaveStatus("Saving workflow...");
     setIsSaving(true);
     try {
+      const triggerNode = nodes.find(n => n.type === "trigger");
+      const currentTrigger = triggerNode?.event || workflowTrigger;
+      
       const configStr = JSON.stringify({ nodes, edges });
       const res = await fetch(`/api/workflows/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: workflowName,
-          trigger: workflowTrigger,
+          trigger: currentTrigger,
           status: status,
           nodesCount: nodes.length,
           config: configStr
