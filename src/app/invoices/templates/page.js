@@ -7,6 +7,7 @@ import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./templates.module.css";
+import { resolveToken } from "@/lib/variable-resolver";
 
 const KYLAS_PRODUCTS = [
   { value: "prod_crm_ent", label: "Kylas CRM Premium Enterprise License" },
@@ -22,6 +23,7 @@ export default function TemplatesListingDashboard() {
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState(null);
+  const [systemSettings, setSystemSettings] = useState(null);
 
   const fetchTemplates = async () => {
     setIsLoading(true);
@@ -45,6 +47,12 @@ export default function TemplatesListingDashboard() {
 
   useEffect(() => {
     fetchTemplates();
+    fetch("/api/settings")
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && !data.error) setSystemSettings(data);
+      })
+      .catch(console.error);
   }, []);
 
   const handleDelete = async (id) => {
@@ -145,10 +153,17 @@ export default function TemplatesListingDashboard() {
                   <button className={styles.modalCloseBtnCross} onClick={() => setPreviewTemplate(null)}>&times;</button>
                 </div>
                 <div className={styles.modalScrollablePDFPreviewCanvasBodyHousingContainer}>
-                  <div className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: previewTemplate.theme.backgroundColor, color: previewTemplate.theme.textColor, padding: "40px" }}>
-                    <h2 style={{ color: previewTemplate.theme.primaryColor, fontFamily: "Montserrat", textAlign: "center" }}>TAX INVOICE RECONCILIATION</h2>
-                    <p style={{ textAlign: "center", fontSize: "12px", color: "#6d7175" }}>[Active Blueprint Blueprint Layout Simulation Container Schema]</p>
-                  </div>
+                  <div 
+                    className={styles.pdfInvoiceLayoutContainerMock}
+                    dangerouslySetInnerHTML={{ __html: resolveToken(previewTemplate.config, {
+                      invoice: { id: "INV-PREVIEW-001", total: 106200, tax: 18000 },
+                      current: { date: new Date().toISOString().split("T")[0] },
+                      customer: { name: "Mock Client", email: "client@example.com" },
+                      product: { rate: 45000 },
+                      amount: { words: "One Lakh Six Thousand Two Hundred" },
+                      settings: systemSettings || {}
+                    }) }}
+                  />
                 </div>
               </div>
             </div>
