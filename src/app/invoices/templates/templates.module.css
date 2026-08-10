@@ -248,23 +248,24 @@
 }
 
 .modalScrollablePDFPreviewCanvasBodyHousingContainer {
-  padding: 32px;
+  padding: 0;
   overflow-y: auto;
   background-color: #525659;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
 }
 
 .pdfInvoiceLayoutContainerMock {
   background-color: var(--card-bg);
-  width: 100%;
-  min-width: 680px;
-  max-width: 720px;
-  aspect-ratio: 1 / 1.414;
+  width: calc(100% - 64px);
+  max-width: 794px;
+  margin: 32px auto;
   box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
 }

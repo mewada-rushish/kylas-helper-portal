@@ -51,6 +51,33 @@ const DEFAULT_MARKUP_TEMPLATE = `<div style="padding: 30px; font-family: 'Poppin
     </table>
   </div>
 
+  <div style="margin-top: 24px;">
+    <table style="width: 100%; font-size: 13px;">
+      <tbody>
+        <tr>
+          <td style="padding: 4px 0; font-weight: 600; width: 140px; color: #334155;">Paid By</td>
+          <td style="padding: 4px 0; color: #475569;">: {{payment.method}}</td>
+        </tr>
+        {{#if payment.referenceNo}}
+        <tr>
+          <td style="padding: 4px 0; font-weight: 600; color: #334155;">Ref / Cheque No</td>
+          <td style="padding: 4px 0; color: #475569;">: {{payment.referenceNo}}</td>
+        </tr>
+        {{/if}}
+        {{#if payment.bankName}}
+        <tr>
+          <td style="padding: 4px 0; font-weight: 600; color: #334155;">Bank Name</td>
+          <td style="padding: 4px 0; color: #475569;">: {{payment.bankName}}</td>
+        </tr>
+        {{/if}}
+        <tr>
+          <td style="padding: 4px 0; font-weight: 600; color: #334155;">Dated</td>
+          <td style="padding: 4px 0; color: #475569;">: {{payment.date}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div style="margin-top: 40px; border-top: 1px dashed #cbd5e1; padding-top: 16px; text-align: center; color: #64748b; font-size: 11px;">
     This accounts statement is secure, encrypted, and compiled via AsmitA Core ERP Infrastructure Stack.
   </div>

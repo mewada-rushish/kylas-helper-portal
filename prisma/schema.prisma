@@ -79,15 +79,23 @@ model InvoiceTemplate {
 }
 
 model Invoice {
-  id        String   @id @default(cuid())
-  customer  String   @db.VarChar(255)
-  email     String   @db.VarChar(255)
-  date      DateTime
-  productId String   @db.VarChar(100)
-  qty       Int
-  rate      Float
-  total     Float
-  createdAt DateTime @default(now())
+  id                 String   @id @default(cuid())
+  customer           String   @db.VarChar(255)
+  email              String   @db.VarChar(255)
+  date               DateTime
+  productId          String   @db.VarChar(100)
+  qty                Int
+  rate               Float
+  total              Float
+  memberId           String?  @db.VarChar(100)
+  amountWords        String?  @db.VarChar(255)
+  paymentMethod      String?  @db.VarChar(50)
+  paymentReferenceNo String?  @db.VarChar(100)
+  paymentBankName    String?  @db.VarChar(255)
+  paymentDate        String?  @db.VarChar(50)
+  periodStart        String?  @db.VarChar(50)
+  periodEnd          String?  @db.VarChar(50)
+  createdAt          DateTime @default(now())
 }
 
 model SystemSetting {

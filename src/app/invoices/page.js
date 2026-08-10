@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
@@ -15,9 +15,6 @@ const KYLAS_PRODUCTS = [
   { value: "prod_iot_node", label: "Smart Home IoT Sensor Node (AsmitA Hub)" },
   { value: "prod_bbps_gw", label: "BBPS Settlement Core Gateway API" },
   { value: "prod_devops_supp", label: "Dedicated Cloud DevOps Maintenance Hours" }
-];const INITIAL_INVOICES = [
-  { id: "INV-2026-001", customer: "Acme Corporate Entity", email: "finance@acme.com", date: "2026-06-18", productId: "prod_crm_ent", qty: 2, rate: 45000, total: 106200, memberId: "SCC-0123", amount: { words: "one lakh six thousand two hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "Cheque", referenceNo: "123456", bankName: "HDFC Bank", date: "15/06/2026" } },
-  { id: "INV-2026-002", customer: "Society Hub Operations", email: "accounts@societyhub.in", date: "2026-06-19", productId: "prod_iot_node", qty: 10, rate: 3500, total: 100300, memberId: "SCC-0124", amount: { words: "one lakh three hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "NEFT/IMPS", referenceNo: "N/A", bankName: "SBI Bank", date: "18/06/2026" } }
 ];
 
 const FALLBACK_THEME = { primaryColor: "#27347B", textColor: "#202223", backgroundColor: "#ffffff", borderColor: "#e1e3e5" };
@@ -26,16 +23,25 @@ export default function InvoicesListPage() {
   const router = useRouter();
   const [invoices, setInvoices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [invoiceModalMode, setInvoiceModalOpen] = useState(null); 
   const [activeInvoice, setActiveInvoice] = useState(null);
   const [defaultTemplate, setDefaultTemplate] = useState(null);
   const [systemSettings, setSystemSettings] = useState(null);
 
+  const fetchInvoices = () => {
+    setIsLoading(true);
+    fetch("/api/invoices")
+      .then(res => res.json())
+      .then(data => {
+        setInvoices(data);
+        setIsLoading(false);
+      })
+      .catch(console.error);
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setInvoices(INITIAL_INVOICES);
-      setIsLoading(false);
-    }, 1200);
+    fetchInvoices();
     
     // Fetch default template
     fetch("/api/invoices/templates")
@@ -54,7 +60,6 @@ export default function InvoicesListPage() {
       })
       .catch(console.error);
       
-    return () => clearTimeout(timer);
   }, []);
 
   const [invCustomer, setInvCustomer] = useState("");
@@ -106,8 +111,9 @@ export default function InvoicesListPage() {
     }
   };
 
-  const handleSaveInvoice = (e) => {
+  const handleSaveInvoice = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     const qtyNum = Number(invQty);
     const rateNum = Number(invRate);
     const calculatedTotal = (qtyNum * rateNum) * 1.18; 
@@ -131,20 +137,35 @@ export default function InvoicesListPage() {
       }
     };
 
-    if (invoiceModalMode === "create") {
-      const newInv = {
-        id: `INV-2026-00${invoices.length + 1}`,
-        date: new Date().toISOString().split("T")[0],
-        ...invoiceData
-      };
-      setInvoices([newInv, ...invoices]);
-    } else if (invoiceModalMode === "edit" && activeInvoice) {
-      setInvoices(invoices.map(inv => inv.id === activeInvoice.id ? {
-        ...inv,
-        ...invoiceData
-      } : inv));
+    try {
+      if (invoiceModalMode === "create") {
+        const payload = {
+          date: new Date().toISOString().split("T")[0],
+          ...invoiceData
+        };
+        await fetch("/api/invoices", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } else if (invoiceModalMode === "edit" && activeInvoice) {
+        const payload = {
+          date: activeInvoice.date,
+          ...invoiceData
+        };
+        await fetch(`/api/invoices/${activeInvoice.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      }
+      fetchInvoices();
+      setInvoiceModalOpen(null);
+    } catch (error) {
+      console.error("Failed to save invoice:", error);
+    } finally {
+      setIsSaving(false);
     }
-    setInvoiceModalOpen(null);
   };
 
   return (
@@ -381,7 +402,13 @@ export default function InvoicesListPage() {
                     </div>
                     <div className={styles.modalFooterActionsBlockRow}>
                       <AdminButton variant="secondary" onClick={() => setInvoiceModalOpen(null)}>Cancel</AdminButton>
-                      <AdminButton variant="primary" type="submit">Save Invoice Changes</AdminButton>
+                      <AdminButton variant="primary" type="submit" disabled={isSaving}>
+                        {isSaving ? (
+                          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <FiLoader className={styles.spinner} /> Saving...
+                          </span>
+                        ) : "Save Invoice Changes"}
+                      </AdminButton>
                     </div>
                   </form>
                 )}

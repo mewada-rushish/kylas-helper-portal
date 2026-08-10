@@ -13,12 +13,24 @@ export const resolveToken = (content, context = {}) => {
   
   const prodObj = KYLAS_PRODUCTS.find(p => p.value === context.productId);
 
+  const rate = context.rate || 45000;
+  const qty = context.qty || 1;
+  const subtotal = rate * qty;
+  const cgst = subtotal * 0.09;
+  const sgst = subtotal * 0.09;
+  const gst = cgst + sgst;
+  const total = context.total || (subtotal + gst);
+
   // Build the complete data model for Handlebars
   const hbsData = {
     ...context,
     invoice: {
       id: context.id || "INV-DEMO-99",
-      total: `₹${(context.total || 53100).toLocaleString("en-IN")}`,
+      total: `₹${total.toLocaleString("en-IN")}`,
+      subtotal: `₹${subtotal.toLocaleString("en-IN")}`,
+      cgst: `₹${cgst.toLocaleString("en-IN")}`,
+      sgst: `₹${sgst.toLocaleString("en-IN")}`,
+      gst: `₹${gst.toLocaleString("en-IN")}`,
       ...context.invoice
     },
     customer: {
