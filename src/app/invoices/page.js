@@ -15,10 +15,9 @@ const KYLAS_PRODUCTS = [
   { value: "prod_iot_node", label: "Smart Home IoT Sensor Node (AsmitA Hub)" },
   { value: "prod_bbps_gw", label: "BBPS Settlement Core Gateway API" },
   { value: "prod_devops_supp", label: "Dedicated Cloud DevOps Maintenance Hours" }
-];
-const INITIAL_INVOICES = [
-  { id: "INV-2026-001", customer: "Acme Corporate Entity", email: "finance@acme.com", date: "2026-06-18", productId: "prod_crm_ent", qty: 2, rate: 45000, total: 106200, memberId: "SCC-0123", amount: { words: "one lakh six thousand two hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "Cheque", chequeNo: "123456", bankName: "HDFC Bank", date: "15/06/2026" } },
-  { id: "INV-2026-002", customer: "Society Hub Operations", email: "accounts@societyhub.in", date: "2026-06-19", productId: "prod_iot_node", qty: 10, rate: 3500, total: 100300, memberId: "SCC-0124", amount: { words: "one lakh three hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "NEFT", chequeNo: "N/A", bankName: "SBI Bank", date: "18/06/2026" } }
+];const INITIAL_INVOICES = [
+  { id: "INV-2026-001", customer: "Acme Corporate Entity", email: "finance@acme.com", date: "2026-06-18", productId: "prod_crm_ent", qty: 2, rate: 45000, total: 106200, memberId: "SCC-0123", amount: { words: "one lakh six thousand two hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "Cheque", referenceNo: "123456", bankName: "HDFC Bank", date: "15/06/2026" } },
+  { id: "INV-2026-002", customer: "Society Hub Operations", email: "accounts@societyhub.in", date: "2026-06-19", productId: "prod_iot_node", qty: 10, rate: 3500, total: 100300, memberId: "SCC-0124", amount: { words: "one lakh three hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "NEFT/IMPS", referenceNo: "N/A", bankName: "SBI Bank", date: "18/06/2026" } }
 ];
 
 const FALLBACK_THEME = { primaryColor: "#27347B", textColor: "#202223", backgroundColor: "#ffffff", borderColor: "#e1e3e5" };
@@ -68,7 +67,7 @@ export default function InvoicesListPage() {
   const [invPeriodStart, setInvPeriodStart] = useState("");
   const [invPeriodEnd, setInvPeriodEnd] = useState("");
   const [invPaymentMethod, setInvPaymentMethod] = useState("Cash");
-  const [invChequeNo, setInvChequeNo] = useState("");
+  const [invReferenceNo, setInvReferenceNo] = useState("");
   const [invBankName, setInvBankName] = useState("");
   const [invPaymentDate, setInvPaymentDate] = useState("");
 
@@ -86,7 +85,7 @@ export default function InvoicesListPage() {
       setInvPeriodStart(invoice.payment?.periodStart || "");
       setInvPeriodEnd(invoice.payment?.periodEnd || "");
       setInvPaymentMethod(invoice.payment?.method || "Cash");
-      setInvChequeNo(invoice.payment?.chequeNo || "");
+      setInvReferenceNo(invoice.payment?.referenceNo || invoice.payment?.chequeNo || "");
       setInvBankName(invoice.payment?.bankName || "");
       setInvPaymentDate(invoice.payment?.date || "");
     } else {
@@ -101,7 +100,7 @@ export default function InvoicesListPage() {
       setInvPeriodStart("");
       setInvPeriodEnd("");
       setInvPaymentMethod("Cash");
-      setInvChequeNo("");
+      setInvReferenceNo("");
       setInvBankName("");
       setInvPaymentDate(new Date().toISOString().split("T")[0]);
     }
@@ -126,7 +125,7 @@ export default function InvoicesListPage() {
         periodStart: invPeriodStart,
         periodEnd: invPeriodEnd,
         method: invPaymentMethod,
-        chequeNo: invChequeNo,
+        referenceNo: invReferenceNo,
         bankName: invBankName,
         date: invPaymentDate
       }
@@ -350,23 +349,32 @@ export default function InvoicesListPage() {
                       <div className={styles.inputFieldGroupBlock}>
                         <label>Payment Method</label>
                         <select value={invPaymentMethod} onChange={(e) => setInvPaymentMethod(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", background: "#f8fafc" }}>
-                          <option value="Cash">Cash</option>
                           <option value="Cheque">Cheque</option>
-                          <option value="Bank Transfer">Bank Transfer</option>
-                          <option value="Online">Online</option>
+                          <option value="UPI">UPI</option>
+                          <option value="NEFT/IMPS">NEFT / IMPS</option>
+                          <option value="Cash">Cash</option>
                         </select>
                       </div>
-                      <div className={styles.inputFieldGroupBlock}>
-                        <label>Cheque / Transaction No</label>
-                        <input type="text" placeholder="Cheque or Ref number" value={invChequeNo} onChange={(e) => setInvChequeNo(e.target.value)} />
-                      </div>
+                      
+                      {invPaymentMethod !== "Cash" && (
+                        <div className={styles.inputFieldGroupBlock}>
+                          <label>
+                            {invPaymentMethod === "Cheque" ? "Cheque No" : invPaymentMethod === "UPI" ? "Transaction ID" : "UTR No"}
+                          </label>
+                          <input type="text" placeholder={`Enter ${invPaymentMethod === "Cheque" ? "Cheque No" : "Ref No"}`} value={invReferenceNo} onChange={(e) => setInvReferenceNo(e.target.value)} />
+                        </div>
+                      )}
                     </div>
+
                     <div className={styles.formRowTwoColumnGrid}>
-                      <div className={styles.inputFieldGroupBlock}>
-                        <label>Bank Name</label>
-                        <input type="text" placeholder="e.g. HDFC Bank" value={invBankName} onChange={(e) => setInvBankName(e.target.value)} />
-                      </div>
-                      <div className={styles.inputFieldGroupBlock}>
+                      {(invPaymentMethod === "Cheque" || invPaymentMethod === "NEFT/IMPS") && (
+                        <div className={styles.inputFieldGroupBlock}>
+                          <label>Bank Name</label>
+                          <input type="text" placeholder="e.g. HDFC Bank" value={invBankName} onChange={(e) => setInvBankName(e.target.value)} />
+                        </div>
+                      )}
+                      
+                      <div className={styles.inputFieldGroupBlock} style={{ gridColumn: (invPaymentMethod === "Cheque" || invPaymentMethod === "NEFT/IMPS") ? "auto" : "1 / -1" }}>
                         <label>Payment Date</label>
                         <input type="date" value={invPaymentDate} onChange={(e) => setInvPaymentDate(e.target.value)} />
                       </div>
