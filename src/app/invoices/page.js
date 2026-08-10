@@ -16,10 +16,9 @@ const KYLAS_PRODUCTS = [
   { value: "prod_bbps_gw", label: "BBPS Settlement Core Gateway API" },
   { value: "prod_devops_supp", label: "Dedicated Cloud DevOps Maintenance Hours" }
 ];
-
 const INITIAL_INVOICES = [
-  { id: "INV-2026-001", customer: "Acme Corporate Entity", email: "finance@acme.com", date: "2026-06-18", productId: "prod_crm_ent", qty: 2, rate: 45000, total: 106200 },
-  { id: "INV-2026-002", customer: "Society Hub Operations", email: "accounts@societyhub.in", date: "2026-06-19", productId: "prod_iot_node", qty: 10, rate: 3500, total: 100300 }
+  { id: "INV-2026-001", customer: "Acme Corporate Entity", email: "finance@acme.com", date: "2026-06-18", productId: "prod_crm_ent", qty: 2, rate: 45000, total: 106200, memberId: "SCC-0123", amount: { words: "one lakh six thousand two hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "Cheque", chequeNo: "123456", bankName: "HDFC Bank", date: "15/06/2026" } },
+  { id: "INV-2026-002", customer: "Society Hub Operations", email: "accounts@societyhub.in", date: "2026-06-19", productId: "prod_iot_node", qty: 10, rate: 3500, total: 100300, memberId: "SCC-0124", amount: { words: "one lakh three hundred" }, payment: { periodStart: "01/01/2026", periodEnd: "31/12/2026", method: "NEFT", chequeNo: "N/A", bankName: "SBI Bank", date: "18/06/2026" } }
 ];
 
 const FALLBACK_THEME = { primaryColor: "#27347B", textColor: "#202223", backgroundColor: "#ffffff", borderColor: "#e1e3e5" };
