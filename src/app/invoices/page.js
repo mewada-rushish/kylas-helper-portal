@@ -8,6 +8,7 @@ import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import styles from "./invoices.module.css";
+import { resolveToken } from "@/lib/variable-resolver";
 
 const KYLAS_PRODUCTS = [
   { value: "prod_crm_ent", label: "Kylas CRM Premium Enterprise License" },
@@ -29,12 +30,23 @@ export default function InvoicesListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [invoiceModalMode, setInvoiceModalOpen] = useState(null); 
   const [activeInvoice, setActiveInvoice] = useState(null);
+  const [defaultTemplate, setDefaultTemplate] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setInvoices(INITIAL_INVOICES);
       setIsLoading(false);
     }, 1200);
+    
+    // Fetch default template
+    fetch("/api/invoices/templates")
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        const def = data.find(t => t.isDefault);
+        if (def) setDefaultTemplate(def);
+      })
+      .catch(console.error);
+      
     return () => clearTimeout(timer);
   }, []);
 
@@ -182,31 +194,38 @@ export default function InvoicesListPage() {
 
                 {invoiceModalMode === "view" && activeInvoice ? (
                   <div className={styles.modalScrollablePDFPreviewCanvasBodyHousingContainer}>
-                    <div className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: FALLBACK_THEME.backgroundColor, color: FALLBACK_THEME.textColor, padding: "40px" }}>
-                      <h2 style={{ color: FALLBACK_THEME.primaryColor, fontFamily: "Montserrat, sans-serif", textAlign: "center", marginBottom: "20px" }}>TAX INVOICE</h2>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", fontFamily: "Poppins, sans-serif", fontSize: "13px" }}>
-                        <div><strong>Billed To:</strong><br/>{activeInvoice.customer}<br/>{activeInvoice.email}</div>
-                        <div style={{ textAlign: "right" }}><strong>Invoice ID:</strong> {activeInvoice.id}<br/><strong>Date:</strong> {activeInvoice.date}</div>
+                    {defaultTemplate ? (
+                      <div 
+                        className={styles.pdfInvoiceLayoutContainerMock}
+                        dangerouslySetInnerHTML={{ __html: resolveToken(defaultTemplate.config, activeInvoice) }}
+                      />
+                    ) : (
+                      <div className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: FALLBACK_THEME.backgroundColor, color: FALLBACK_THEME.textColor, padding: "40px" }}>
+                        <h2 style={{ color: FALLBACK_THEME.primaryColor, fontFamily: "Montserrat, sans-serif", textAlign: "center", marginBottom: "20px" }}>TAX INVOICE</h2>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", fontFamily: "Poppins, sans-serif", fontSize: "13px" }}>
+                          <div><strong>Billed To:</strong><br/>{activeInvoice.customer}<br/>{activeInvoice.email}</div>
+                          <div style={{ textAlign: "right" }}><strong>Invoice ID:</strong> {activeInvoice.id}<br/><strong>Date:</strong> {activeInvoice.date}</div>
+                        </div>
+                        <table width="100%" style={{ borderCollapse: "collapse", fontSize: "12px", fontFamily: "Poppins, sans-serif" }}>
+                          <thead>
+                            <tr style={{ backgroundColor: "#fafafa", borderBottom: "1px solid #e1e3e5" }}>
+                              <th align="left" style={{ padding: "10px" }}>Item Description</th>
+                              <th align="center" style={{ padding: "10px" }}>Qty</th>
+                              <th align="right" style={{ padding: "10px" }}>Rate</th>
+                              <th align="right" style={{ padding: "10px" }}>Gross Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style={{ borderBottom: "1px solid #e1e3e5" }}>
+                              <td style={{ padding: "10px" }}>{KYLAS_PRODUCTS.find(p => p.value === activeInvoice.productId)?.label}</td>
+                              <td align="center" style={{ padding: "10px" }}>{activeInvoice.qty}</td>
+                              <td align="right" style={{ padding: "10px" }}>₹{activeInvoice.rate.toLocaleString("en-IN")}.00</td>
+                              <td align="right" style={{ padding: "10px", fontWeight: "600" }}>₹{activeInvoice.total.toLocaleString("en-IN")}.00</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
-                      <table width="100%" style={{ borderCollapse: "collapse", fontSize: "12px", fontFamily: "Poppins, sans-serif" }}>
-                        <thead>
-                          <tr style={{ backgroundColor: "#fafafa", borderBottom: "1px solid #e1e3e5" }}>
-                            <th align="left" style={{ padding: "10px" }}>Item Description</th>
-                            <th align="center" style={{ padding: "10px" }}>Qty</th>
-                            <th align="right" style={{ padding: "10px" }}>Rate</th>
-                            <th align="right" style={{ padding: "10px" }}>Gross Value</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr style={{ borderBottom: "1px solid #e1e3e5" }}>
-                            <td style={{ padding: "10px" }}>{KYLAS_PRODUCTS.find(p => p.value === activeInvoice.productId)?.label}</td>
-                            <td align="center" style={{ padding: "10px" }}>{activeInvoice.qty}</td>
-                            <td align="right" style={{ padding: "10px" }}>₹{activeInvoice.rate.toLocaleString("en-IN")}.00</td>
-                            <td align="right" style={{ padding: "10px", fontWeight: "600" }}>₹{activeInvoice.total.toLocaleString("en-IN")}.00</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                    )}
                   </div>
                 ) : (
                   <form onSubmit={handleSaveInvoice} className={styles.invoiceInteractiveFormStack}>
