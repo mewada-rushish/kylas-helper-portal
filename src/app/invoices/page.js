@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2 } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
@@ -272,8 +272,8 @@ export default function InvoicesListPage() {
                       )}
                     </div>
                     <div style={{ padding: "16px 24px", backgroundColor: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-                      <AdminButton variant="secondary" onClick={() => setInvoiceModalOpen(null)}>Close</AdminButton>
-                      <AdminButton variant="secondary" onClick={() => {
+                      <AdminButton variant="secondary" icon={FiX} onClick={() => setInvoiceModalOpen(null)}>Close</AdminButton>
+                      <AdminButton variant="secondary" icon={FiPrinter} onClick={() => {
                         const el = document.getElementById("invoice-preview-container");
                         if (el) {
                           const w = window.open('', '_blank');
@@ -282,7 +282,7 @@ export default function InvoicesListPage() {
                           w.onload = () => { w.print(); };
                         }
                       }}>Print</AdminButton>
-                      <AdminButton variant="primary" onClick={async () => {
+                      <AdminButton variant="primary" icon={FiDownload} onClick={async () => {
                         const el = document.getElementById("invoice-preview-container");
                         if (el) {
                           const html2pdf = (await import("html2pdf.js")).default;
