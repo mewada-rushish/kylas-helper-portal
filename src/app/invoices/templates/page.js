@@ -158,7 +158,8 @@ export default function TemplatesListingDashboard() {
                     dangerouslySetInnerHTML={{ __html: resolveToken(previewTemplate.config, {
                       invoice: { id: "INV-PREVIEW-001", total: 106200, tax: 18000 },
                       current: { date: new Date().toISOString().split("T")[0] },
-                      customer: { name: "Mock Client", email: "client@example.com" },
+                      customer: "Mock Client", 
+                      email: "client@example.com",
                       product: { rate: 45000 },
                       amount: { words: "One Lakh Six Thousand Two Hundred" },
                       settings: systemSettings || {}
