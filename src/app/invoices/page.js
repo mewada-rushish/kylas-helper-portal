@@ -61,26 +61,50 @@ export default function InvoicesListPage() {
 
   const [invCustomer, setInvCustomer] = useState("");
   const [invEmail, setInvEmail] = useState("");
+  const [invMemberId, setInvMemberId] = useState("");
+  const [invAmountWords, setInvAmountWords] = useState("");
   const [invProduct, setInvProduct] = useState("prod_crm_ent");
   const [invQty, setInvQty] = useState(1);
   const [invRate, setInvRate] = useState(0);
+  const [invPeriodStart, setInvPeriodStart] = useState("");
+  const [invPeriodEnd, setInvPeriodEnd] = useState("");
+  const [invPaymentMethod, setInvPaymentMethod] = useState("Cash");
+  const [invChequeNo, setInvChequeNo] = useState("");
+  const [invBankName, setInvBankName] = useState("");
+  const [invPaymentDate, setInvPaymentDate] = useState("");
 
   const handleOpenInvoiceModal = (mode, invoice = null) => {
     setInvoiceModalOpen(mode);
     if (invoice) {
       setActiveInvoice(invoice);
-      setInvCustomer(invoice.customer);
-      setInvEmail(invoice.email);
-      setInvProduct(invoice.productId);
-      setInvQty(invoice.qty);
-      setInvRate(invoice.rate);
+      setInvCustomer(invoice.customer || "");
+      setInvEmail(invoice.email || "");
+      setInvMemberId(invoice.memberId || "");
+      setInvAmountWords(invoice.amount?.words || "");
+      setInvProduct(invoice.productId || "prod_crm_ent");
+      setInvQty(invoice.qty || 1);
+      setInvRate(invoice.rate || 0);
+      setInvPeriodStart(invoice.payment?.periodStart || "");
+      setInvPeriodEnd(invoice.payment?.periodEnd || "");
+      setInvPaymentMethod(invoice.payment?.method || "Cash");
+      setInvChequeNo(invoice.payment?.chequeNo || "");
+      setInvBankName(invoice.payment?.bankName || "");
+      setInvPaymentDate(invoice.payment?.date || "");
     } else {
       setActiveInvoice(null);
       setInvCustomer("");
       setInvEmail("");
+      setInvMemberId("");
+      setInvAmountWords("");
       setInvProduct("prod_crm_ent");
       setInvQty(1);
       setInvRate(0);
+      setInvPeriodStart("");
+      setInvPeriodEnd("");
+      setInvPaymentMethod("Cash");
+      setInvChequeNo("");
+      setInvBankName("");
+      setInvPaymentDate(new Date().toISOString().split("T")[0]);
     }
   };
 
@@ -90,27 +114,36 @@ export default function InvoicesListPage() {
     const rateNum = Number(invRate);
     const calculatedTotal = (qtyNum * rateNum) * 1.18; 
 
+    const invoiceData = {
+      customer: invCustomer,
+      email: invEmail,
+      memberId: invMemberId,
+      productId: invProduct,
+      qty: qtyNum,
+      rate: rateNum,
+      total: calculatedTotal,
+      amount: { words: invAmountWords },
+      payment: {
+        periodStart: invPeriodStart,
+        periodEnd: invPeriodEnd,
+        method: invPaymentMethod,
+        chequeNo: invChequeNo,
+        bankName: invBankName,
+        date: invPaymentDate
+      }
+    };
+
     if (invoiceModalMode === "create") {
       const newInv = {
         id: `INV-2026-00${invoices.length + 1}`,
-        customer: invCustomer,
-        email: invEmail,
         date: new Date().toISOString().split("T")[0],
-        productId: invProduct,
-        qty: qtyNum,
-        rate: rateNum,
-        total: calculatedTotal
+        ...invoiceData
       };
       setInvoices([newInv, ...invoices]);
     } else if (invoiceModalMode === "edit" && activeInvoice) {
       setInvoices(invoices.map(inv => inv.id === activeInvoice.id ? {
         ...inv,
-        customer: invCustomer,
-        email: invEmail,
-        productId: invProduct,
-        qty: qtyNum,
-        rate: rateNum,
-        total: calculatedTotal
+        ...invoiceData
       } : inv));
     }
     setInvoiceModalOpen(null);
@@ -248,6 +281,16 @@ export default function InvoicesListPage() {
                         <input type="email" placeholder="billing@entity.com" value={invEmail} onChange={(e) => setInvEmail(e.target.value)} required />
                       </div>
                     </div>
+                    <div className={styles.formRowTwoColumnGrid}>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Member ID</label>
+                        <input type="text" placeholder="e.g. SCC - 1" value={invMemberId} onChange={(e) => setInvMemberId(e.target.value)} />
+                      </div>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Amount In Words</label>
+                        <input type="text" placeholder="e.g. One Lakh Only" value={invAmountWords} onChange={(e) => setInvAmountWords(e.target.value)} />
+                      </div>
+                    </div>
                     <div className={styles.inputFieldGroupBlock}>
                       <label>Kylas Sync Catalog Product Mapping</label>
                       <CustomDropdown 
@@ -264,6 +307,41 @@ export default function InvoicesListPage() {
                       <div className={styles.inputFieldGroupBlock}>
                         <label>Unit Purchase Rate (₹)</label>
                         <input type="number" min="0" placeholder="0" value={invRate} onChange={(e) => setInvRate(e.target.value)} required />
+                      </div>
+                    </div>
+                    <div className={styles.formRowTwoColumnGrid}>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Period Start Date</label>
+                        <input type="date" value={invPeriodStart} onChange={(e) => setInvPeriodStart(e.target.value)} />
+                      </div>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Period End Date</label>
+                        <input type="date" value={invPeriodEnd} onChange={(e) => setInvPeriodEnd(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className={styles.formRowTwoColumnGrid}>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Payment Method</label>
+                        <select value={invPaymentMethod} onChange={(e) => setInvPaymentMethod(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", background: "#f8fafc" }}>
+                          <option value="Cash">Cash</option>
+                          <option value="Cheque">Cheque</option>
+                          <option value="Bank Transfer">Bank Transfer</option>
+                          <option value="Online">Online</option>
+                        </select>
+                      </div>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Cheque / Transaction No</label>
+                        <input type="text" placeholder="Cheque or Ref number" value={invChequeNo} onChange={(e) => setInvChequeNo(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className={styles.formRowTwoColumnGrid}>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Bank Name</label>
+                        <input type="text" placeholder="e.g. HDFC Bank" value={invBankName} onChange={(e) => setInvBankName(e.target.value)} />
+                      </div>
+                      <div className={styles.inputFieldGroupBlock}>
+                        <label>Payment Date</label>
+                        <input type="date" value={invPaymentDate} onChange={(e) => setInvPaymentDate(e.target.value)} />
                       </div>
                     </div>
                     <div className={styles.modalFooterActionsBlockRow}>
