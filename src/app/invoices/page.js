@@ -272,8 +272,10 @@ export default function InvoicesListPage() {
                       )}
                     </div>
                     <div style={{ padding: "16px 24px", backgroundColor: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-                      <AdminButton variant="secondary" icon={FiX} onClick={() => setInvoiceModalOpen(null)}>Close</AdminButton>
-                      <AdminButton variant="secondary" icon={FiPrinter} onClick={() => {
+                      <AdminButton variant="secondary" onClick={() => setInvoiceModalOpen(null)}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><FiX /> <span>Close</span></div>
+                      </AdminButton>
+                      <AdminButton variant="secondary" onClick={() => {
                         const el = document.getElementById("invoice-preview-container");
                         if (el) {
                           const w = window.open('', '_blank');
@@ -281,14 +283,18 @@ export default function InvoicesListPage() {
                           w.document.close();
                           w.onload = () => { w.print(); };
                         }
-                      }}>Print</AdminButton>
-                      <AdminButton variant="primary" icon={FiDownload} onClick={async () => {
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><FiPrinter /> <span>Print</span></div>
+                      </AdminButton>
+                      <AdminButton variant="primary" onClick={async () => {
                         const el = document.getElementById("invoice-preview-container");
                         if (el) {
                           const html2pdf = (await import("html2pdf.js")).default;
                           html2pdf().from(el).set({ margin: 0, filename: `${activeInvoice.id}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).save();
                         }
-                      }}>Download PDF</AdminButton>
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><FiDownload /> <span>Download PDF</span></div>
+                      </AdminButton>
                     </div>
                   </div>
                 ) : (
