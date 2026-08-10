@@ -31,6 +31,7 @@ export default function InvoicesListPage() {
   const [invoiceModalMode, setInvoiceModalOpen] = useState(null); 
   const [activeInvoice, setActiveInvoice] = useState(null);
   const [defaultTemplate, setDefaultTemplate] = useState(null);
+  const [systemSettings, setSystemSettings] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -44,6 +45,14 @@ export default function InvoicesListPage() {
       .then(data => {
         const def = data.find(t => t.isDefault);
         if (def) setDefaultTemplate(def);
+      })
+      .catch(console.error);
+
+    // Fetch system settings
+    fetch("/api/settings")
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && !data.error) setSystemSettings(data);
       })
       .catch(console.error);
       
@@ -197,7 +206,7 @@ export default function InvoicesListPage() {
                     {defaultTemplate ? (
                       <div 
                         className={styles.pdfInvoiceLayoutContainerMock}
-                        dangerouslySetInnerHTML={{ __html: resolveToken(defaultTemplate.config, activeInvoice) }}
+                        dangerouslySetInnerHTML={{ __html: resolveToken(defaultTemplate.config, { ...activeInvoice, settings: systemSettings || {} }) }}
                       />
                     ) : (
                       <div className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: FALLBACK_THEME.backgroundColor, color: FALLBACK_THEME.textColor, padding: "40px" }}>

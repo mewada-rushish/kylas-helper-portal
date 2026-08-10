@@ -397,11 +397,16 @@ export class AutomationEngine {
     
     if (!template) throw new Error("Invoice template not found");
 
-    // Resolve mappings
     const resolvedData = {};
     for (const [key, path] of Object.entries(node.mappings || {})) {
       resolvedData[key] = evaluateTemplate(path, context);
     }
+    
+    // Inject system settings into the root of the data so they can be accessed via {{settings.xxx}}
+    const systemSettings = await prisma.systemSetting.findUnique({
+      where: { id: "default" }
+    });
+    resolvedData.settings = systemSettings || {};
 
     await this.appendLog("Compiling template with Handlebars...", { data: resolvedData });
     const compiledTemplate = Handlebars.compile(template.config || "");

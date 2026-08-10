@@ -64,7 +64,12 @@ const VARIABLE_DICTIONARY = [
   { token: "{{product.rate}}", description: "Base Item Unit Price" },
   { token: "{{product.qty}}", description: "Line Unit Quantity Count" },
   { token: "{{invoice.total}}", description: "Gross Total Amount Document Value" },
-  { token: "{{current.date}}", description: "Current Issue Date" }
+  { token: "{{current.date}}", description: "Current Issue Date" },
+  { token: "{{settings.companyName}}", description: "Company Legal Name" },
+  { token: "{{settings.companyAddress}}", description: "Registered Corporate Address" },
+  { token: "{{settings.logoUrl}}", description: "URL of the Company Logo" },
+  { token: "{{settings.gstin}}", description: "Official GSTIN Identifier" },
+  { token: "{{settings.panCode}}", description: "Corporate Identity PAN" }
 ];
 
 export default function TemplateEditorWorkspace() {
@@ -99,7 +104,14 @@ export default function TemplateEditorWorkspace() {
     qty: 1,
     rate: 45000,
     total: 53100,
-    date: new Date().toISOString().split("T")[0]
+    date: "2026-08-10",
+    settings: {
+      companyName: "AsmitA Club",
+      companyAddress: "105, Naya Nagar Road, Naya Nagar, Mira Road East, Mira Bhayandar, Maharashtra 401107",
+      logoUrl: "/uploads/logo-1783144818440.svg",
+      gstin: "27AAAAA0000A1Z5",
+      panCode: "ABCDE1234F"
+    }
   };
 
   useEffect(() => {
