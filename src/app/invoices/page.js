@@ -235,39 +235,61 @@ export default function InvoicesListPage() {
                 </div>
 
                 {invoiceModalMode === "view" && activeInvoice ? (
-                  <div className={styles.modalScrollablePDFPreviewCanvasBodyHousingContainer}>
-                    {defaultTemplate ? (
-                      <div 
-                        className={styles.pdfInvoiceLayoutContainerMock}
-                        dangerouslySetInnerHTML={{ __html: resolveToken(defaultTemplate.config, { ...activeInvoice, settings: systemSettings || {} }) }}
-                      />
-                    ) : (
-                      <div className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: FALLBACK_THEME.backgroundColor, color: FALLBACK_THEME.textColor, padding: "40px" }}>
-                        <h2 style={{ color: FALLBACK_THEME.primaryColor, fontFamily: "Montserrat, sans-serif", textAlign: "center", marginBottom: "20px" }}>TAX INVOICE</h2>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", fontFamily: "Poppins, sans-serif", fontSize: "13px" }}>
-                          <div><strong>Billed To:</strong><br/>{activeInvoice.customer}<br/>{activeInvoice.email}</div>
-                          <div style={{ textAlign: "right" }}><strong>Invoice ID:</strong> {activeInvoice.id}<br/><strong>Date:</strong> {activeInvoice.date}</div>
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "90vh" }}>
+                    <div className={styles.modalScrollablePDFPreviewCanvasBodyHousingContainer}>
+                      {defaultTemplate ? (
+                        <div 
+                          id="invoice-preview-container"
+                          className={styles.pdfInvoiceLayoutContainerMock}
+                          dangerouslySetInnerHTML={{ __html: resolveToken(defaultTemplate.config, { ...activeInvoice, settings: systemSettings || {} }) }}
+                        />
+                      ) : (
+                        <div id="invoice-preview-container" className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: FALLBACK_THEME.backgroundColor, color: FALLBACK_THEME.textColor, padding: "40px" }}>
+                          <h2 style={{ color: FALLBACK_THEME.primaryColor, fontFamily: "Montserrat, sans-serif", textAlign: "center", marginBottom: "20px" }}>TAX INVOICE</h2>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", fontFamily: "Poppins, sans-serif", fontSize: "13px" }}>
+                            <div><strong>Billed To:</strong><br/>{activeInvoice.customer}<br/>{activeInvoice.email}</div>
+                            <div style={{ textAlign: "right" }}><strong>Invoice ID:</strong> {activeInvoice.id}<br/><strong>Date:</strong> {activeInvoice.date}</div>
+                          </div>
+                          <table width="100%" style={{ borderCollapse: "collapse", fontSize: "12px", fontFamily: "Poppins, sans-serif" }}>
+                            <thead>
+                              <tr style={{ backgroundColor: "#fafafa", borderBottom: "1px solid #e1e3e5" }}>
+                                <th align="left" style={{ padding: "10px" }}>Item Description</th>
+                                <th align="center" style={{ padding: "10px" }}>Qty</th>
+                                <th align="right" style={{ padding: "10px" }}>Rate</th>
+                                <th align="right" style={{ padding: "10px" }}>Gross Value</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr style={{ borderBottom: "1px solid #e1e3e5" }}>
+                                <td style={{ padding: "10px" }}>{KYLAS_PRODUCTS.find(p => p.value === activeInvoice.productId)?.label}</td>
+                                <td align="center" style={{ padding: "10px" }}>{activeInvoice.qty}</td>
+                                <td align="right" style={{ padding: "10px" }}>₹{activeInvoice.rate.toLocaleString("en-IN")}.00</td>
+                                <td align="right" style={{ padding: "10px", fontWeight: "600" }}>₹{activeInvoice.total.toLocaleString("en-IN")}.00</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
-                        <table width="100%" style={{ borderCollapse: "collapse", fontSize: "12px", fontFamily: "Poppins, sans-serif" }}>
-                          <thead>
-                            <tr style={{ backgroundColor: "#fafafa", borderBottom: "1px solid #e1e3e5" }}>
-                              <th align="left" style={{ padding: "10px" }}>Item Description</th>
-                              <th align="center" style={{ padding: "10px" }}>Qty</th>
-                              <th align="right" style={{ padding: "10px" }}>Rate</th>
-                              <th align="right" style={{ padding: "10px" }}>Gross Value</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr style={{ borderBottom: "1px solid #e1e3e5" }}>
-                              <td style={{ padding: "10px" }}>{KYLAS_PRODUCTS.find(p => p.value === activeInvoice.productId)?.label}</td>
-                              <td align="center" style={{ padding: "10px" }}>{activeInvoice.qty}</td>
-                              <td align="right" style={{ padding: "10px" }}>₹{activeInvoice.rate.toLocaleString("en-IN")}.00</td>
-                              <td align="right" style={{ padding: "10px", fontWeight: "600" }}>₹{activeInvoice.total.toLocaleString("en-IN")}.00</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                      )}
+                    </div>
+                    <div style={{ padding: "16px 24px", backgroundColor: "#fff", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                      <AdminButton variant="secondary" onClick={() => setInvoiceModalOpen(null)}>Close</AdminButton>
+                      <AdminButton variant="secondary" onClick={() => {
+                        const el = document.getElementById("invoice-preview-container");
+                        if (el) {
+                          const w = window.open('', '_blank');
+                          w.document.write('<html><head><title>Print</title></head><body style="margin:0;">' + el.outerHTML + '</body></html>');
+                          w.document.close();
+                          w.onload = () => { w.print(); };
+                        }
+                      }}>Print</AdminButton>
+                      <AdminButton variant="primary" onClick={async () => {
+                        const el = document.getElementById("invoice-preview-container");
+                        if (el) {
+                          const html2pdf = (await import("html2pdf.js")).default;
+                          html2pdf().from(el).set({ margin: 0, filename: `${activeInvoice.id}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).save();
+                        }
+                      }}>Download PDF</AdminButton>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleSaveInvoice} className={styles.invoiceInteractiveFormStack}>
