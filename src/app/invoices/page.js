@@ -235,7 +235,7 @@ export default function InvoicesListPage() {
                 </div>
 
                 {invoiceModalMode === "view" && activeInvoice ? (
-                  <div style={{ display: "flex", flexDirection: "column", height: "100%", maxHeight: "90vh" }}>
+                  <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
                     <div className={styles.modalScrollablePDFPreviewCanvasBodyHousingContainer}>
                       {defaultTemplate ? (
                         <div 
