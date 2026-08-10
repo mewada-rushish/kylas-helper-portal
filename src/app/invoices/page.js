@@ -125,8 +125,8 @@ export default function InvoicesListPage() {
         periodStart: invPeriodStart,
         periodEnd: invPeriodEnd,
         method: invPaymentMethod,
-        referenceNo: invReferenceNo,
-        bankName: invBankName,
+        referenceNo: invPaymentMethod === "Cash" ? "" : invReferenceNo,
+        bankName: (invPaymentMethod === "Cash" || invPaymentMethod === "UPI") ? "" : invBankName,
         date: invPaymentDate
       }
     };
