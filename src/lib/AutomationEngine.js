@@ -404,7 +404,7 @@ export class AutomationEngine {
     }
 
     await this.appendLog("Compiling template with Handlebars...", { data: resolvedData });
-    const compiledTemplate = Handlebars.compile(template.theme || "");
+    const compiledTemplate = Handlebars.compile(template.config || "");
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via Puppeteer
