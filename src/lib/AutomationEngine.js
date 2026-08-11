@@ -354,8 +354,18 @@ export class AutomationEngine {
         
         let rawHeaders = node.apiHeaders || params.headers;
         if (rawHeaders) {
-          rawHeaders = evaluateTemplate(rawHeaders, context);
-          try { headersObj = typeof rawHeaders === 'string' ? JSON.parse(rawHeaders) : rawHeaders; } catch(e){}
+          if (Array.isArray(rawHeaders)) {
+            // UI passes [{key: '...', value: '...'}]
+            headersObj = {};
+            for (const h of rawHeaders) {
+              if (h.key) {
+                headersObj[h.key] = evaluateTemplate(h.value, context);
+              }
+            }
+          } else {
+            rawHeaders = evaluateTemplate(rawHeaders, context);
+            try { headersObj = typeof rawHeaders === 'string' ? JSON.parse(rawHeaders) : rawHeaders; } catch(e){}
+          }
         }
 
         let rawBody = node.apiBody || params.body;
