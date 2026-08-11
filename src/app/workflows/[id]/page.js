@@ -123,13 +123,43 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
 
   // 2. Process Actions
   ancestorNodes.filter(n => n.type === 'action' && n.outputVariableName).forEach(n => {
+    let fields = [
+      { path: `step_${n.id}.${n.outputVariableName}`, label: `${n.outputVariableName} (Full Response)`, sample: '{"status":"ok"}' }
+    ];
+
+    if (n.sampleResponse) {
+      try {
+        const sampleObj = JSON.parse(n.sampleResponse);
+        
+        const extractKeys = (obj, currentPath) => {
+          if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+            Object.keys(obj).forEach(k => {
+              const newPath = currentPath ? `${currentPath}.${k}` : k;
+              const val = obj[k];
+              if (val && typeof val === 'object' && !Array.isArray(val)) {
+                extractKeys(val, newPath);
+              } else {
+                fields.push({
+                  path: `step_${n.id}.${n.outputVariableName}.${newPath}`,
+                  label: newPath,
+                  sample: val
+                });
+              }
+            });
+          }
+        };
+        
+        extractKeys(sampleObj, "");
+      } catch (e) {
+        // invalid json, ignore
+      }
+    }
+
     groupedFields.push({
       stepId: n.id,
       stepTitle: n.title || 'Action Step',
       type: 'action',
-      fields: [
-        { path: `step_${n.id}.${n.outputVariableName}`, label: n.outputVariableName, sample: '{"status":"ok"}' }
-      ]
+      fields
     });
   });
 
@@ -1350,6 +1380,20 @@ export default function WorkflowCanvasEngine() {
                                       />
                                     </div>
                                   )}
+                                  
+                                  <div className={styles.blockFieldRowContent} style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px dashed #cbd5e1' }}>
+                                    <label>Sample JSON Response (Optional)</label>
+                                    <p className={styles.nodeHelpText} style={{ marginTop: '4px', marginBottom: '8px' }}>
+                                      Paste a sample response from this API. We will automatically extract the keys so you can select them as variables in subsequent steps!
+                                    </p>
+                                    <textarea 
+                                      className={styles.canvasBlockTextInputCond}
+                                      style={{ minHeight: '100px', fontFamily: 'monospace', width: '100%' }}
+                                      placeholder="{\n  &quot;id&quot;: 123,\n  &quot;status&quot;: &quot;success&quot;\n}"
+                                      value={node.sampleResponse || ""}
+                                      onChange={(e) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, sampleResponse: e.target.value } : n))}
+                                    />
+                                  </div>
                                 </div>
                               ) : (
                                 <div className={styles.nestedRulesStack}>
