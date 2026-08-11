@@ -439,7 +439,7 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via Puppeteer
-    const puppeteer = await import("puppeteer").then(m => m.default || m);
+    const puppeteer = require("puppeteer");
     const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(htmlOutput);
