@@ -1,7 +1,6 @@
 import { prisma } from "./prisma";
 import Handlebars from "handlebars";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import puppeteer from "puppeteer";
 
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
@@ -440,6 +439,7 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via Puppeteer
+    const puppeteer = await import("puppeteer").then(m => m.default || m);
     const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setContent(htmlOutput);
