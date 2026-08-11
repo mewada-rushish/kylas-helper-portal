@@ -1,7 +1,6 @@
 import { prisma } from "./prisma";
 import Handlebars from "handlebars";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import puppeteer from "puppeteer";
 
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
@@ -440,7 +439,28 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via Puppeteer
-    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+    const isLocal = !process.env.VERCEL;
+    let browser;
+    if (isLocal) {
+      // Local dev: use standard puppeteer (which brings its own Chrome)
+      const req = await import("puppeteer");
+      const localPuppeteer = req.default || req;
+      browser = await localPuppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+    } else {
+      // Vercel deployment: use Sparticuz Chromium + Puppeteer Core
+      const chromiumReq = await import("@sparticuz/chromium");
+      const chromium = chromiumReq.default || chromiumReq;
+      const puppeteerCoreReq = await import("puppeteer-core");
+      const puppeteerCore = puppeteerCoreReq.default || puppeteerCoreReq;
+      
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
+    }
+
     const page = await browser.newPage();
     await page.setContent(htmlOutput);
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
