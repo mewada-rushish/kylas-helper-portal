@@ -237,6 +237,7 @@ export default function WorkflowCanvasEngine() {
   const [logsDateRange, setLogsDateRange] = useState({ start: '', end: '' });
   const [versionsDateRange, setVersionsDateRange] = useState({ start: '', end: '' });
   const [selectedLog, setSelectedLog] = useState(null);
+  const [revertedVersion, setRevertedVersion] = useState(null);
   const pollIntervalRef = useRef(null);
 
   // Fetch Workflow data on mount
@@ -857,14 +858,20 @@ export default function WorkflowCanvasEngine() {
       if (!res.ok) throw new Error("Failed to save workflow");
       
       // Auto-save a version
+      const versionDesc = revertedVersion 
+        ? `Reverted to ${revertedVersion}` 
+        : `User triggered save as ${status}`;
+
       await fetch(`/api/workflows/${params.id}/versions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           config: { nodes, edges },
-          description: `User triggered save as ${status}`
+          description: versionDesc
         })
       });
+
+      setRevertedVersion(null);
 
       setWorkflowStatus(status);
       setSaveStatus("Workflow successfully saved");
@@ -875,6 +882,20 @@ export default function WorkflowCanvasEngine() {
       toast.error(err.message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleRevert = (ver) => {
+    try {
+      const config = JSON.parse(ver.config);
+      if (config.nodes) setNodes(config.nodes);
+      if (config.edges) setEdges(config.edges);
+      
+      setRevertedVersion(ver.versionName);
+      setActiveTab("builder");
+      toast.success(`Loaded ${ver.versionName}. Click Save to confirm and make this active.`);
+    } catch(e) {
+      toast.error("Failed to parse version config.");
     }
   };
 
@@ -1594,15 +1615,41 @@ export default function WorkflowCanvasEngine() {
                 <div className={styles.timelineContainer}>
                   {filteredVersions.length === 0 && <p style={{ color: '#64748b', textAlign: 'center', marginTop: '20px' }}>No versions match the filter.</p>}
                   {filteredVersions.map((ver) => (
-                    <div key={ver.id} className={styles.timelineItem}>
-                      <div className={styles.timelineMarker}><div className={styles.markerCircle} /><div className={styles.markerLine} /></div>
-                      <div className={styles.versionCard}>
-                        <div className={styles.versionMetaRow}>
-                          <span className={styles.versionBadgeName}>{ver.versionName.toUpperCase()}</span>
-                          <span className={styles.versionTimestampStamp}>{new Date(ver.createdAt).toLocaleString()}</span>
+                    <div key={ver.id} className={styles.timelineItem} style={{ marginBottom: '24px', paddingLeft: '24px' }}>
+                      <div className={styles.timelineMarker} style={{ top: '8px' }}>
+                        <div className={styles.markerCircle} style={{ width: '12px', height: '12px', background: '#3b82f6', borderRadius: '50%', border: '2px solid white', boxShadow: '0 0 0 1px #3b82f6' }} />
+                        <div className={styles.markerLine} style={{ position: 'absolute', top: '12px', bottom: '-24px', left: '5px', width: '2px', background: '#e2e8f0' }} />
+                      </div>
+                      <div className={styles.versionCard} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div className={styles.versionMetaRow} style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
+                            <span className={styles.versionBadgeName} style={{ background: '#eff6ff', color: '#1d4ed8', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>{ver.versionName.toUpperCase()}</span>
+                            <span className={styles.versionTimestampStamp} style={{ color: '#64748b', fontSize: '13px' }}>{new Date(ver.createdAt).toLocaleString()}</span>
+                          </div>
+                          <p className={styles.versionDescText} style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#334155' }}>{ver.description}</p>
+                          <span className={styles.versionAuthorTag} style={{ fontSize: '12px', color: '#94a3b8' }}>Modified by: <strong style={{ color: '#475569' }}>{ver.author}</strong></span>
                         </div>
-                        <p className={styles.versionDescText}>{ver.description}</p>
-                        <span className={styles.versionAuthorTag}>Modified by: <strong>{ver.author}</strong></span>
+                        <button 
+                          onClick={() => handleRevert(ver)}
+                          style={{
+                            background: '#f8fafc',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '6px',
+                            padding: '8px 16px',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            color: '#334155',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#94a3b8'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+                        >
+                          <FiRotateCcw /> Revert to this
+                        </button>
                       </div>
                     </div>
                   ))}
