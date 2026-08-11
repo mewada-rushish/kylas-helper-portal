@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import Handlebars from "handlebars";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
@@ -21,18 +22,19 @@ function resolveContextVariable(path, context) {
     return triggerCtx;
   }
 
-  // If it's a step shortcut e.g. step_123.varName
-  if (path.startsWith("step_")) {
-    const keys = path.split('.');
-    for (const key of keys) {
-      if (current === undefined || current === null) return undefined;
-      current = current[key];
-    }
-    return current;
+  // If it's a step shortcut e.g. step_123.varName (legacy compatibility)
+  if (path.startsWith("step_") && !path.includes(".")) {
+    return current[path];
   }
 
-  // Fallback for flat paths
-  return context[path];
+  // Proper dotted path resolution for everything else (e.g. trigger.payload.entity.name or step_123.result)
+  const keys = path.split('.');
+  for (const key of keys) {
+    if (current === undefined || current === null) return undefined;
+    current = current[key];
+  }
+  
+  return current;
 }
 
 /**
@@ -161,6 +163,7 @@ export class AutomationEngine {
     let currentNodeId = triggerNode.id;
     const maxSteps = 50; // Prevent infinite loops
     let stepCount = 0;
+    let finalStatus = "SUCCESS";
 
     while (currentNodeId && stepCount < maxSteps) {
       stepCount++;
@@ -208,6 +211,9 @@ export class AutomationEngine {
 
         if (!nextNodeId) {
           await this.appendLog("No valid next node found. Ending execution path.");
+          if (node.type === 'condition_router') {
+            finalStatus = "COMPLETED_WITH_ERRORS";
+          }
           break;
         }
 
@@ -226,9 +232,9 @@ export class AutomationEngine {
 
     await prisma.workflowExecution.update({
       where: { id: this.executionLog.id },
-      data: { status: "SUCCESS" }
+      data: { status: finalStatus === "SUCCESS" ? "SUCCESS" : "FAILED" }
     });
-    await this.appendLog("Workflow completed successfully");
+    await this.appendLog(finalStatus === "SUCCESS" ? "Workflow completed successfully" : "Workflow completed with errors: condition not met.");
   }
 
   async evaluateConditionNode(node, context) {
@@ -253,7 +259,7 @@ export class AutomationEngine {
         const rightValue = rule.value;
         let ruleMatch = false;
 
-        await this.appendLog(`Evaluating rule: ${rule.field} ${rule.operator} ${rule.value}`, {
+        await this.appendLog(`Evaluating rule (v2): ${rule.field} ${rule.operator} ${rule.value}`, {
           leftValue,
           rightValue,
           leftType: typeof leftValue,
@@ -263,13 +269,13 @@ export class AutomationEngine {
         switch (rule.operator) {
           case '==': 
           case 'equals': 
-            ruleMatch = String(leftValue) === rightValue; break;
+            ruleMatch = String(leftValue).trim() === String(rightValue).trim(); break;
           case '!=': 
           case 'not_equals':
-            ruleMatch = String(leftValue) !== rightValue; break;
+            ruleMatch = String(leftValue).trim() !== String(rightValue).trim(); break;
           case 'includes': 
           case 'contains':
-            ruleMatch = String(leftValue).includes(rightValue); break;
+            ruleMatch = String(leftValue).trim().includes(String(rightValue).trim()); break;
           case '>': 
           case 'greater_than':
             ruleMatch = Number(leftValue) > Number(rightValue); break;
@@ -420,12 +426,47 @@ export class AutomationEngine {
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
-    // For now, save the PDF to DB or mock an upload and return a fake URL.
-    // Let's pretend it's uploaded to a bucket and return the URL.
-    const url = `https://generated-pdfs.local/invoice_${Date.now()}.pdf`;
-    
-    await this.appendLog("Invoice generated successfully", { url, templateName: template.name });
+    // Upload to Digital Ocean Spaces (S3 compatible)
+    const endpoint = process.env.DO_SPACES_ENDPOINT;
+    const region = process.env.DO_SPACES_REGION;
+    const bucket = process.env.DO_SPACES_BUCKET;
+    const accessKeyId = process.env.DO_SPACES_KEY;
+    const secretAccessKey = process.env.DO_SPACES_SECRET;
 
-    return { url, generatedHtml: htmlOutput };
+    if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
+      throw new Error("Digital Ocean Spaces credentials are not fully configured in the environment.");
+    }
+
+    const s3Client = new S3Client({
+      endpoint,
+      region: region || "us-east-1", // DO spaces require a region string, even if dummy
+      credentials: {
+        accessKeyId,
+        secretAccessKey
+      }
+    });
+
+    const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
+    const fileName = `kylas-portal/invoices/${invoiceId}/${invoiceId}.pdf`;
+
+    await this.appendLog("Uploading PDF to Digital Ocean Spaces...", { fileName });
+
+    await s3Client.send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: fileName,
+      Body: pdfBuffer,
+      ContentType: "application/pdf",
+      ACL: "public-read"
+    }));
+
+    // Construct the public URL
+    // DO Spaces format: https://[bucket].[region].digitaloceanspaces.com/[fileName]
+    // If endpoint is https://nyc3.digitaloceanspaces.com, URL is https://[bucket].nyc3.digitaloceanspaces.com/[fileName]
+    const endpointObj = new URL(endpoint);
+    const publicUrl = `${endpointObj.protocol}//${bucket}.${endpointObj.host}/${fileName}`;
+
+    await this.appendLog("Invoice generated and uploaded successfully", { url: publicUrl, templateName: template.name });
+
+    return { url: publicUrl, generatedHtml: htmlOutput };
   }
 }

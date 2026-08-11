@@ -12,6 +12,7 @@ import {
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
+import VariablePickerInput from "@/components/ui/variable-picker/VariablePickerInput";
 import toast from "react-hot-toast";
 import styles from "./workflows.module.css";
 
@@ -76,11 +77,11 @@ const getAncestors = (nodeId, allNodes, allEdges, visited = new Set()) => {
   if (visited.has(nodeId)) return [];
   visited.add(nodeId);
   
-  const parentEdges = allEdges.filter(e => e.target.startsWith(`target-${nodeId}`));
+  const parentEdges = allEdges.filter(e => e.toPlug && e.toPlug.startsWith(`target-${nodeId}`));
   let ancestors = [];
   
   for (const edge of parentEdges) {
-    const parentIdMatch = edge.source.match(/source-(node_\w+)/);
+    const parentIdMatch = edge.fromPlug && edge.fromPlug.match(/source-(node_\w+)/);
     if (parentIdMatch) {
       const parentId = parentIdMatch[1];
       ancestors.push(parentId);
@@ -90,39 +91,60 @@ const getAncestors = (nodeId, allNodes, allEdges, visited = new Set()) => {
   return [...new Set(ancestors)];
 };
 
-const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks) => {
+const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLogs = []) => {
   const ancestors = getAncestors(nodeId, allNodes, allEdges);
   const ancestorNodes = allNodes.filter(n => ancestors.includes(n.id) || n.type === 'trigger');
   
-  let allFields = [];
-  const activeTriggerEvents = ancestorNodes.filter(n => n.type === 'trigger').map(n => n.event);
-  
-  activeTriggerEvents.forEach(evt => {
-    const hook = webhooks.find(h => h.endpointPath === evt);
+  let groupedFields = [];
+
+  // 1. Process Triggers
+  const triggers = ancestorNodes.filter(n => n.type === 'trigger');
+  triggers.forEach(t => {
+    let fields = [];
+    const hook = webhooks.find(h => h.endpointPath === t.event);
     if (hook && hook.selectedVariables) {
       try {
         const vars = JSON.parse(hook.selectedVariables);
         if (Array.isArray(vars)) {
           vars.forEach(v => {
             if (v && v.path) {
-              if (!allFields.some(f => f.value === `payload.${v.path}`)) {
-                allFields.push({ value: `payload.${v.path}`, label: `${hook.name}: ${v.customName || v.path}` });
-              }
+              fields.push({ path: `trigger.payload.${v.path}`, label: v.customName || v.path, sample: 'Sample Data' });
             }
           });
         }
       } catch(e) {}
     }
+    // Fallback if no variables defined in webhook
+    if (fields.length === 0) {
+      fields.push({ path: "trigger.payload.id", label: "Payload ID", sample: 12345 });
+    }
+    groupedFields.push({ stepId: t.id, stepTitle: t.title || "Workflow Trigger", type: 'trigger', fields });
   });
 
+  // 2. Process Actions
   ancestorNodes.filter(n => n.type === 'action' && n.outputVariableName).forEach(n => {
-    allFields.push({ 
-      value: `step_${n.id}.${n.outputVariableName}`, 
-      label: `${n.title || 'Action'}: ${n.outputVariableName}` 
+    groupedFields.push({
+      stepId: n.id,
+      stepTitle: n.title || 'Action Step',
+      type: 'action',
+      fields: [
+        { path: `step_${n.id}.${n.outputVariableName}`, label: n.outputVariableName, sample: '{"status":"ok"}' }
+      ]
     });
   });
 
-  return allFields.length > 0 ? allFields : DEFAULT_TRIGGER_FIELDS;
+  // 3. System Variables
+  groupedFields.push({
+    stepId: 'sys',
+    stepTitle: 'System Variables',
+    type: 'system',
+    fields: [
+      { path: 'sys.date', label: 'System Date (YYYY-MM-DD)', sample: '2026-08-10' },
+      { path: 'sys.time', label: 'System Time (HH:MM:SS)', sample: '14:30:00' }
+    ]
+  });
+
+  return groupedFields;
 };
 
 export default function WorkflowCanvasEngine() {
@@ -141,6 +163,7 @@ export default function WorkflowCanvasEngine() {
   const [availableWebhooks, setAvailableWebhooks] = useState([]);
   const [availableOutgoingWebhooks, setAvailableOutgoingWebhooks] = useState([]);
   const [invoiceTemplates, setInvoiceTemplates] = useState([]);
+  const [templateVariablesSchema, setTemplateVariablesSchema] = useState([]);
 
   const [nodes, setNodes] = useState([
     { id: "node_1", type: "trigger", title: "Workflow Trigger", x: 40, y: 220, event: "lead.created" }
@@ -204,6 +227,19 @@ export default function WorkflowCanvasEngine() {
         }
       } catch (e) {
         console.error("Failed to load templates", e);
+      }
+
+      // Fetch Settings for Template Schema
+      try {
+        const setRes = await fetch("/api/settings");
+        if (setRes.ok) {
+          const setData = await setRes.json();
+          if (setData.templateVariablesSchema) {
+            setTemplateVariablesSchema(JSON.parse(setData.templateVariablesSchema));
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load settings", e);
       }
 
       if (!params.id) return;
@@ -962,9 +998,28 @@ export default function WorkflowCanvasEngine() {
                         onMouseDown={(e) => handleNodeDragStart(e, node.id)}
                       >
                       <div className={styles.nodeCardDragHeader}>
-                        <div className={styles.nodeCardHeaderLeftTitle}>
-                          <FiMove className={styles.dragHandleIconVector} />
-                          <h4>{node.title}</h4>
+                        <div className={styles.nodeCardHeaderLeftTitle} style={{ flex: 1, display: 'flex', alignItems: 'center', marginRight: '12px' }}>
+                          <FiMove className={styles.dragHandleIconVector} style={{ flexShrink: 0 }} />
+                          <input 
+                            type="text" 
+                            value={node.title || ""} 
+                            onChange={(e) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, title: e.target.value } : n))}
+                            placeholder="Name this step..."
+                            style={{ 
+                              background: 'transparent', 
+                              border: '1px solid transparent', 
+                              fontWeight: 600, 
+                              fontSize: '13px', 
+                              color: 'inherit',
+                              width: '100%',
+                              padding: '2px 4px',
+                              borderRadius: '4px',
+                              outline: 'none',
+                              marginLeft: '4px'
+                            }}
+                            onFocus={(e) => e.target.style.border = '1px dashed #cbd5e1'}
+                            onBlur={(e) => e.target.style.border = '1px solid transparent'}
+                          />
                         </div>
                         {isExecuted && <FiCheckCircle style={{ color: '#10b981', marginLeft: 'auto', marginRight: '8px', flexShrink: 0 }} size={16} />}
                         {(node.type !== "trigger" || nodes.filter(n => n.type === "trigger").length > 1) && (
@@ -1058,9 +1113,10 @@ export default function WorkflowCanvasEngine() {
                                             )}
                                           </div>
                                           <div className="dropdownContainerParent" style={{ marginBottom: '10px' }}>
-                                            <Dropdown 
-                                              options={triggerFields.length > 0 ? triggerFields : DEFAULT_TRIGGER_FIELDS} selectedValue={rule.field}
-                                              onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
+                                            <VariablePickerInput 
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                              value={rule.field || ""}
+                                              onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
                                             />
                                           </div>
                                           <div className={styles.flexInputsRowCond}>
@@ -1148,56 +1204,152 @@ export default function WorkflowCanvasEngine() {
                               
                               {node.actionType === 'api_call' ? (
                                 <div className={styles.nestedRulesStack}>
-                                  <div className={styles.blockFieldRowContent}>
-                                    <label>Select Outgoing API</label>
+                                  <div className={styles.blockFieldRowContent} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }}>
+                                    <label>Load API Template (Optional)</label>
+                                    <p className={styles.nodeHelpText} style={{ marginTop: '4px', marginBottom: '8px' }}>
+                                      Select an existing external API configuration to auto-fill the builder below.
+                                    </p>
                                     <div className="dropdownContainerParent">
                                       <Dropdown 
-                                        options={availableOutgoingWebhooks.map(h => ({ label: h.name || h.url, value: h.id }))}
+                                        options={[{label: "None", value: ""}, ...availableOutgoingWebhooks.map(h => ({ label: h.name || h.url, value: h.id }))]}
                                         selectedValue={node.externalApiId || ""}
-                                        onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, externalApiId: val, mappings: n.mappings || {} } : n))}
-                                        placeholder="Select API..."
+                                        onSelect={(val) => {
+                                          if (!val) {
+                                            setNodes(prev => prev.map(n => n.id === node.id ? { ...n, externalApiId: "" } : n));
+                                            return;
+                                          }
+                                          const selectedApi = availableOutgoingWebhooks.find(h => h.id === val);
+                                          if (selectedApi) {
+                                            let parsedHeaders = [];
+                                            try {
+                                              if (selectedApi.headers) {
+                                                const obj = JSON.parse(selectedApi.headers);
+                                                if (Array.isArray(obj)) {
+                                                  // Format is already [{key, value}]
+                                                  parsedHeaders = obj.map(item => ({ key: item.key || '', value: String(item.value || '') }));
+                                                } else {
+                                                  // Format might be { "0": { key: "Auth", value: "123" } }
+                                                  const entries = Object.entries(obj);
+                                                  if (entries.length > 0 && typeof entries[0][1] === 'object' && entries[0][1] !== null && 'key' in entries[0][1]) {
+                                                    parsedHeaders = entries.map(([_, item]) => ({ key: item.key || '', value: String(item.value || '') }));
+                                                  } else {
+                                                    // Format is { "Authorization": "Bearer..." }
+                                                    parsedHeaders = entries.map(([k, v]) => ({ key: k, value: String(v) }));
+                                                  }
+                                                }
+                                              }
+                                            } catch(e) {}
+                                            
+                                            setNodes(prev => prev.map(n => n.id === node.id ? { 
+                                              ...n, 
+                                              externalApiId: val,
+                                              apiUrl: selectedApi.url || "",
+                                              apiMethod: selectedApi.method || "POST",
+                                              apiBody: selectedApi.bodyPayload || "",
+                                              apiHeaders: parsedHeaders.length > 0 ? parsedHeaders : []
+                                            } : n));
+                                          }
+                                        }}
+                                        placeholder="Select saved API..."
                                       />
                                     </div>
                                   </div>
-                                  
-                                  {node.externalApiId && (() => {
-                                    const selectedApi = availableOutgoingWebhooks.find(h => h.id === node.externalApiId);
-                                    const apiStr = selectedApi ? ((selectedApi.url || "") + (selectedApi.headers || "") + (selectedApi.bodyPayload || "")) : "";
-                                    const extractedTokens = Array.from(new Set([...apiStr.matchAll(/\{\{\s*(?:#each\s+|#with\s+)?([a-zA-Z0-9_.-]+)\s*\}\}/g)].map(m => m[1])));
-                                    const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks);
-                                    
-                                    if (extractedTokens.length === 0) {
-                                      return (
-                                        <div style={{ marginTop: '12px', fontSize: '12px', color: '#64748b', fontStyle: 'italic' }}>
-                                          No variables required by this API configuration.
-                                        </div>
-                                      );
-                                    }
 
-                                    return (
-                                      <div style={{ marginTop: '12px' }}>
-                                        <label>Map Variables</label>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                                          {extractedTokens.map(token => (
-                                            <div key={token} style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px' }}>
-                                              <div style={{ flex: '0 0 calc(50% - 4px)', fontSize: '11px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '8px' }}>{token}</div>
-                                              <div style={{ flex: '0 0 calc(50% - 4px)' }} className="dropdownContainerParent">
-                                                <Dropdown 
-                                                  options={nodeFields.length > 0 ? nodeFields : [{ label: "No variables available", value: "" }]}
-                                                  selectedValue={node.mappings?.[token] || ""}
-                                                  onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { 
-                                                    ...n, 
-                                                    mappings: { ...(n.mappings || {}), [token]: val } 
-                                                  } : n))}
-                                                  placeholder="Select field..."
-                                                />
-                                              </div>
-                                            </div>
-                                          ))}
-                                        </div>
+                                  <div className={styles.blockFieldRowContent}>
+                                    <label>Method & URL</label>
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                                      <div className="dropdownContainerParent" style={{ width: '100px', flexShrink: 0 }}>
+                                        <Dropdown 
+                                          options={[
+                                            {label: 'GET', value: 'GET'},
+                                            {label: 'POST', value: 'POST'},
+                                            {label: 'PUT', value: 'PUT'},
+                                            {label: 'PATCH', value: 'PATCH'},
+                                            {label: 'DELETE', value: 'DELETE'}
+                                          ]}
+                                          selectedValue={node.apiMethod || 'GET'}
+                                          onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiMethod: val } : n))}
+                                        />
                                       </div>
-                                    );
-                                  })()}
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <VariablePickerInput 
+                                          availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                          value={node.apiUrl || ""}
+                                          onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiUrl: val } : n))}
+                                          placeholder="https://api.example.com/v1/..."
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className={styles.blockFieldRowContent} style={{ marginTop: '16px' }}>
+                                    <label>Headers</label>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                                      {(node.apiHeaders || []).map((header, hIdx) => (
+                                        <div key={hIdx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                          <input 
+                                            type="text" 
+                                            placeholder="Key (e.g. Authorization)"
+                                            style={{ flex: 1, minWidth: 0, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', outline: 'none', fontSize: '13px' }}
+                                            value={header.key}
+                                            onChange={(e) => {
+                                              const newHeaders = [...(node.apiHeaders || [])];
+                                              newHeaders[hIdx] = { ...newHeaders[hIdx], key: e.target.value };
+                                              setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiHeaders: newHeaders } : n));
+                                            }}
+                                          />
+                                          <div style={{ flex: 2, minWidth: 0 }}>
+                                            <VariablePickerInput 
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                              value={header.value}
+                                              onChange={(val) => {
+                                                const newHeaders = [...(node.apiHeaders || [])];
+                                                newHeaders[hIdx] = { ...newHeaders[hIdx], value: val };
+                                                setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiHeaders: newHeaders } : n));
+                                              }}
+                                              placeholder="Value..."
+                                            />
+                                          </div>
+                                          <button 
+                                            className={styles.deleteNodeBtn} 
+                                            style={{ flexShrink: 0, padding: '4px' }}
+                                            onClick={() => {
+                                              const newHeaders = [...(node.apiHeaders || [])];
+                                              newHeaders.splice(hIdx, 1);
+                                              setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiHeaders: newHeaders } : n));
+                                            }}
+                                          >
+                                            <FiX />
+                                          </button>
+                                        </div>
+                                      ))}
+                                      <button 
+                                        style={{ width: 'fit-content', padding: '6px 12px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontWeight: 500, marginTop: '4px' }}
+                                        onClick={() => {
+                                          const newHeaders = [...(node.apiHeaders || []), { key: '', value: '' }];
+                                          setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiHeaders: newHeaders } : n));
+                                        }}
+                                      >
+                                        <FiPlus /> Add Header
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {(node.apiMethod !== 'GET' && node.apiMethod !== 'DELETE') && (
+                                    <div className={styles.blockFieldRowContent} style={{ marginTop: '16px' }}>
+                                      <label>Raw JSON Payload</label>
+                                      <p className={styles.nodeHelpText} style={{ marginTop: '4px', marginBottom: '8px' }}>
+                                        Paste your JSON here. Insert variable pills to map data or replace arrays (e.g. line items) dynamically.
+                                      </p>
+                                      <VariablePickerInput 
+                                        availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                        value={node.apiBody || ""}
+                                        onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiBody: val } : n))}
+                                        placeholder="{\n  &quot;key&quot;: &quot;value&quot;\n}"
+                                        style={{ minHeight: '150px', maxHeight: '400px', fontFamily: 'monospace' }}
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               ) : (
                                 <div className={styles.nestedRulesStack}>
@@ -1226,13 +1378,14 @@ export default function WorkflowCanvasEngine() {
                                               onSelect={(val) => handleUpdateActionOverride(node.id, oIdx, "key", val)}
                                             />
                                           </div>
-                                          <input 
-                                            type="text"
-                                            className={styles.canvasBlockTextInputAction}
-                                            placeholder="Value..."
-                                            value={override.value}
-                                            onChange={(e) => handleUpdateActionOverride(node.id, oIdx, "value", e.target.value)}
-                                          />
+                                          <div style={{ flex: 1, minWidth: 0 }}>
+                                            <VariablePickerInput
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                              placeholder="Value (type or map)..."
+                                              value={override.value}
+                                              onChange={(val) => handleUpdateActionOverride(node.id, oIdx, "value", val)}
+                                            />
+                                          </div>
                                         </div>
                                       </div>
                                     );
@@ -1272,10 +1425,10 @@ export default function WorkflowCanvasEngine() {
                             </div>
                             
                             {node.templateId && (() => {
-                              const selectedTemplate = invoiceTemplates.find(t => t.id === node.templateId);
-                              const templateStr = selectedTemplate ? ((selectedTemplate.theme || "") + (selectedTemplate.config || "")) : "";
-                              const extractedTokens = Array.from(new Set([...templateStr.matchAll(/\{\{\s*(?:#each\s+|#with\s+)?([a-zA-Z0-9_.-]+)\s*\}\}/g)].map(m => m[1])));
-                              const displayTokens = extractedTokens.length > 0 ? extractedTokens : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"];
+                              const displayTokens = templateVariablesSchema.length > 0 
+                                ? templateVariablesSchema.map(v => v.key)
+                                : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"];
+                              const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks);
                               
                               return (
                                 <div style={{ marginTop: '12px' }}>
@@ -1285,10 +1438,10 @@ export default function WorkflowCanvasEngine() {
                                       <div key={token} style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px' }}>
                                         <div style={{ flex: '0 0 calc(50% - 4px)', fontSize: '11px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '8px' }}>{token}</div>
                                         <div style={{ flex: '0 0 calc(50% - 4px)' }} className="dropdownContainerParent">
-                                          <Dropdown 
-                                            options={triggerFields.length > 0 ? triggerFields : [{ label: "No variables", value: "" }]}
-                                            selectedValue={node.mappings?.[token] || ""}
-                                            onSelect={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { 
+                                          <VariablePickerInput 
+                                            availableVariables={nodeFields}
+                                            value={node.mappings?.[token] || ""}
+                                            onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { 
                                               ...n, 
                                               mappings: { ...(n.mappings || {}), [token]: val } 
                                             } : n))}

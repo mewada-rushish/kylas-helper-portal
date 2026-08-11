@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FiChevronDown, FiCheck } from "react-icons/fi";
+import { FiChevronDown, FiCheck, FiEdit2 } from "react-icons/fi";
 import styles from "./dropdown.module.css";
 
-export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName, placeholder }) {
+export default function CustomDropdown({ options, selectedValue, onSelect, icon: Icon, triggerClassName, placeholder, allowCustom = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
@@ -31,11 +31,28 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
   }, [isOpen]);
 
   const selectedOption = options.find(opt => opt.value === selectedValue);
-  const displayLabel = selectedOption ? selectedOption.label : (placeholder || (options[0] ? options[0].label : "Select..."));
+  
+  // If custom is allowed, and selectedValue doesn't match an option, display the custom value itself
+  let displayLabel;
+  if (selectedOption) {
+    displayLabel = selectedOption.label;
+  } else if (allowCustom && selectedValue) {
+    displayLabel = selectedValue;
+  } else {
+    displayLabel = placeholder || (options[0] ? options[0].label : "Select...");
+  }
 
   const filteredOptions = options.filter(opt => 
     opt.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCustomSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      onSelect(searchQuery.trim());
+      setIsOpen(false);
+    }
+  };
 
   return (
     <div className={styles.dropdownContainer} ref={dropdownRef}>
@@ -46,7 +63,7 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
       >
         <span className={styles.triggerContent}>
           {Icon && <Icon className={styles.iconPrefix} />}
-          <span className={styles.labelText} style={!selectedOption && placeholder ? { color: 'var(--text-muted)' } : {}}>
+          <span className={styles.labelText} style={!selectedOption && !selectedValue && placeholder ? { color: 'var(--text-muted)' } : {}}>
             {displayLabel}
           </span>
         </span>
@@ -55,17 +72,19 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
 
       {isOpen && (
         <ul className={styles.dropdownMenu}>
-          {options.length > 5 && (
+          {(options.length > 5 || allowCustom) && (
             <div className={styles.searchInputWrapper}>
-              <input 
-                ref={searchInputRef}
-                type="text" 
-                className={styles.searchInput} 
-                placeholder="Search..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
+              <form onSubmit={handleCustomSubmit} style={{ width: '100%', margin: 0 }}>
+                <input 
+                  ref={searchInputRef}
+                  type="text" 
+                  className={styles.searchInput} 
+                  placeholder={allowCustom ? "Search or type custom path..." : "Search..."} 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </form>
             </div>
           )}
           {filteredOptions.length > 0 ? (
@@ -83,8 +102,23 @@ export default function CustomDropdown({ options, selectedValue, onSelect, icon:
               </li>
             ))
           ) : (
-            <li className={styles.dropdownItem} style={{ justifyContent: 'center', color: '#94a3b8' }}>
-              No results found
+            !allowCustom && (
+              <li className={styles.dropdownItem} style={{ justifyContent: 'center', color: '#94a3b8' }}>
+                No results found
+              </li>
+            )
+          )}
+          
+          {allowCustom && searchQuery.trim() && !filteredOptions.some(opt => opt.value === searchQuery.trim()) && (
+            <li 
+              className={`${styles.dropdownItem} ${styles.customItem}`}
+              onClick={() => {
+                onSelect(searchQuery.trim());
+                setIsOpen(false);
+              }}
+              style={{ borderTop: '1px solid #e2e8f0', color: '#3b82f6', fontWeight: 500 }}
+            >
+              <FiEdit2 style={{ marginRight: '8px' }} /> Use custom: "{searchQuery.trim()}"
             </li>
           )}
         </ul>
