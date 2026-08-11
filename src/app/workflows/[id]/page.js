@@ -91,7 +91,7 @@ const getAncestors = (nodeId, allNodes, allEdges, visited = new Set()) => {
   return [...new Set(ancestors)];
 };
 
-const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLogs = []) => {
+const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentContext = null) => {
   const ancestors = getAncestors(nodeId, allNodes, allEdges);
   const ancestorNodes = allNodes.filter(n => ancestors.includes(n.id) || n.type === 'trigger');
   
@@ -103,11 +103,8 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
     let fields = [];
     let actualPayload = null;
 
-    if (testLogs && testLogs.length > 0) {
-      const payloadLog = testLogs.find(l => l.message === "Workflow started with payload");
-      if (payloadLog && payloadLog.details) {
-        actualPayload = payloadLog.details;
-      }
+    if (recentContext && recentContext.trigger && recentContext.trigger.payload) {
+      actualPayload = recentContext.trigger.payload;
     }
 
     const hook = webhooks.find(h => h.endpointPath === t.event);
@@ -119,9 +116,6 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
             if (v && v.path) {
               let sampleValue = 'Sample Data';
               if (actualPayload) {
-                // path is usually like "entity.id" or "customFieldValues..."
-                // Since actualPayload is details, we need to resolve it
-                // Wait, trigger.payload is details, so if path is "entity.id", we resolve "entity.id" on details
                 const keys = v.path.split('.');
                 let current = actualPayload;
                 for (const k of keys) {
@@ -140,7 +134,7 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
     }
     // Fallback if no variables defined in webhook
     if (fields.length === 0) {
-      fields.push({ path: "trigger.payload.id", label: "Payload ID", sample: actualPayload?.entity?.id || 12345 });
+      fields.push({ path: "trigger.payload.id", label: "Payload ID", sample: actualPayload?.id || 12345 });
     }
     groupedFields.push({ stepId: t.id, stepTitle: t.title || "Workflow Trigger", type: 'trigger', fields });
   });
@@ -151,32 +145,33 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
       { path: `step_${n.id}.${n.outputVariableName}`, label: `${n.outputVariableName} (Full Response)`, sample: '{"status":"ok"}' }
     ];
 
-    if (n.sampleResponse) {
-      try {
-        const sampleObj = JSON.parse(n.sampleResponse);
-        
-        const extractKeys = (obj, currentPath) => {
-          if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
-            Object.keys(obj).forEach(k => {
-              const newPath = currentPath ? `${currentPath}.${k}` : k;
-              const val = obj[k];
-              if (val && typeof val === 'object' && !Array.isArray(val)) {
-                extractKeys(val, newPath);
-              } else {
-                fields.push({
-                  path: `step_${n.id}.${n.outputVariableName}.${newPath}`,
-                  label: newPath,
-                  sample: val
-                });
-              }
-            });
-          }
-        };
-        
-        extractKeys(sampleObj, "");
-      } catch (e) {
-        // invalid json, ignore
-      }
+    let sampleObj = null;
+    if (recentContext && recentContext[`step_${n.id}`]) {
+      sampleObj = recentContext[`step_${n.id}`][n.outputVariableName];
+    } else if (n.sampleResponse) {
+      try { sampleObj = JSON.parse(n.sampleResponse); } catch(e) {}
+    }
+    
+    if (sampleObj) {
+      const extractKeys = (obj, currentPath) => {
+        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+          Object.keys(obj).forEach(k => {
+            const newPath = currentPath ? `${currentPath}.${k}` : k;
+            const val = obj[k];
+            if (val && typeof val === 'object' && !Array.isArray(val)) {
+              extractKeys(val, newPath);
+            } else {
+              fields.push({
+                path: `step_${n.id}.${n.outputVariableName}.${newPath}`,
+                label: newPath,
+                sample: typeof val === 'object' ? JSON.stringify(val) : val
+              });
+            }
+          });
+        }
+      };
+      
+      extractKeys(sampleObj, "");
     }
 
     groupedFields.push({
@@ -372,6 +367,17 @@ export default function WorkflowCanvasEngine() {
       return [];
     }
   };
+
+  const recentContextObj = (() => {
+    try {
+      if (testExecution && testExecution.context) {
+        return typeof testExecution.context === 'string' ? JSON.parse(testExecution.context) : testExecution.context;
+      } else if (logs && logs.length > 0 && logs[0].context) {
+        return typeof logs[0].context === 'string' ? JSON.parse(logs[0].context) : logs[0].context;
+      }
+    } catch(e) {}
+    return null;
+  })();
 
   const executedNodeIds = getExecutedNodeIds();
 
@@ -1177,7 +1183,7 @@ export default function WorkflowCanvasEngine() {
                                           </div>
                                           <div className="dropdownContainerParent" style={{ marginBottom: '10px' }}>
                                             <VariablePickerInput 
-                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj)}
                                               value={rule.field || ""}
                                               onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
                                             />
@@ -1336,7 +1342,7 @@ export default function WorkflowCanvasEngine() {
                                       </div>
                                       <div style={{ flex: 1, minWidth: 0 }}>
                                         <VariablePickerInput 
-                                          availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
+                                          availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj)}
                                           value={node.apiUrl || ""}
                                           onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiUrl: val } : n))}
                                           placeholder="https://api.example.com/v1/..."
@@ -1363,7 +1369,7 @@ export default function WorkflowCanvasEngine() {
                                           />
                                           <div style={{ flex: 2, minWidth: 0 }}>
                                             <VariablePickerInput 
-                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj)}
                                               value={header.value}
                                               onChange={(val) => {
                                                 const newHeaders = [...(node.apiHeaders || [])];
@@ -1405,7 +1411,7 @@ export default function WorkflowCanvasEngine() {
                                         Paste your JSON here. Insert variable pills to map data or replace arrays (e.g. line items) dynamically.
                                       </p>
                                       <VariablePickerInput 
-                                        availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
+                                        availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj)}
                                         value={node.apiBody || ""}
                                         onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiBody: val } : n))}
                                         placeholder="{\n  &quot;key&quot;: &quot;value&quot;\n}"
@@ -1457,7 +1463,7 @@ export default function WorkflowCanvasEngine() {
                                           </div>
                                           <div style={{ flex: 1, minWidth: 0 }}>
                                             <VariablePickerInput
-                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj)}
                                               placeholder="Value (type or map)..."
                                               value={override.value}
                                               onChange={(val) => handleUpdateActionOverride(node.id, oIdx, "value", val)}
@@ -1505,7 +1511,7 @@ export default function WorkflowCanvasEngine() {
                               const displayTokens = templateVariablesSchema.length > 0 
                                 ? templateVariablesSchema.map(v => v.key)
                                 : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"];
-                              const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs);
+                              const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj);
                               
                               return (
                                 <div style={{ marginTop: '12px' }}>
