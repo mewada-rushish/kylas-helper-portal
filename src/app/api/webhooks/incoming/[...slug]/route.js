@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { logSystemAction } from "@/lib/logger";
-
+import { AutomationEngine } from "@/lib/AutomationEngine";
 export async function POST(request, { params }) {
   // We can construct the path from the slug, or just use request.nextUrl.pathname
   const { pathname } = request.nextUrl;
@@ -70,8 +70,6 @@ export async function POST(request, { params }) {
     });
 
     // Execute active workflows normally (we would normally do this async, but doing await here for simplicity)
-    const { AutomationEngine } = await import('@/lib/AutomationEngine');
-    
     for (const rule of activeWorkflows) {
       try {
         const engine = new AutomationEngine(rule.id);

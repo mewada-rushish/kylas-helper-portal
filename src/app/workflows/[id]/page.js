@@ -140,14 +140,18 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
   });
 
   // 2. Process Actions
-  ancestorNodes.filter(n => n.type === 'action' && n.outputVariableName).forEach(n => {
-    let fields = [
-      { path: `step_${n.id}.${n.outputVariableName}`, label: `${n.outputVariableName} (Full Response)`, sample: '{"status":"ok"}' }
-    ];
+  ancestorNodes.filter(n => n.type === 'action').forEach(n => {
+    let fields = [];
+    
+    if (n.outputVariableName) {
+      fields.push({ path: `step_${n.id}.${n.outputVariableName}`, label: `${n.outputVariableName} (Full Response)`, sample: '{"status":"ok"}' });
+    } else {
+      fields.push({ path: `step_${n.id}`, label: `Response Data (Full)`, sample: '{"status":"ok"}' });
+    }
 
     let sampleObj = null;
     if (recentContext && recentContext[`step_${n.id}`]) {
-      sampleObj = recentContext[`step_${n.id}`][n.outputVariableName];
+      sampleObj = n.outputVariableName ? recentContext[`step_${n.id}`][n.outputVariableName] : recentContext[`step_${n.id}`];
     } else if (n.sampleResponse) {
       try { sampleObj = JSON.parse(n.sampleResponse); } catch(e) {}
     }
@@ -161,25 +165,16 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
             if (val && typeof val === 'object' && !Array.isArray(val)) {
               extractKeys(val, newPath);
             } else {
-              fields.push({
-                path: `step_${n.id}.${n.outputVariableName}.${newPath}`,
-                label: newPath,
-                sample: typeof val === 'object' ? JSON.stringify(val) : val
-              });
+              const fullPath = n.outputVariableName ? `step_${n.id}.${n.outputVariableName}.${newPath}` : `step_${n.id}.${newPath}`;
+              let sampleValue = typeof val === 'object' ? JSON.stringify(val) : val;
+              fields.push({ path: fullPath, label: newPath, sample: sampleValue });
             }
           });
         }
       };
-      
       extractKeys(sampleObj, "");
     }
-
-    groupedFields.push({
-      stepId: n.id,
-      stepTitle: n.title || 'Action Step',
-      type: 'action',
-      fields
-    });
+    groupedFields.push({ stepId: n.id, stepTitle: n.title || "API Call", type: 'action', fields });
   });
 
   // 3. System Variables
