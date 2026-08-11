@@ -348,11 +348,21 @@ export class AutomationEngine {
         bodyStr = rawBody ? rawBody : null;
 
       } else {
-        // Legacy Mode: Free-form overrides
-        finalUrl = params.url;
-        method = params.method || "GET";
-        try { headersObj = params.headers ? deepEvaluate(JSON.parse(params.headers), context) : {}; } catch(e){}
-        try { bodyStr = params.body ? JSON.stringify(deepEvaluate(JSON.parse(params.body), context)) : null; } catch(e){}
+        // Custom Mode (UI-defined API Call)
+        finalUrl = evaluateTemplate(node.apiUrl || params.url, context);
+        method = node.apiMethod || params.method || "GET";
+        
+        let rawHeaders = node.apiHeaders || params.headers;
+        if (rawHeaders) {
+          rawHeaders = evaluateTemplate(rawHeaders, context);
+          try { headersObj = typeof rawHeaders === 'string' ? JSON.parse(rawHeaders) : rawHeaders; } catch(e){}
+        }
+
+        let rawBody = node.apiBody || params.body;
+        if (rawBody) {
+          rawBody = evaluateTemplate(rawBody, context);
+          try { bodyStr = typeof rawBody === 'object' ? JSON.stringify(rawBody) : rawBody; } catch(e){}
+        }
       }
 
       const fetchOptions = { method, headers: headersObj };
