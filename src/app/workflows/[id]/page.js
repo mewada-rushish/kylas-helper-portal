@@ -158,16 +158,23 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
     
     if (sampleObj) {
       const extractKeys = (obj, currentPath) => {
-        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        if (obj && typeof obj === 'object') {
           Object.keys(obj).forEach(k => {
             const newPath = currentPath ? `${currentPath}.${k}` : k;
             const val = obj[k];
-            if (val && typeof val === 'object' && !Array.isArray(val)) {
-              extractKeys(val, newPath);
-            } else {
-              const fullPath = n.outputVariableName ? `step_${n.id}.${n.outputVariableName}.${newPath}` : `step_${n.id}.${newPath}`;
-              let sampleValue = typeof val === 'object' ? JSON.stringify(val) : val;
-              fields.push({ path: fullPath, label: newPath, sample: sampleValue });
+            
+            const fullPath = n.outputVariableName ? `step_${n.id}.${n.outputVariableName}.${newPath}` : `step_${n.id}.${newPath}`;
+            let sampleValue = typeof val === 'object' ? JSON.stringify(val) : val;
+            fields.push({ path: fullPath, label: newPath, sample: sampleValue });
+
+            if (val && typeof val === 'object') {
+              if (Array.isArray(val)) {
+                if (val.length > 0) {
+                  extractKeys({ '0': val[0] }, newPath);
+                }
+              } else {
+                extractKeys(val, newPath);
+              }
             }
           });
         }
