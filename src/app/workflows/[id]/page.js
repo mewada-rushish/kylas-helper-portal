@@ -951,20 +951,8 @@ export default function WorkflowCanvasEngine() {
                     onChange={(e) => setWorkflowName(e.target.value)}
                     className={styles.headerTitleInput}
                     title="Click to rename workflow"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.4)",
-                      border: "1px solid rgba(0, 0, 0, 0.1)",
-                      borderRadius: "6px",
-                      outline: "none",
-                      fontSize: "20px",
-                      fontWeight: "600",
-                      color: "#1d1d1f",
-                      padding: "4px 8px",
-                      margin: "0",
-                      width: "320px"
-                    }}
                   />
-                  <span className={styles.statusBadge} style={{ textTransform: "capitalize" }}>{workflowStatus}</span>
+                  <span className={`${styles.statusBadge} ${workflowStatus === 'active' ? styles.statusActive : ''}`}>{workflowStatus}</span>
                 </div>
                 <span className={styles.autoSaveLabel}>{saveStatus}</span>
               </div>
