@@ -105,9 +105,7 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
 
     if (testLogs && testLogs.length > 0) {
       const payloadLog = testLogs.find(l => l.message === "Workflow started with payload");
-      if (payloadLog && payloadLog.details && payloadLog.details.entity) {
-        actualPayload = payloadLog.details.entity; // The trigger maps payload to entity
-      } else if (payloadLog && payloadLog.details) {
+      if (payloadLog && payloadLog.details) {
         actualPayload = payloadLog.details;
       }
     }
