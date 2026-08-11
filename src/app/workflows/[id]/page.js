@@ -101,6 +101,17 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
   const triggers = ancestorNodes.filter(n => n.type === 'trigger');
   triggers.forEach(t => {
     let fields = [];
+    let actualPayload = null;
+
+    if (testLogs && testLogs.length > 0) {
+      const payloadLog = testLogs.find(l => l.message === "Workflow started with payload");
+      if (payloadLog && payloadLog.details && payloadLog.details.entity) {
+        actualPayload = payloadLog.details.entity; // The trigger maps payload to entity
+      } else if (payloadLog && payloadLog.details) {
+        actualPayload = payloadLog.details;
+      }
+    }
+
     const hook = webhooks.find(h => h.endpointPath === t.event);
     if (hook && hook.selectedVariables) {
       try {
@@ -108,7 +119,22 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
         if (Array.isArray(vars)) {
           vars.forEach(v => {
             if (v && v.path) {
-              fields.push({ path: `trigger.payload.${v.path}`, label: v.customName || v.path, sample: 'Sample Data' });
+              let sampleValue = 'Sample Data';
+              if (actualPayload) {
+                // path is usually like "entity.id" or "customFieldValues..."
+                // Since actualPayload is details, we need to resolve it
+                // Wait, trigger.payload is details, so if path is "entity.id", we resolve "entity.id" on details
+                const keys = v.path.split('.');
+                let current = actualPayload;
+                for (const k of keys) {
+                  if (current === undefined || current === null) break;
+                  current = current[k];
+                }
+                if (current !== undefined) {
+                  sampleValue = typeof current === 'object' ? JSON.stringify(current) : current;
+                }
+              }
+              fields.push({ path: `trigger.payload.${v.path}`, label: v.customName || v.path, sample: sampleValue });
             }
           });
         }
@@ -116,7 +142,7 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, testLog
     }
     // Fallback if no variables defined in webhook
     if (fields.length === 0) {
-      fields.push({ path: "trigger.payload.id", label: "Payload ID", sample: 12345 });
+      fields.push({ path: "trigger.payload.id", label: "Payload ID", sample: actualPayload?.entity?.id || 12345 });
     }
     groupedFields.push({ stepId: t.id, stepTitle: t.title || "Workflow Trigger", type: 'trigger', fields });
   });
@@ -1144,7 +1170,7 @@ export default function WorkflowCanvasEngine() {
                                           </div>
                                           <div className="dropdownContainerParent" style={{ marginBottom: '10px' }}>
                                             <VariablePickerInput 
-                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
                                               value={rule.field || ""}
                                               onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, branches: n.branches.map(b => b.branchId === branch.branchId ? { ...b, conditions: { ...b.conditions, rules: b.conditions.rules.map((r, ri) => ri === rIdx ? { ...r, field: val } : r) } } : b) } : n))}
                                             />
@@ -1303,7 +1329,7 @@ export default function WorkflowCanvasEngine() {
                                       </div>
                                       <div style={{ flex: 1, minWidth: 0 }}>
                                         <VariablePickerInput 
-                                          availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                          availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
                                           value={node.apiUrl || ""}
                                           onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiUrl: val } : n))}
                                           placeholder="https://api.example.com/v1/..."
@@ -1330,7 +1356,7 @@ export default function WorkflowCanvasEngine() {
                                           />
                                           <div style={{ flex: 2, minWidth: 0 }}>
                                             <VariablePickerInput 
-                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
                                               value={header.value}
                                               onChange={(val) => {
                                                 const newHeaders = [...(node.apiHeaders || [])];
@@ -1372,7 +1398,7 @@ export default function WorkflowCanvasEngine() {
                                         Paste your JSON here. Insert variable pills to map data or replace arrays (e.g. line items) dynamically.
                                       </p>
                                       <VariablePickerInput 
-                                        availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                        availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
                                         value={node.apiBody || ""}
                                         onChange={(val) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, apiBody: val } : n))}
                                         placeholder="{\n  &quot;key&quot;: &quot;value&quot;\n}"
@@ -1424,7 +1450,7 @@ export default function WorkflowCanvasEngine() {
                                           </div>
                                           <div style={{ flex: 1, minWidth: 0 }}>
                                             <VariablePickerInput
-                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks)}
+                                              availableVariables={getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs)}
                                               placeholder="Value (type or map)..."
                                               value={override.value}
                                               onChange={(val) => handleUpdateActionOverride(node.id, oIdx, "value", val)}
@@ -1472,7 +1498,7 @@ export default function WorkflowCanvasEngine() {
                               const displayTokens = templateVariablesSchema.length > 0 
                                 ? templateVariablesSchema.map(v => v.key)
                                 : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"];
-                              const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks);
+                              const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, logs);
                               
                               return (
                                 <div style={{ marginTop: '12px' }}>
