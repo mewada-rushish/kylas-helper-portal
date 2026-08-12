@@ -226,6 +226,11 @@ export default function InvoicesListPage() {
                       <td className={styles.valueTotalBoldCell}>₹{inv.total.toLocaleString("en-IN")}</td>
                       <td>
                         <div className={styles.actionsCellRow}>
+                          {inv.pdfUrl && (
+                            <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className={styles.iconActionBtn} title="Download PDF" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <FiDownload />
+                            </a>
+                          )}
                           <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("view", inv)} title="Preview Invoice parameters">
                             <FiEye />
                           </button>

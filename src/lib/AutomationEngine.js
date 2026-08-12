@@ -493,6 +493,35 @@ export class AutomationEngine {
     const endpointObj = new URL(endpoint);
     const publicUrl = `${endpointObj.protocol}//${bucket}.${endpointObj.host}/${fileName}`;
 
+    // Save to the database
+    try {
+      await prisma.invoice.create({
+        data: {
+          id: invoiceId,
+          customer: resolvedData.customer?.name || "Unknown Customer",
+          email: resolvedData.customer?.email || "",
+          date: resolvedData.current?.date ? new Date(resolvedData.current.date) : new Date(),
+          productId: resolvedData.product?.name || "Custom Product",
+          qty: 1,
+          rate: parseFloat(resolvedData.invoice?.subtotal || 0),
+          total: parseFloat(resolvedData.invoice?.total || 0),
+          memberId: resolvedData.memberId || "",
+          amountWords: resolvedData.amount?.words || "",
+          paymentMethod: resolvedData.payment?.method || "",
+          paymentReferenceNo: resolvedData.payment?.referenceNo || "",
+          paymentBankName: resolvedData.payment?.bankName || "",
+          paymentDate: resolvedData.payment?.date || "",
+          periodStart: resolvedData.payment?.periodStart || "",
+          periodEnd: resolvedData.payment?.periodEnd || "",
+          pdfUrl: publicUrl
+        }
+      });
+      await this.appendLog("Invoice saved to database", { invoiceId });
+    } catch (dbErr) {
+      console.error("Failed to save invoice to DB:", dbErr);
+      await this.appendLog("Warning: Failed to save invoice to DB", { error: dbErr.message });
+    }
+
     await this.appendLog("Invoice generated and uploaded successfully", { url: publicUrl, templateName: template.name });
 
     return { url: publicUrl, generatedHtml: htmlOutput };

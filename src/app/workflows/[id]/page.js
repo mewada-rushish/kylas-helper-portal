@@ -322,6 +322,38 @@ export default function WorkflowCanvasEngine() {
     fetchWorkflow();
   }, [params.id]);
 
+  const handleDeleteWorkflow = async () => {
+    if (!confirm("Are you sure you want to delete this workflow?")) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/workflows/${params.id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Workflow deleted successfully");
+        router.push("/workflows");
+      }
+    } catch (e) {
+      toast.error("Failed to delete workflow");
+      setIsSaving(false);
+    }
+  };
+
+  const handleRerunWorkflow = async (executionId) => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/workflows/${params.id}/executions/${executionId}/rerun`, { method: "POST" });
+      if (res.ok) {
+        toast.success("Workflow rerun initiated successfully");
+        if (activeTab === "logs") fetchLogs();
+      } else {
+        toast.error("Failed to rerun workflow");
+      }
+    } catch (e) {
+      toast.error("Error initiating rerun");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const fetchLogs = async () => {
     if (!params.id || params.id.startsWith("wf_new_")) return;
     try {
@@ -1702,11 +1734,16 @@ export default function WorkflowCanvasEngine() {
                 <div className={styles.logPayloadInspectorColumn}>
                   {selectedLog ? (
                     <div className={styles.inspectorCanvasCard}>
-                      <div className={styles.inspectorHeaderTitleRow}>
-                        <h4>Payload Data Inspector</h4>
-                        <span className={`${styles.statusPillLabel} ${selectedLog.status === "SUCCESS" ? styles.pillSuccessColor : (selectedLog.status === "FAILED" ? styles.pillFailColor : "")}`} style={{ backgroundColor: selectedLog.status === "PENDING_TEST" ? "#dbeafe" : undefined, color: selectedLog.status === "PENDING_TEST" ? "#1e40af" : undefined }}>
-                          {selectedLog.status.toUpperCase()}
-                        </span>
+                      <div className={styles.inspectorHeaderTitleRow} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <h4 style={{ margin: 0 }}>Payload Data Inspector</h4>
+                          <span className={`${styles.statusPillLabel} ${selectedLog.status === "SUCCESS" ? styles.pillSuccessColor : (selectedLog.status === "FAILED" ? styles.pillFailColor : "")}`} style={{ backgroundColor: selectedLog.status === "PENDING_TEST" ? "#dbeafe" : undefined, color: selectedLog.status === "PENDING_TEST" ? "#1e40af" : undefined }}>
+                            {selectedLog.status.toUpperCase()}
+                          </span>
+                        </div>
+                        <AdminButton variant="secondary" onClick={() => handleRerunWorkflow(selectedLog.id)} disabled={isSaving}>
+                          <FiRotateCcw style={{marginRight: '6px'}} /> Rerun
+                        </AdminButton>
                       </div>
                       <p className={styles.inspectorHelpGuideText}>Review the step-by-step logs and variable context below.</p>
                       

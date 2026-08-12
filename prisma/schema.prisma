@@ -95,6 +95,7 @@ model Invoice {
   paymentDate        String?  @db.VarChar(50)
   periodStart        String?  @db.VarChar(50)
   periodEnd          String?  @db.VarChar(50)
+  pdfUrl             String?  @db.Text
   createdAt          DateTime @default(now())
 }
 
