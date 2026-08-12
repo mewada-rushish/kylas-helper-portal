@@ -48,9 +48,15 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     throw new Error("Digital Ocean Spaces credentials are not fully configured in the environment.");
   }
 
+  let cleanEndpoint = endpoint;
+  if (cleanEndpoint.includes(`${bucket}.`)) {
+    cleanEndpoint = cleanEndpoint.replace(`${bucket}.`, "");
+  }
+
   const s3Client = new S3Client({
-    endpoint,
+    endpoint: cleanEndpoint,
     region: region || "us-east-1",
+    forcePathStyle: false,
     credentials: { accessKeyId, secretAccessKey }
   });
 
@@ -64,7 +70,7 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     ACL: "public-read"
   }));
 
-  const endpointObj = new URL(endpoint);
+  const endpointObj = new URL(cleanEndpoint);
   const publicUrl = `${endpointObj.protocol}//${bucket}.${endpointObj.host}/${fileName}`;
 
   return { publicUrl, htmlOutput };

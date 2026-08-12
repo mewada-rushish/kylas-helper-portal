@@ -465,14 +465,22 @@ export class AutomationEngine {
       throw new Error("Digital Ocean Spaces credentials are not fully configured in the environment.");
     }
 
+    let cleanEndpoint = endpoint;
+    if (cleanEndpoint.includes(`${bucket}.`)) {
+      cleanEndpoint = cleanEndpoint.replace(`${bucket}.`, "");
+    }
+
     const s3Client = new S3Client({
-      endpoint,
+      endpoint: cleanEndpoint,
       region: region || "us-east-1", // DO spaces require a region string, even if dummy
+      forcePathStyle: false,
       credentials: {
         accessKeyId,
         secretAccessKey
       }
     });
+
+    const endpointObj = new URL(cleanEndpoint);
 
     const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
     const fileName = `kylas-portal/invoices/${invoiceId}/${invoiceId}.pdf`;
@@ -487,10 +495,8 @@ export class AutomationEngine {
       ACL: "public-read"
     }));
 
-    // Construct the public URL
     // DO Spaces format: https://[bucket].[region].digitaloceanspaces.com/[fileName]
     // If endpoint is https://nyc3.digitaloceanspaces.com, URL is https://[bucket].nyc3.digitaloceanspaces.com/[fileName]
-    const endpointObj = new URL(endpoint);
     const publicUrl = `${endpointObj.protocol}//${bucket}.${endpointObj.host}/${fileName}`;
 
     // Save to the database
