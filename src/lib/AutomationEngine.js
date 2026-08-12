@@ -1,9 +1,5 @@
 import { prisma } from "./prisma";
-import Handlebars from "handlebars";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import React from "react";
-import { renderToBuffer, Document, Page } from "@react-pdf/renderer";
-import Html from "react-pdf-html";
+import { generateAndUploadInvoicePDF } from "./pdfGenerator";
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
  */
@@ -419,85 +415,17 @@ export class AutomationEngine {
   async executeGenerateInvoiceNode(node, context) {
     if (!node.templateId) throw new Error("No template selected for generate_invoice");
     
-    const template = await prisma.invoiceTemplate.findUnique({
-      where: { id: node.templateId }
-    });
-    
-    if (!template) throw new Error("Invoice template not found");
-
     const resolvedData = {};
     for (const [key, path] of Object.entries(node.mappings || {})) {
       resolvedData[key] = evaluateTemplate(path, context);
     }
     
-    // Inject system settings into the root of the data so they can be accessed via {{settings.xxx}}
-    const systemSettings = await prisma.systemSetting.findUnique({
-      where: { id: "default" }
-    });
-    resolvedData.settings = systemSettings || {};
-
-    await this.appendLog("Compiling template with Handlebars...", { data: resolvedData });
-    const compiledTemplate = Handlebars.compile(template.config || "");
-    const htmlOutput = compiledTemplate(resolvedData);
-
-    // Generate PDF via @react-pdf/renderer & react-pdf-html
-    // We strip font-family from the HTML to prevent @react-pdf/renderer from crashing on unregistered fonts.
-    // It will safely fallback to standard PDF fonts (Helvetica).
-    const safeHtmlOutput = htmlOutput.replace(/font-family:[^;]+;/gi, '');
-
-    // We use React.createElement to avoid JSX syntax errors in standard .js files
-    const pdfComponent = React.createElement(Document, null,
-      React.createElement(Page, null,
-        React.createElement(Html, null, safeHtmlOutput)
-      )
-    );
-
-    const pdfBuffer = await renderToBuffer(pdfComponent);
-
-    // Upload to Digital Ocean Spaces (S3 compatible)
-    const endpoint = process.env.DO_SPACES_ENDPOINT;
-    const region = process.env.DO_SPACES_REGION;
-    const bucket = process.env.DO_SPACES_BUCKET;
-    const accessKeyId = process.env.DO_SPACES_KEY;
-    const secretAccessKey = process.env.DO_SPACES_SECRET;
-
-    if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
-      throw new Error("Digital Ocean Spaces credentials are not fully configured in the environment.");
-    }
-
-    let cleanEndpoint = endpoint;
-    if (cleanEndpoint.includes(`${bucket}.`)) {
-      cleanEndpoint = cleanEndpoint.replace(`${bucket}.`, "");
-    }
-
-    const s3Client = new S3Client({
-      endpoint: cleanEndpoint,
-      region: region || "us-east-1", // DO spaces require a region string, even if dummy
-      forcePathStyle: false,
-      credentials: {
-        accessKeyId,
-        secretAccessKey
-      }
-    });
-
-    const endpointObj = new URL(cleanEndpoint);
-
     const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
-    const fileName = `kylas-portal/invoices/${invoiceId}/${invoiceId}.pdf`;
+    resolvedData.invoiceId = invoiceId;
 
-    await this.appendLog("Uploading PDF to Digital Ocean Spaces...", { fileName });
+    await this.appendLog("Generating PDF using Puppeteer...", { invoiceId });
 
-    await s3Client.send(new PutObjectCommand({
-      Bucket: bucket,
-      Key: fileName,
-      Body: pdfBuffer,
-      ContentType: "application/pdf",
-      ACL: "public-read"
-    }));
-
-    // DO Spaces format: https://[bucket].[region].digitaloceanspaces.com/[fileName]
-    // If endpoint is https://nyc3.digitaloceanspaces.com, URL is https://[bucket].nyc3.digitaloceanspaces.com/[fileName]
-    const publicUrl = `${endpointObj.protocol}//${bucket}.${endpointObj.host}/${fileName}`;
+    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, resolvedData, node.templateId);
 
     // Save to the database
     try {
@@ -528,7 +456,7 @@ export class AutomationEngine {
       await this.appendLog("Warning: Failed to save invoice to DB", { error: dbErr.message });
     }
 
-    await this.appendLog("Invoice generated and uploaded successfully", { url: publicUrl, templateName: template.name });
+    await this.appendLog("Invoice generated and uploaded successfully", { url: publicUrl });
 
     return { url: publicUrl, generatedHtml: htmlOutput };
   }

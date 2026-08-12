@@ -1,10 +1,8 @@
-import React from 'react';
-import { renderToBuffer } from '@react-pdf/renderer';
-import { Document, Page } from '@react-pdf/renderer';
-import Html from 'react-pdf-html';
 import Handlebars from 'handlebars';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import prisma from './prisma';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templateId) {
   // Find template
@@ -28,15 +26,33 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
   const compiledTemplate = Handlebars.compile(template.config || "");
   const htmlOutput = compiledTemplate(resolvedData);
 
-  const safeHtmlOutput = htmlOutput.replace(/font-family:[^;]+;/gi, '');
+  // Generate PDF via Puppeteer
+  let browser = null;
+  let pdfBuffer = null;
+  try {
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
 
-  const pdfComponent = React.createElement(Document, null,
-    React.createElement(Page, null,
-      React.createElement(Html, null, safeHtmlOutput)
-    )
-  );
-
-  const pdfBuffer = await renderToBuffer(pdfComponent);
+    const page = await browser.newPage();
+    await page.setContent(htmlOutput, { waitUntil: 'networkidle0' });
+    pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20px', bottom: '20px' }
+    });
+  } catch (error) {
+    console.error("Puppeteer PDF generation failed:", error);
+    throw error;
+  } finally {
+    if (browser !== null) {
+      await browser.close();
+    }
+  }
 
   const endpoint = process.env.DO_SPACES_ENDPOINT;
   const region = process.env.DO_SPACES_REGION;
