@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { generateAndUploadInvoicePDF } from '@/lib/pdfGenerator';
+
 
 const prisma = new PrismaClient();
 
@@ -48,7 +48,15 @@ export async function PUT(request, { params }) {
     };
 
     try {
-      const { publicUrl } = await generateAndUploadInvoicePDF(updatedInvoice.id, resolvedData, null);
+      let generateAndUploadInvoicePDF;
+      try {
+        const pdfGen = await import('@/lib/pdfGenerator');
+        generateAndUploadInvoicePDF = pdfGen.generateAndUploadInvoicePDF;
+      } catch (importErr) {
+        throw new Error(`Failed to load PDF Generator module: ${importErr.message}`);
+      }
+
+      const { publicUrl } = await generateAndUploadInvoicePDF(id, resolvedData);
       updatedInvoice = await prisma.invoice.update({ where: { id: id }, data: { pdfUrl: publicUrl } });
     } catch (pdfErr) {
       console.error("Failed to regenerate PDF on edit:", pdfErr);

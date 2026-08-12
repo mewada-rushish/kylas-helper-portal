@@ -1,5 +1,4 @@
 import { prisma } from "./prisma";
-import { generateAndUploadInvoicePDF } from "./pdfGenerator";
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
  */
@@ -424,6 +423,14 @@ export class AutomationEngine {
     resolvedData.invoiceId = invoiceId;
 
     await this.appendLog("Generating PDF using Puppeteer...", { invoiceId });
+
+    let generateAndUploadInvoicePDF;
+    try {
+      const pdfGen = await import("./pdfGenerator");
+      generateAndUploadInvoicePDF = pdfGen.generateAndUploadInvoicePDF;
+    } catch (importErr) {
+      throw new Error(`Failed to load PDF Generator module: ${importErr.message}`);
+    }
 
     const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, resolvedData, node.templateId);
 
