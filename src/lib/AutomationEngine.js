@@ -443,14 +443,14 @@ export class AutomationEngine {
     let browser;
     if (isLocal) {
       // Local dev: use standard puppeteer (which brings its own Chrome)
-      const req = await import("puppeteer");
+      const req = eval('require("puppeteer")');
       const localPuppeteer = req.default || req;
       browser = await localPuppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
     } else {
       // Vercel deployment: use Sparticuz Chromium + Puppeteer Core
-      const chromiumReq = await import("@sparticuz/chromium");
+      const chromiumReq = eval('require("@sparticuz/chromium")');
       const chromium = chromiumReq.default || chromiumReq;
-      const puppeteerCoreReq = await import("puppeteer-core");
+      const puppeteerCoreReq = eval('require("puppeteer-core")');
       const puppeteerCore = puppeteerCoreReq.default || puppeteerCoreReq;
       
       browser = await puppeteerCore.launch({
