@@ -143,7 +143,14 @@ export class AutomationEngine {
   async run(initialPayload = {}) {
     if (!this.executionLog) throw new Error("Engine not initialized");
 
-    let context = { trigger: { payload: initialPayload } };
+    const now = new Date();
+    let context = { 
+      trigger: { payload: initialPayload },
+      sys: {
+        date: now.toISOString().split('T')[0],
+        time: now.toTimeString().split(' ')[0]
+      }
+    };
     
     await prisma.workflowExecution.update({
       where: { id: this.executionLog.id },
@@ -429,6 +436,53 @@ export class AutomationEngine {
     const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
     resolvedData.invoiceId = invoiceId;
 
+    // Normalize mapped values into standard invoice data model (matching preview/template)
+    const rawRate = parseFloat(resolvedData.rate || resolvedData.total_amount || resolvedData.invoice?.subtotal || 45000);
+    const qty = parseFloat(resolvedData.qty || 1);
+    const subtotal = rawRate * qty;
+    const cgst = subtotal * 0.09;
+    const sgst = subtotal * 0.09;
+    const gst = cgst + sgst;
+    const total = subtotal + gst;
+
+    const normalizedData = {
+      ...resolvedData,
+      invoice: {
+        id: invoiceId,
+        total: `₹${total.toLocaleString("en-IN")}`,
+        subtotal: `₹${subtotal.toLocaleString("en-IN")}`,
+        cgst: `₹${cgst.toLocaleString("en-IN")}`,
+        sgst: `₹${sgst.toLocaleString("en-IN")}`,
+        gst: `₹${gst.toLocaleString("en-IN")}`,
+        ...resolvedData.invoice
+      },
+      customer: {
+        name: resolvedData.customer?.name || "Unknown",
+        email: resolvedData.customer?.email || "",
+        phone: resolvedData.customer?.phone || "",
+        ...resolvedData.customer
+      },
+      current: {
+        date: resolvedData.date || resolvedData.current?.date || new Date().toISOString().split('T')[0],
+        ...resolvedData.current
+      },
+      product: {
+        name: resolvedData.payment_for || resolvedData.product?.name || "Standard Service",
+        rate: `₹${rawRate.toLocaleString("en-IN")}`,
+        qty,
+        ...resolvedData.product
+      },
+      amount: {
+        words: resolvedData.amount?.words || resolvedData.amount_words || "only",
+        ...resolvedData.amount
+      },
+      payment: {
+        method: resolvedData.payment?.method || "Cash",
+        ...resolvedData.payment
+      },
+      memberId: resolvedData.memberId || ""
+    };
+
     await this.appendLog("Generating PDF using Puppeteer...", { invoiceId });
 
     let generateAndUploadInvoicePDF;
@@ -439,28 +493,28 @@ export class AutomationEngine {
       throw new Error(`Failed to load PDF Generator module: ${importErr.message}`);
     }
 
-    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, resolvedData, node.templateId);
+    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, normalizedData, node.templateId);
 
     // Save to the database
     try {
       await prisma.invoice.create({
         data: {
           id: invoiceId,
-          customer: resolvedData.customer?.name || "Unknown Customer",
-          email: resolvedData.customer?.email || "",
-          date: resolvedData.current?.date ? new Date(resolvedData.current.date) : new Date(),
-          productId: resolvedData.product?.name || "Custom Product",
-          qty: 1,
-          rate: parseFloat(resolvedData.invoice?.subtotal || 0),
-          total: parseFloat(resolvedData.invoice?.total || 0),
-          memberId: resolvedData.memberId || "",
-          amountWords: resolvedData.amount?.words || "",
-          paymentMethod: resolvedData.payment?.method || "",
-          paymentReferenceNo: resolvedData.payment?.referenceNo || "",
-          paymentBankName: resolvedData.payment?.bankName || "",
-          paymentDate: resolvedData.payment?.date || "",
-          periodStart: resolvedData.payment?.periodStart || "",
-          periodEnd: resolvedData.payment?.periodEnd || "",
+          customer: normalizedData.customer.name,
+          email: normalizedData.customer.email,
+          date: new Date(normalizedData.current.date),
+          productId: normalizedData.product.name,
+          qty: qty,
+          rate: rawRate,
+          total: total,
+          memberId: normalizedData.memberId,
+          amountWords: normalizedData.amount.words,
+          paymentMethod: normalizedData.payment.method,
+          paymentReferenceNo: normalizedData.payment.referenceNo || "",
+          paymentBankName: normalizedData.payment.bankName || "",
+          paymentDate: normalizedData.payment.date || "",
+          periodStart: normalizedData.payment.periodStart || "",
+          periodEnd: normalizedData.payment.periodEnd || "",
           pdfUrl: publicUrl
         }
       });
