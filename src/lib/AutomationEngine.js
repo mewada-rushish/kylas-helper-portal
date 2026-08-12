@@ -438,27 +438,20 @@ export class AutomationEngine {
     const compiledTemplate = Handlebars.compile(template.config || "");
     const htmlOutput = compiledTemplate(resolvedData);
 
-    // Generate PDF via Puppeteer
-    const chromiumReq = eval('require("@sparticuz/chromium")');
-    const chromium = chromiumReq.default || chromiumReq;
-    const puppeteerCoreReq = eval('require("puppeteer-core")');
-    const puppeteerCore = puppeteerCoreReq.default || puppeteerCoreReq;
-    
-    const isLocal = !process.env.VERCEL;
-    // Hardcoded local Windows Chrome path for local testing
-    const localExecutablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-    
-    browser = await puppeteerCore.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: isLocal ? localExecutablePath : await chromium.executablePath(),
-      headless: chromium.headless,
-    });
+    // Generate PDF via @react-pdf/renderer & react-pdf-html
+    const React = eval('require("react")');
+    const { renderToBuffer, Document, Page } = eval('require("@react-pdf/renderer")');
+    const HtmlReq = eval('require("react-pdf-html")');
+    const Html = HtmlReq.default || HtmlReq;
 
-    const page = await browser.newPage();
-    await page.setContent(htmlOutput);
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-    await browser.close();
+    // We use React.createElement to avoid JSX syntax errors in standard .js files
+    const pdfComponent = React.createElement(Document, null,
+      React.createElement(Page, null,
+        React.createElement(Html, null, htmlOutput)
+      )
+    );
+
+    const pdfBuffer = await renderToBuffer(pdfComponent);
 
     // Upload to Digital Ocean Spaces (S3 compatible)
     const endpoint = process.env.DO_SPACES_ENDPOINT;
