@@ -1573,9 +1573,21 @@ export default function WorkflowCanvasEngine() {
                             </div>
                             
                             {node.templateId && (() => {
-                              const displayTokens = templateVariablesSchema.length > 0 
-                                ? templateVariablesSchema.map(v => v.key)
-                                : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"];
+                              const selectedTemplate = invoiceTemplates.find(t => t.id === node.templateId);
+                              let templateTokens = [];
+                              if (selectedTemplate && selectedTemplate.config) {
+                                const matches1 = [...selectedTemplate.config.matchAll(/{{\s*([\w.]+)\s*}}/g)];
+                                const matches2 = [...selectedTemplate.config.matchAll(/{{\s*#?if\s+([\w.]+)\s*}}/g)];
+                                templateTokens = [...new Set([...matches1, ...matches2].map(m => m[1]))];
+                                templateTokens = templateTokens.filter(t => !t.startsWith('settings.'));
+                              }
+                              
+                              const displayTokens = templateTokens.length > 0 
+                                ? templateTokens 
+                                : (templateVariablesSchema.length > 0 
+                                  ? templateVariablesSchema.map(v => v.key)
+                                  : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"]);
+                              
                               const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj);
                               
                               return (
