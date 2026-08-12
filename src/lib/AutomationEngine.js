@@ -436,14 +436,36 @@ export class AutomationEngine {
     const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
     resolvedData.invoiceId = invoiceId;
 
-    // Normalize mapped values into standard invoice data model (matching preview/template)
-    const rawRate = parseFloat(resolvedData.rate || resolvedData.total_amount || resolvedData.invoice?.subtotal || 45000);
+    // Helper to safely parse stringified JSON objects/arrays (from evaluateTemplate interpolation)
+    const safelyParseValue = (val) => {
+      if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+        try { return JSON.parse(val); } catch (e) { return val; }
+      }
+      return val;
+    };
+
+    let totalAmountVal = safelyParseValue(resolvedData.rate || resolvedData.total_amount || resolvedData.invoice?.subtotal);
+    if (typeof totalAmountVal === 'object' && totalAmountVal !== null) {
+      totalAmountVal = totalAmountVal.value || totalAmountVal.amount || 0;
+    }
+    const rawRate = parseFloat(totalAmountVal || 45000);
+
     const qty = parseFloat(resolvedData.qty || 1);
     const subtotal = rawRate * qty;
     const cgst = subtotal * 0.09;
     const sgst = subtotal * 0.09;
     const gst = cgst + sgst;
     const total = subtotal + gst;
+
+    let productVal = safelyParseValue(resolvedData.payment_for || resolvedData.product?.name);
+    let productName = "Standard Service";
+    if (Array.isArray(productVal) && productVal.length > 0) {
+      productName = productVal[0].name || productVal[0].title || "Standard Service";
+    } else if (typeof productVal === 'object' && productVal !== null) {
+      productName = productVal.name || productVal.title || "Standard Service";
+    } else if (typeof productVal === 'string' && productVal.trim() !== "") {
+      productName = productVal;
+    }
 
     const normalizedData = {
       ...resolvedData,
@@ -467,13 +489,13 @@ export class AutomationEngine {
         ...resolvedData.current
       },
       product: {
-        name: resolvedData.payment_for || resolvedData.product?.name || "Standard Service",
+        name: productName,
         rate: `₹${rawRate.toLocaleString("en-IN")}`,
         qty,
         ...resolvedData.product
       },
       amount: {
-        words: resolvedData.amount?.words || resolvedData.amount_words || "only",
+        words: resolvedData.amount?.words || resolvedData.amount_words || "",
         ...resolvedData.amount
       },
       payment: {
