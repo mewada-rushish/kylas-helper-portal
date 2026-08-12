@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: false,
   allowedDevOrigins: ['192.168.0.151'],
-  serverExternalPackages: ['puppeteer', 'puppeteer-core', '@sparticuz/chromium'],
+  serverExternalPackages: ['@sparticuz/chromium'],
 };
 
 export default nextConfig;
