@@ -416,7 +416,14 @@ export class AutomationEngine {
     
     const resolvedData = {};
     for (const [key, path] of Object.entries(node.mappings || {})) {
-      resolvedData[key] = evaluateTemplate(path, context);
+      const value = evaluateTemplate(path, context);
+      const parts = key.split('.');
+      let current = resolvedData;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) current[parts[i]] = {};
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
     }
     
     const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
