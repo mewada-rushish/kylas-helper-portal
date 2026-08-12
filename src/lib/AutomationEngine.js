@@ -441,10 +441,14 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via @react-pdf/renderer & react-pdf-html
+    // We strip font-family from the HTML to prevent @react-pdf/renderer from crashing on unregistered fonts.
+    // It will safely fallback to standard PDF fonts (Helvetica).
+    const safeHtmlOutput = htmlOutput.replace(/font-family:[^;]+;/gi, '');
+
     // We use React.createElement to avoid JSX syntax errors in standard .js files
     const pdfComponent = React.createElement(Document, null,
       React.createElement(Page, null,
-        React.createElement(Html, null, htmlOutput)
+        React.createElement(Html, null, safeHtmlOutput)
       )
     );
 
