@@ -75,9 +75,9 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     
     pdfBuffer = await page.pdf({
       format: 'A4',
-      scale: 0.96,
+      scale: 0.9,
       printBackground: true,
-      margin: { top: '30px', bottom: '30px' }
+      margin: { top: '30px', bottom: '30px', left: '30px', right: '30px' }
     });
   } catch (error) {
     console.error("Puppeteer PDF generation failed:", error);
