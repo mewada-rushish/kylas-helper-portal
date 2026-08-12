@@ -439,27 +439,21 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via Puppeteer
+    const chromiumReq = eval('require("@sparticuz/chromium")');
+    const chromium = chromiumReq.default || chromiumReq;
+    const puppeteerCoreReq = eval('require("puppeteer-core")');
+    const puppeteerCore = puppeteerCoreReq.default || puppeteerCoreReq;
+    
     const isLocal = !process.env.VERCEL;
-    let browser;
-    if (isLocal) {
-      // Local dev: use standard puppeteer (which brings its own Chrome)
-      const req = eval('require("puppeteer")');
-      const localPuppeteer = req.default || req;
-      browser = await localPuppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
-    } else {
-      // Vercel deployment: use Sparticuz Chromium + Puppeteer Core
-      const chromiumReq = eval('require("@sparticuz/chromium")');
-      const chromium = chromiumReq.default || chromiumReq;
-      const puppeteerCoreReq = eval('require("puppeteer-core")');
-      const puppeteerCore = puppeteerCoreReq.default || puppeteerCoreReq;
-      
-      browser = await puppeteerCore.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-      });
-    }
+    // Hardcoded local Windows Chrome path for local testing
+    const localExecutablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    
+    browser = await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: isLocal ? localExecutablePath : await chromium.executablePath(),
+      headless: chromium.headless,
+    });
 
     const page = await browser.newPage();
     await page.setContent(htmlOutput);
