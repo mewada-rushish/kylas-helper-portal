@@ -500,6 +500,7 @@ export class AutomationEngine {
       },
       payment: {
         method: resolvedData.payment?.method || "Cash",
+        date: resolvedData.payment?.date || resolvedData.date || new Date().toISOString().split('T')[0],
         ...resolvedData.payment
       },
       memberId: resolvedData.memberId || ""

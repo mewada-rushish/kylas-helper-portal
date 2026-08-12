@@ -20,12 +20,14 @@ export default function GeneralSettings() {
   // Component state definitions
   const [logoPreview, setLogoPreview] = useState(null);
   const [companyName, setCompanyName] = useState("");
-  const [authorizedSignatory, setAuthorizedSignatory] = useState("");
-  const [companyAddress, setCompanyAddress] = useState("");
+    const [authorizedSignatory, setAuthorizedSignatory] = useState("");
+    const [companyAddress, setCompanyAddress] = useState("");
+    const [contactNumber, setContactNumber] = useState("");
 
-  const [invoicePrefixBase, setInvoicePrefixBase] = useState("");
-  const [paddingDigits, setPaddingDigits] = useState("4");
-  const [nextSequence, setNextSequence] = useState(1001);
+    const [invoicePrefixBase, setInvoicePrefixBase] = useState("");
+    const [paddingDigits, setPaddingDigits] = useState("4");
+    const [nextSequence, setNextSequence] = useState(1001);
+
 
   const [gstin, setGstin] = useState("");
   const [panCode, setPanCode] = useState("");
@@ -83,6 +85,7 @@ export default function GeneralSettings() {
         setCompanyName(data.companyName || "");
         setAuthorizedSignatory(data.authorizedSignatory || "");
         setCompanyAddress(data.companyAddress || "");
+        setContactNumber(data.contactNumber || "");
         setInvoicePrefixBase(data.invoicePrefixBase || "INV");
         setPaddingDigits(data.paddingDigits || "4");
         setNextSequence(data.nextSequence !== undefined ? data.nextSequence : 1001);
@@ -132,6 +135,7 @@ export default function GeneralSettings() {
           companyName,
           authorizedSignatory,
           companyAddress,
+          contactNumber,
           invoicePrefixBase,
           paddingDigits,
           nextSequence,
@@ -244,6 +248,19 @@ export default function GeneralSettings() {
                     onChange={(e) => setCompanyAddress(e.target.value)}
                     className={styles.primaryTextareaInputWithIcon}
                     rows={2}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formInputGroupField}>
+                <label className={styles.fieldLabel}>Official Contact Number</label>
+                <div className={styles.inputIconWrapperFrame}>
+                  <FiHash className={styles.fieldInputIconAddon} />
+                  <input
+                    type="text"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    className={styles.primaryTextInputWithIcon}
                   />
                 </div>
               </div>

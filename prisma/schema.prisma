@@ -104,6 +104,7 @@ model SystemSetting {
   companyName         String   @default("AsmitA Enterprise Studio") @db.VarChar(255)
   authorizedSignatory String   @default("Authorized Signatory Label") @db.VarChar(255)
   companyAddress      String   @default("401-403, Deep Navy Business Park, Mira Bhayandar, Maharashtra, 401107") @db.Text
+  contactNumber       String   @default("+91 80000 00000") @db.VarChar(50)
   invoicePrefixBase   String   @default("INV") @db.VarChar(50)
   paddingDigits       String   @default("4") @db.VarChar(10)
   nextSequence        Int      @default(1001)
