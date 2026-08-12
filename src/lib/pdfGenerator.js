@@ -3,6 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import prisma from './prisma';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
+import fs from 'fs';
 
 export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templateId) {
   // Find template
@@ -30,11 +31,31 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
   let browser = null;
   let pdfBuffer = null;
   try {
+    const isLocal = process.env.NODE_ENV === 'development' || process.platform === 'win32';
+    let executablePath = null;
+    const sparticuz = chromium.default || chromium;
+    
+    if (isLocal) {
+      const winPaths = [
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+      ];
+      for (const p of winPaths) {
+        if (fs.existsSync(p)) {
+          executablePath = p;
+          break;
+        }
+      }
+    } else {
+      executablePath = await sparticuz.executablePath();
+    }
+
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      args: isLocal ? [] : sparticuz.args,
+      defaultViewport: sparticuz.defaultViewport,
+      executablePath: executablePath || await sparticuz.executablePath(),
+      headless: isLocal ? true : sparticuz.headless,
       ignoreHTTPSErrors: true,
     });
 
