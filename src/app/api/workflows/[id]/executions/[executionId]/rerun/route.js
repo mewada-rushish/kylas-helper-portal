@@ -35,7 +35,7 @@ export async function POST(request, { params }) {
     // Run asynchronously so we don't block the API response
     engine.run(triggerPayload).catch(err => console.error("Workflow background error on rerun:", err));
 
-    return NextResponse.json({ success: true, message: "Workflow rerun initiated" });
+    return NextResponse.json({ success: true, message: "Workflow rerun initiated", newExecutionId: engine.executionLog.id });
   } catch (error) {
     console.error('Error rerunning workflow:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

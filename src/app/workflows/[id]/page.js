@@ -342,8 +342,15 @@ export default function WorkflowCanvasEngine() {
     try {
       const res = await fetch(`/api/workflows/${params.id}/executions/${executionId}/rerun`, { method: "POST" });
       if (res.ok) {
+        const data = await res.json();
         toast.success("Workflow rerun initiated successfully");
-        if (activeTab === "logs") fetchLogs();
+        if (activeTab === "logs") {
+          const freshLogs = await fetchLogs();
+          if (data.newExecutionId && freshLogs) {
+            const newLog = freshLogs.find(l => l.id === data.newExecutionId);
+            if (newLog) setSelectedLog(newLog);
+          }
+        }
       } else {
         toast.error("Failed to rerun workflow");
       }
@@ -355,16 +362,25 @@ export default function WorkflowCanvasEngine() {
   };
 
   const fetchLogs = async () => {
-    if (!params.id || params.id.startsWith("wf_new_")) return;
+    if (!params.id || params.id.startsWith("wf_new_")) return null;
     try {
       const res = await fetch(`/api/workflows/${params.id}/logs`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data.logs || []);
+        
+        // Auto-update the currently selected log to show live changes
+        setSelectedLog(prev => {
+          if (!prev) return prev;
+          const updatedLog = data.logs.find(l => l.id === prev.id);
+          return updatedLog || prev;
+        });
+        return data.logs;
       }
     } catch (e) {
       console.error("Failed to fetch logs", e);
     }
+    return null;
   };
 
   const fetchVersions = async () => {
@@ -381,7 +397,22 @@ export default function WorkflowCanvasEngine() {
   };
 
   useEffect(() => {
-    if (activeTab === "logs") fetchLogs();
+    if (activeTab === "logs") {
+      fetchLogs();
+      
+      // Auto-poll if there are any pending/running logs or if the selected log is still running
+      const interval = setInterval(() => {
+        setLogs(currentLogs => {
+          const hasRunning = currentLogs.some(l => l.status === "RUNNING" || l.status === "PENDING_TEST");
+          if (hasRunning) {
+            fetchLogs(); // This will update logs and selectedLog
+          }
+          return currentLogs;
+        });
+      }, 2000);
+      
+      return () => clearInterval(interval);
+    }
     if (activeTab === "versions") fetchVersions();
   }, [activeTab]);
 
