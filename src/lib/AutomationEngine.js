@@ -1,7 +1,9 @@
 import { prisma } from "./prisma";
 import Handlebars from "handlebars";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
+import React from "react";
+import { renderToBuffer, Document, Page } from "@react-pdf/renderer";
+import Html from "react-pdf-html";
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
  */
@@ -439,11 +441,6 @@ export class AutomationEngine {
     const htmlOutput = compiledTemplate(resolvedData);
 
     // Generate PDF via @react-pdf/renderer & react-pdf-html
-    const React = eval('require("react")');
-    const { renderToBuffer, Document, Page } = eval('require("@react-pdf/renderer")');
-    const HtmlReq = eval('require("react-pdf-html")');
-    const Html = HtmlReq.default || HtmlReq;
-
     // We use React.createElement to avoid JSX syntax errors in standard .js files
     const pdfComponent = React.createElement(Document, null,
       React.createElement(Page, null,
