@@ -25,7 +25,15 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
   resolvedData.settings = systemSettings || {};
 
   const compiledTemplate = Handlebars.compile(template.config || "");
-  const htmlOutput = compiledTemplate(resolvedData);
+  let htmlOutput = compiledTemplate(resolvedData);
+
+  // Inject base URL so relative URLs (like /uploads/logo.svg) load correctly in Puppeteer
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  if (htmlOutput.includes('<head>')) {
+    htmlOutput = htmlOutput.replace('<head>', `<head><base href="${baseUrl}/">`);
+  } else {
+    htmlOutput = `<head><base href="${baseUrl}/"></head>` + htmlOutput;
+  }
 
   // Generate PDF via Puppeteer
   let browser = null;
@@ -63,6 +71,7 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     await page.setContent(htmlOutput, { waitUntil: 'networkidle0' });
     pdfBuffer = await page.pdf({
       format: 'A4',
+      scale: 0.96,
       printBackground: true,
       margin: { top: '20px', bottom: '20px' }
     });
