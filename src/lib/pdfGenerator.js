@@ -70,12 +70,16 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     const page = await browser.newPage();
     await page.setContent(htmlOutput, { waitUntil: 'networkidle0' });
     
-    // Force the template root div to 100% width so it perfectly fits the Puppeteer margins
-    await page.addStyleTag({ content: 'body { margin: 0 !important; padding: 0 !important; } body > div { width: 100% !important; max-width: 100% !important; margin: 0 !important; box-sizing: border-box !important; }' });
+    // Inject CSS to fix box-sizing so padded elements don't overflow the 100% width container
+    await page.addStyleTag({ content: `
+      * { box-sizing: border-box !important; }
+      body { margin: 0 !important; padding: 0 !important; }
+      body > div { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; }
+    `});
     
     pdfBuffer = await page.pdf({
       format: 'A4',
-      scale: 0.85,
+      scale: 0.95,
       printBackground: true,
       margin: { top: '30px', bottom: '30px', left: '30px', right: '30px' }
     });
