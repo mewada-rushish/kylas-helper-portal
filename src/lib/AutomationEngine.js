@@ -451,11 +451,7 @@ export class AutomationEngine {
     const rawRate = parseFloat(totalAmountVal || 45000);
 
     const qty = parseFloat(resolvedData.qty || 1);
-    const subtotal = rawRate * qty;
-    const cgst = subtotal * 0.09;
-    const sgst = subtotal * 0.09;
-    const gst = cgst + sgst;
-    const total = subtotal + gst;
+    const total = rawRate * qty;
 
     let productVal = safelyParseValue(resolvedData.payment_for || resolvedData.product?.name);
     let productName = "Standard Service";
@@ -481,15 +477,37 @@ export class AutomationEngine {
       return str.trim() ? str.trim() + ' Only' : '';
     };
 
+    let periodStart = resolvedData.payment?.periodStart || resolvedData.periodStart || "";
+    let periodEnd = resolvedData.payment?.periodEnd || resolvedData.periodEnd || "";
+    
+    if (periodStart && !periodEnd) {
+      const pName = productName.toLowerCase();
+      let monthsToAdd = 1;
+      
+      if (pName.includes("half yearly") || pName.includes("half year") || pName.includes("half - yearly") || pName.includes("half-yearly")) {
+        monthsToAdd = 6;
+      } else if (pName.includes("quarterly")) {
+        monthsToAdd = 3;
+      } else if (pName.includes("yearly") || pName.includes("annual")) {
+        monthsToAdd = 12;
+      }
+      
+      const startDateObj = new Date(periodStart);
+      if (!isNaN(startDateObj.getTime())) {
+        // Handle last day of month edge cases correctly
+        startDateObj.setMonth(startDateObj.getMonth() + monthsToAdd);
+        // We might want to subtract 1 day since period is usually inclusive? 
+        // e.g. 1st Jan to 31st Dec. Let's subtract 1 day.
+        startDateObj.setDate(startDateObj.getDate() - 1);
+        periodEnd = startDateObj.toISOString().split('T')[0];
+      }
+    }
+
     const normalizedData = {
       ...resolvedData,
       invoice: {
         id: invoiceId,
         total: `₹${total.toLocaleString("en-IN")}`,
-        subtotal: `₹${subtotal.toLocaleString("en-IN")}`,
-        cgst: `₹${cgst.toLocaleString("en-IN")}`,
-        sgst: `₹${sgst.toLocaleString("en-IN")}`,
-        gst: `₹${gst.toLocaleString("en-IN")}`,
         ...resolvedData.invoice
       },
       customer: {
@@ -515,6 +533,8 @@ export class AutomationEngine {
       payment: {
         method: resolvedData.payment?.method || "Cash",
         date: resolvedData.payment?.date || resolvedData.date || new Date().toISOString().split('T')[0],
+        periodStart,
+        periodEnd,
         ...resolvedData.payment
       },
       memberId: resolvedData.memberId || ""
