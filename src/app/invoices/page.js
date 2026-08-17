@@ -68,6 +68,20 @@ export default function InvoicesListPage() {
       
   }, []);
 
+  const formatWithSetting = (dateStr) => {
+    if (!dateStr) return "";
+    let dStr = dateStr;
+    if (dStr.includes('T')) dStr = dStr.split('T')[0];
+    const parts = dStr.split('-');
+    if (parts.length === 3) {
+      if (systemSettings?.dateFormat === "DD/MM/YYYY") return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      if (systemSettings?.dateFormat === "DD-MM-YYYY") return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      if (systemSettings?.dateFormat === "MM/DD/YYYY") return `${parts[1]}/${parts[2]}/${parts[0]}`;
+    }
+    return dStr;
+  };
+
+
   const [invCustomer, setInvCustomer] = useState("");
   const [invEmail, setInvEmail] = useState("");
   const [invMemberId, setInvMemberId] = useState("");
@@ -253,7 +267,7 @@ export default function InvoicesListPage() {
                             <span className={styles.custSubEmail}>{inv.email}</span>
                           </div>
                         </td>
-                        <td className={styles.dateStampCell}>{inv.date}</td>
+                        <td className={styles.dateStampCell}>{formatWithSetting(inv.date)}</td>
                         <td className={styles.productCell}>
                           {KYLAS_PRODUCTS.find(p => p.value === inv.productId)?.label || inv.productId}
                         </td>
@@ -355,14 +369,14 @@ export default function InvoicesListPage() {
                       __html: resolveToken(defaultTemplate.config, { 
                         ...activeInvoice,
                         customer: { name: activeInvoice.customer, email: activeInvoice.email },
-                        current: { date: activeInvoice.date ? activeInvoice.date.split('T')[0] : "" },
+                        current: { date: formatWithSetting(activeInvoice.date) },
                         payment: {
-                          periodStart: activeInvoice.periodStart || "",
-                          periodEnd: activeInvoice.periodEnd || "",
-                          date: activeInvoice.paymentDate || "",
-                          method: activeInvoice.paymentMethod || "",
-                          bankName: activeInvoice.paymentBankName || "",
-                          referenceNo: activeInvoice.paymentReferenceNo || ""
+                          periodStart: formatWithSetting(activeInvoice.payment?.periodStart || activeInvoice.periodStart),
+                          periodEnd: formatWithSetting(activeInvoice.payment?.periodEnd || activeInvoice.periodEnd),
+                          date: formatWithSetting(activeInvoice.payment?.date || activeInvoice.paymentDate),
+                          method: activeInvoice.payment?.method || activeInvoice.paymentMethod || "",
+                          bankName: activeInvoice.payment?.bankName || activeInvoice.paymentBankName || "",
+                          referenceNo: activeInvoice.payment?.referenceNo || activeInvoice.paymentReferenceNo || ""
                         },
                         invoice: { id: activeInvoice.id, total: `₹${Number(activeInvoice.total).toLocaleString("en-IN")}` },
                         product: { name: KYLAS_PRODUCTS[activeInvoice.productId] || activeInvoice.productId },
@@ -376,7 +390,7 @@ export default function InvoicesListPage() {
                           <h2 style={{ color: FALLBACK_THEME.primaryColor, fontFamily: "Montserrat, sans-serif", textAlign: "center", marginBottom: "20px" }}>TAX INVOICE</h2>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", fontFamily: "Poppins, sans-serif", fontSize: "13px" }}>
                             <div><strong>Billed To:</strong><br/>{activeInvoice.customer}<br/>{activeInvoice.email}</div>
-                            <div style={{ textAlign: "right" }}><strong>Invoice ID:</strong> {activeInvoice.id}<br/><strong>Date:</strong> {activeInvoice.date}</div>
+                            <div style={{ textAlign: "right" }}><strong>Invoice ID:</strong> {activeInvoice.id}<br/><strong>Date:</strong> {formatWithSetting(activeInvoice.date)}</div>
                           </div>
                           <table width="100%" style={{ borderCollapse: "collapse", fontSize: "12px", fontFamily: "Poppins, sans-serif" }}>
                             <thead>
