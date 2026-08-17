@@ -341,8 +341,8 @@ export default function WorkflowCanvasEngine() {
     setIsSaving(true);
     try {
       const res = await fetch(`/api/workflows/${params.id}/executions/${executionId}/rerun`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        const data = await res.json();
         toast.success("Workflow rerun initiated successfully");
         if (activeTab === "logs") {
           const freshLogs = await fetchLogs();
@@ -352,10 +352,10 @@ export default function WorkflowCanvasEngine() {
           }
         }
       } else {
-        toast.error("Failed to rerun workflow");
+        toast.error(`Failed to rerun: ${data.error || "Unknown Error"}`);
       }
     } catch (e) {
-      toast.error("Error initiating rerun");
+      toast.error("Error initiating rerun: " + e.message);
     } finally {
       setIsSaving(false);
     }
