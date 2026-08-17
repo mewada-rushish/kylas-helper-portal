@@ -66,7 +66,16 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
 
   // Inject base URL so relative URLs (like /uploads/logo.svg) load correctly in Puppeteer
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  const fontsTag = `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />`;
+  const fontsTag = `
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box !important; font-family: 'Inter', sans-serif !important; }
+      body { margin: 0 !important; padding: 0 !important; font-family: 'Inter', sans-serif !important; }
+      body > div { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; }
+    </style>
+  `;
   if (htmlOutput.includes('<head>')) {
     htmlOutput = htmlOutput.replace('<head>', `<head><base href="${baseUrl}/">${fontsTag}`);
   } else {
@@ -132,14 +141,6 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     
     // Ensure all remote web fonts are fully loaded before rendering
     await page.evaluateHandle('document.fonts.ready');
-    
-    // Inject CSS to fix box-sizing so padded elements don't overflow the 100% width container
-    // Also enforce Inter font to fix missing Linux core fonts (tofu boxes)
-    await page.addStyleTag({ content: `
-      * { box-sizing: border-box !important; font-family: 'Inter', sans-serif !important; }
-      body { margin: 0 !important; padding: 0 !important; font-family: 'Inter', sans-serif !important; }
-      body > div { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; }
-    `});
     
     pdfBuffer = await page.pdf({
       format: 'A4',
