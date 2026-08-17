@@ -338,6 +338,22 @@ export default function InvoicesListPage() {
                 />
               </div>
 
+              <div style={{ width: '220px' }}>
+                <CustomDropdown 
+                  icon={FiBox}
+                  placeholder="All Products"
+                  options={[
+                    { value: "all", label: "All Products" },
+                    ...KYLAS_PRODUCTS
+                  ]} 
+                  selectedValue={filterProduct} 
+                  onSelect={(val) => setFilterProduct(val)}
+                  triggerClassName={styles.filterDropdownOverride}
+                />
+              </div>
+
+              <div style={{ flex: 1 }}></div>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input 
                   type="date"
@@ -355,22 +371,6 @@ export default function InvoicesListPage() {
                   title="End Date"
                 />
               </div>
-
-              <div style={{ width: '220px' }}>
-                <CustomDropdown 
-                  icon={FiBox}
-                  placeholder="All Products"
-                  options={[
-                    { value: "all", label: "All Products" },
-                    ...KYLAS_PRODUCTS
-                  ]} 
-                  selectedValue={filterProduct} 
-                  onSelect={(val) => setFilterProduct(val)}
-                  triggerClassName={styles.filterDropdownOverride}
-                />
-              </div>
-
-              <div style={{ flex: 1 }}></div>
 
               <button 
                 onClick={fetchInvoices}
