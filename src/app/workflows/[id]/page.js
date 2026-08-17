@@ -1054,6 +1054,34 @@ export default function WorkflowCanvasEngine() {
               </button>
             </div>
           </div>
+ 
+  const copyToClipboard = (text, message = "Copied to clipboard!") => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => toast.success(message))
+        .catch(() => fallbackCopy(text, message));
+    } else {
+      fallbackCopy(text, message);
+    }
+  };
+
+  const fallbackCopy = (text, message) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      toast.success(message);
+    } catch (err) {
+      toast.error("Failed to copy text");
+    }
+    document.body.removeChild(textArea);
+  };
 
           <div className={styles.tabContentFrame}>
             {activeTab === "builder" && (
@@ -1801,8 +1829,7 @@ export default function WorkflowCanvasEngine() {
                                 try { return JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
                                 catch(e) { return selectedLog.context; }
                               })();
-                              navigator.clipboard.writeText(text);
-                              toast.success("Copied context data to clipboard!");
+                              copyToClipboard(text, "Copied context data to clipboard!");
                             }}
                             style={{ background: 'transparent', border: 'none', color: '#8c9196', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', borderRadius: '4px' }}
                             title="Copy Context Data"
@@ -1828,8 +1855,7 @@ export default function WorkflowCanvasEngine() {
                                 try { return JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
                                 catch(e) { return selectedLog.logs; }
                               })();
-                              navigator.clipboard.writeText(text);
-                              toast.success("Copied execution trace logs to clipboard!");
+                              copyToClipboard(text, "Copied execution trace logs to clipboard!");
                             }}
                             style={{ background: 'transparent', border: 'none', color: '#8c9196', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', borderRadius: '4px' }}
                             title="Copy Execution Trace Logs"
