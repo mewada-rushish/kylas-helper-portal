@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { AutomationEngine } from '@/lib/AutomationEngine';
 
 export async function POST(request, { params }) {
   let routeId = null;
@@ -30,9 +31,6 @@ export async function POST(request, { params }) {
     if (!triggerPayload) {
       return NextResponse.json({ success: false, error: "No trigger payload found in execution context" }, { status: 400 });
     }
-
-    // Dynamically load AutomationEngine to catch any module load-time errors
-    const { AutomationEngine } = await import('@/lib/AutomationEngine');
 
     // Initialize and run the workflow again
     const engine = new AutomationEngine(id);
