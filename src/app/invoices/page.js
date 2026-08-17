@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter, FiBox, FiRefreshCw } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -309,30 +309,57 @@ export default function InvoicesListPage() {
           </header>
 
           <div className={styles.tableCardFrame}>
-            <div style={{ display: 'flex', gap: '16px', padding: '20px', borderBottom: '1px solid #e1e3e5', backgroundColor: '#fff', borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <FiSearch style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8c9196' }} />
+            <div style={{ display: 'flex', gap: '12px', padding: '16px 20px', borderBottom: '1px solid #e1e3e5', backgroundColor: '#f8f9fa', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', alignItems: 'center' }}>
+              
+              <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
+                <FiSearch style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8c9196', width: '16px', height: '16px' }} />
                 <input 
                   type="text" 
-                  placeholder="Search by Invoice ID, Client Name, or Email..." 
+                  placeholder="Search invoices by ID, Client Name, or Email..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: '6px', border: '1px solid #e1e3e5', outline: 'none', fontSize: '14px' }}
+                  style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px', color: '#334155', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', background: '#fff' }}
                 />
               </div>
-              <div style={{ width: '300px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FiFilter style={{ color: '#8c9196' }} />
-                <select 
-                  value={filterProduct} 
-                  onChange={(e) => setFilterProduct(e.target.value)}
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e1e3e5', outline: 'none', fontSize: '14px', background: '#fff' }}
-                >
-                  <option value="all">All Products</option>
-                  {KYLAS_PRODUCTS.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </select>
+
+              <div style={{ width: '220px' }}>
+                <CustomDropdown 
+                  icon={FiBox}
+                  placeholder="All Products"
+                  options={[
+                    { value: "all", label: "All Products" },
+                    ...KYLAS_PRODUCTS
+                  ]} 
+                  selectedValue={filterProduct} 
+                  onSelect={(val) => setFilterProduct(val)}
+                  triggerClassName={styles.filterDropdownOverride}
+                />
               </div>
+
+              <div style={{ flex: 1 }}></div>
+
+              <button 
+                onClick={fetchInvoices}
+                title="Refresh Invoices"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  background: '#fff',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.borderColor = '#cbd5e1'}
+                onMouseOut={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+              >
+                <FiRefreshCw style={{ width: '16px', height: '16px' }} />
+              </button>
             </div>
 
             <table className={styles.invoiceTableGrid}>
