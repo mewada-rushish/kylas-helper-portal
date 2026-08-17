@@ -1003,6 +1003,34 @@ export default function WorkflowCanvasEngine() {
     return true;
   });
 
+  const copyToClipboard = (text, message = "Copied to clipboard!") => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => toast.success(message))
+        .catch(() => fallbackCopy(text, message));
+    } else {
+      fallbackCopy(text, message);
+    }
+  };
+
+  const fallbackCopy = (text, message) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      toast.success(message);
+    } catch (err) {
+      toast.error("Failed to copy text");
+    }
+    document.body.removeChild(textArea);
+  };
+
   return (
     <div className={styles.adminLayout} onClick={closeContextMenu}>
       <Sidebar items={sidebarMenuItems} activeId="workflows" />
@@ -1054,34 +1082,6 @@ export default function WorkflowCanvasEngine() {
               </button>
             </div>
           </div>
- 
-  const copyToClipboard = (text, message = "Copied to clipboard!") => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text)
-        .then(() => toast.success(message))
-        .catch(() => fallbackCopy(text, message));
-    } else {
-      fallbackCopy(text, message);
-    }
-  };
-
-  const fallbackCopy = (text, message) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      toast.success(message);
-    } catch (err) {
-      toast.error("Failed to copy text");
-    }
-    document.body.removeChild(textArea);
-  };
 
           <div className={styles.tabContentFrame}>
             {activeTab === "builder" && (
