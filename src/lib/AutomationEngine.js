@@ -564,6 +564,20 @@ export class AutomationEngine {
 
     const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, normalizedData, node.templateId);
 
+    // Robust date parser for potentially formatted dates (DD/MM/YYYY)
+    const parseDateString = (dStr) => {
+      if (!dStr) return new Date();
+      let d = new Date(dStr);
+      if (!isNaN(d.getTime())) return d;
+      
+      const parts = String(dStr).split(/[\/\-]/);
+      if (parts.length === 3 && parts[2].length === 4) {
+        d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return new Date();
+    };
+
     // Save to the database
     try {
       await prisma.invoice.create({
@@ -571,7 +585,7 @@ export class AutomationEngine {
           id: invoiceId,
           customer: normalizedData.customer.name,
           email: normalizedData.customer.email,
-          date: new Date(normalizedData.current.date),
+          date: parseDateString(normalizedData.current.date),
           productId: normalizedData.product.name,
           qty: qty,
           rate: rawRate,
