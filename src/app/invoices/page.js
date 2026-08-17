@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter, FiBox, FiRefreshCw } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiFileText, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter, FiBox, FiRefreshCw } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -299,6 +299,62 @@ export default function InvoicesListPage() {
     }
   };
 
+  const handleBulkExportCSV = () => {
+    if (selectedInvoices.length === 0) return;
+    
+    const selectedData = invoices.filter(inv => selectedInvoices.includes(inv.id));
+    
+    const headers = ["Invoice ID", "Customer Name", "Email", "Date", "Product", "Total Amount", "PDF Link"];
+    const rows = selectedData.map(inv => [
+      inv.id,
+      `"${inv.customer || ""}"`,
+      `"${inv.email || ""}"`,
+      formatWithSetting(inv.date),
+      `"${KYLAS_PRODUCTS.find(p => p.value === inv.productId)?.label || inv.productId || ""}"`,
+      inv.total,
+      `"${inv.publicUrl || ""}"`
+    ]);
+    
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Invoices_Export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`${selectedData.length} invoices exported to CSV`);
+  };
+
+  const handleBulkDownloadPDFs = () => {
+    if (selectedInvoices.length === 0) return;
+    const selectedData = invoices.filter(inv => selectedInvoices.includes(inv.id));
+    
+    let downloadCount = 0;
+    selectedData.forEach((inv, index) => {
+      if (inv.publicUrl) {
+        downloadCount++;
+        setTimeout(() => {
+          const link = document.createElement("a");
+          link.href = inv.publicUrl;
+          link.target = "_blank";
+          link.download = `Invoice_${inv.id}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }, index * 300);
+      }
+    });
+    
+    if (downloadCount > 0) {
+      toast.success(`Downloading ${downloadCount} invoice PDFs...`);
+    } else {
+      toast.error("No PDFs available to download for selected invoices");
+    }
+  };
+
   return (
     <div className={styles.adminLayout}>
       <Sidebar activeId="invoices" />
@@ -311,9 +367,26 @@ export default function InvoicesListPage() {
             </div>
             <div className={styles.headerActions}>
               {selectedInvoices.length > 0 && (
-                <AdminButton variant="destructive" icon={FiTrash2} onClick={() => setShowBulkDeleteModal(true)} style={{ backgroundColor: '#e11d48', color: 'white', border: 'none' }}>
-                  Delete Selected ({selectedInvoices.length})
-                </AdminButton>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => setShowBulkDeleteModal(true)} 
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#e11d48', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                  >
+                    <FiTrash2 /> Delete ({selectedInvoices.length})
+                  </button>
+                  <button 
+                    onClick={handleBulkExportCSV} 
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                  >
+                    <FiDownload /> Export CSV
+                  </button>
+                  <button 
+                    onClick={handleBulkDownloadPDFs} 
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                  >
+                    <FiFileText /> Download PDFs
+                  </button>
+                </div>
               )}
               <AdminButton variant="secondary" icon={FiLayout} onClick={() => router.push("/invoices/templates")}>
                 Templates
