@@ -609,6 +609,6 @@ export class AutomationEngine {
 
     await this.appendLog("Invoice generated and uploaded successfully", { url: publicUrl });
 
-    return { url: publicUrl, generatedHtml: htmlOutput };
+    return { url: publicUrl, generatedHtml: htmlOutput, data: normalizedData };
   }
 }

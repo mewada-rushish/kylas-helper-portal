@@ -154,6 +154,20 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
       sampleObj = n.outputVariableName ? recentContext[`step_${n.id}`][n.outputVariableName] : recentContext[`step_${n.id}`];
     } else if (n.sampleResponse) {
       try { sampleObj = JSON.parse(n.sampleResponse); } catch(e) {}
+    } else if (n.type === 'generate_invoice') {
+      const mockData = {};
+      if (n.mappings) {
+        Object.keys(n.mappings).forEach(k => {
+          const parts = k.split('.');
+          let current = mockData;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!current[parts[i]]) current[parts[i]] = {};
+            current = current[parts[i]];
+          }
+          current[parts[parts.length - 1]] = "Sample Value";
+        });
+      }
+      sampleObj = { url: "https://example.com/invoice.pdf", generatedHtml: "<html>...</html>", data: mockData };
     }
     
     if (sampleObj) {
