@@ -67,9 +67,20 @@ export async function POST(request) {
     };
     const productName = KYLAS_PRODUCTS[newInvoice.productId] || newInvoice.productId;
 
+    const formatDDMMYYYY = (isoStr) => {
+      if (!isoStr) return "";
+      let dStr = isoStr;
+      if (dStr.includes('T')) dStr = dStr.split('T')[0];
+      const parts = dStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]} / ${parts[1]} / ${parts[0]}`;
+      }
+      return isoStr;
+    };
+
     const resolvedData = {
       customer: { name: newInvoice.customer, email: newInvoice.email },
-      current: { date: newInvoice.date ? new Date(newInvoice.date).toISOString().split('T')[0] : "" },
+      current: { date: newInvoice.date ? formatDDMMYYYY(new Date(newInvoice.date).toISOString().split('T')[0]) : "" },
       product: { name: productName, rate: `₹${newInvoice.rate.toLocaleString("en-IN")}`, qty: newInvoice.qty },
       invoice: { id: id, subtotal: `₹${newInvoice.rate.toLocaleString("en-IN")}`, total: `₹${newInvoice.total.toLocaleString("en-IN")}` },
       memberId: newInvoice.memberId,
@@ -78,9 +89,9 @@ export async function POST(request) {
         method: newInvoice.paymentMethod,
         referenceNo: newInvoice.paymentReferenceNo,
         bankName: newInvoice.paymentBankName,
-        date: newInvoice.paymentDate,
-        periodStart: newInvoice.periodStart,
-        periodEnd: newInvoice.periodEnd
+        date: formatDDMMYYYY(newInvoice.paymentDate),
+        periodStart: formatDDMMYYYY(newInvoice.periodStart),
+        periodEnd: formatDDMMYYYY(newInvoice.periodEnd)
       }
     };
 

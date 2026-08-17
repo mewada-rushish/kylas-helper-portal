@@ -496,7 +496,7 @@ export class AutomationEngine {
       
       if (pName.includes("half yearly") || pName.includes("half year") || pName.includes("half - yearly") || pName.includes("half-yearly")) {
         monthsToAdd = 6;
-      } else if (pName.includes("quarterly")) {
+      } else if (pName.includes("quarterly") || pName.includes("quaterly")) {
         monthsToAdd = 3;
       } else if (pName.includes("yearly") || pName.includes("annual")) {
         monthsToAdd = 12;
@@ -521,6 +521,17 @@ export class AutomationEngine {
       pDate = pDate.split('T')[0];
     }
 
+    const formatDDMMYYYY = (isoStr) => {
+      if (!isoStr) return "";
+      let dStr = isoStr;
+      if (dStr.includes('T')) dStr = dStr.split('T')[0];
+      const parts = dStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]} / ${parts[1]} / ${parts[0]}`;
+      }
+      return isoStr;
+    };
+
     const normalizedData = {
       ...resolvedData,
       invoice: {
@@ -530,9 +541,9 @@ export class AutomationEngine {
       },
       customer: {
         ...resolvedData.customer,
-        name: resolvedData.customer?.name || "Unknown",
-        email: resolvedData.customer?.email || "",
-        phone: resolvedData.customer?.phone || ""
+        name: resolvedData.customer?.name || resolvedData.name || resolvedData.customerName || "Unknown",
+        email: resolvedData.customer?.email || resolvedData.email || "",
+        phone: resolvedData.customer?.phone || resolvedData.phone || ""
       },
       current: {
         ...resolvedData.current,
@@ -552,15 +563,26 @@ export class AutomationEngine {
         ...resolvedData.payment,
         method: resolvedData.payment?.method || "Cash",
         date: pDate,
-        periodStart,
-        periodEnd
+        periodStart: periodStart,
+        periodEnd: periodEnd
       },
       memberId: resolvedData.memberId || ""
     };
 
+    const pdfTemplateData = {
+      ...normalizedData,
+      current: { ...normalizedData.current, date: formatDDMMYYYY(normalizedData.current.date) },
+      payment: {
+        ...normalizedData.payment,
+        date: formatDDMMYYYY(normalizedData.payment.date),
+        periodStart: formatDDMMYYYY(normalizedData.payment.periodStart),
+        periodEnd: formatDDMMYYYY(normalizedData.payment.periodEnd)
+      }
+    };
+
     await this.appendLog("Generating PDF using Puppeteer...", { invoiceId });
 
-    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, normalizedData, node.templateId);
+    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, pdfTemplateData, node.templateId);
 
     // Save to the database
     try {
