@@ -4,7 +4,10 @@ const nextConfig = {
   allowedDevOrigins: ['192.168.0.87'],
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/@sparticuz/chromium/**/*'],
+    '/api/**/*': [
+      './node_modules/@sparticuz/chromium/**/*',
+      './node_modules/puppeteer-core/**/*'
+    ],
   },
 };
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { logSystemAction } from "@/lib/logger";
+import { AutomationEngine } from "@/lib/AutomationEngine";
 
 export async function POST(request, { params }) {
   const { id } = await params; // This matches the dynamic segment [id]
@@ -57,7 +58,6 @@ export async function POST(request, { params }) {
     });
 
     if (workflows.length > 0) {
-      const { AutomationEngine } = await import("@/lib/AutomationEngine");
       for (const workflow of workflows) {
         try {
           const engine = new AutomationEngine(workflow.id);
