@@ -38,6 +38,11 @@ export async function POST(request, { params }) {
     return NextResponse.json({ success: true, message: "Workflow rerun initiated", newExecutionId: engine.executionLog.id });
   } catch (error) {
     console.error('Error rerunning workflow:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack,
+      debug: { id, executionId }
+    }, { status: 500 });
   }
 }
