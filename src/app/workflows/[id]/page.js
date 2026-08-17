@@ -1582,11 +1582,12 @@ export default function WorkflowCanvasEngine() {
                                 templateTokens = templateTokens.filter(t => !t.startsWith('settings.'));
                               }
                               
-                              const displayTokens = templateTokens.length > 0 
+                              const displayTokens = (templateTokens.length > 0 
                                 ? templateTokens 
                                 : (templateVariablesSchema.length > 0 
                                   ? templateVariablesSchema.map(v => v.key)
-                                  : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"]);
+                                  : ["receipt_no", "date", "customer.name", "customer.phone", "total_amount", "payment_for"]))
+                              .filter(t => !["amount.words", "payment.referenceNo", "payment.bankName"].includes(t));
                               
                               const nodeFields = getAvailableFieldsForNode(node.id, nodes, edges, availableWebhooks, recentContextObj);
                               
