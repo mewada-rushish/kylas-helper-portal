@@ -151,10 +151,15 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
 
     let sampleObj = null;
     if (recentContext && recentContext[`step_${n.id}`]) {
-      sampleObj = n.outputVariableName ? recentContext[`step_${n.id}`][n.outputVariableName] : recentContext[`step_${n.id}`];
-    } else if (n.sampleResponse) {
-      try { sampleObj = JSON.parse(n.sampleResponse); } catch(e) {}
-    } else if (n.type === 'generate_invoice') {
+      sampleObj = (n.outputVariableName && recentContext[`step_${n.id}`][n.outputVariableName]) 
+        ? recentContext[`step_${n.id}`][n.outputVariableName] 
+        : recentContext[`step_${n.id}`];
+    }
+    
+    if (!sampleObj) {
+      if (n.sampleResponse) {
+        try { sampleObj = JSON.parse(n.sampleResponse); } catch(e) {}
+      } else if (n.type === 'generate_invoice') {
       const mockData = {};
       if (n.mappings) {
         Object.keys(n.mappings).forEach(k => {
@@ -168,6 +173,7 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
         });
       }
       sampleObj = { url: "https://example.com/invoice.pdf", generatedHtml: "<html>...</html>", data: mockData };
+      }
     }
     
     if (sampleObj) {
