@@ -29,11 +29,11 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
       const filePath = path.join(process.cwd(), 'public', systemSettings.logoUrl);
       if (fs.existsSync(filePath)) {
         const ext = path.extname(filePath).replace('.', '');
-        let mime = \`image/\${ext}\`;
+        let mime = `image/${ext}`;
         if (ext === 'svg') mime = 'image/svg+xml';
         if (ext === 'jpg') mime = 'image/jpeg';
         const base64 = fs.readFileSync(filePath).toString('base64');
-        systemSettings.logoUrl = \`data:\${mime};base64,\${base64}\`;
+        systemSettings.logoUrl = `data:${mime};base64,${base64}`;
       }
     } catch (e) {
       console.error("Failed to base64 encode logo:", e);
