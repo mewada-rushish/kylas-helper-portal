@@ -2,7 +2,6 @@ import Handlebars from 'handlebars';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import prisma from './prisma';
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
 import fs from 'fs';
 
 export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templateId) {
@@ -41,7 +40,7 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
   try {
     const isLocal = process.env.NODE_ENV === 'development' || process.platform === 'win32';
     let executablePath = null;
-    const sparticuz = chromium.default || chromium;
+    let sparticuz = null;
     
     if (isLocal) {
       const winPaths = [
@@ -56,13 +55,15 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
         }
       }
     } else {
+      const chromiumModule = await import('@sparticuz/chromium');
+      sparticuz = chromiumModule.default || chromiumModule;
       executablePath = await sparticuz.executablePath();
     }
 
     browser = await puppeteer.launch({
       args: isLocal ? [] : sparticuz.args,
-      defaultViewport: sparticuz.defaultViewport,
-      executablePath: executablePath || await sparticuz.executablePath(),
+      defaultViewport: isLocal ? null : sparticuz.defaultViewport,
+      executablePath: executablePath || (sparticuz ? await sparticuz.executablePath() : null),
       headless: isLocal ? true : sparticuz.headless,
       ignoreHTTPSErrors: true,
     });
