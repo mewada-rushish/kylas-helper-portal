@@ -368,30 +368,15 @@ export default function InvoicesListPage() {
             <div className={styles.headerActions}>
               {selectedInvoices.length > 0 && (
                 <div style={{ display: 'flex', gap: '8px', marginRight: '16px', paddingRight: '16px', borderRight: '1px solid #e2e8f0' }}>
-                  <button 
-                    onClick={handleBulkDownloadPDFs} 
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#fff', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                  >
-                    <FiFileText style={{ color: '#3b82f6', width: '15px', height: '15px' }} /> Download PDFs
-                  </button>
-                  <button 
-                    onClick={handleBulkExportCSV} 
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#fff', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                  >
-                    <FiDownload style={{ color: '#10b981', width: '15px', height: '15px' }} /> Export CSV
-                  </button>
-                  <button 
-                    onClick={() => setShowBulkDeleteModal(true)} 
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fecdd3', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fff1f2'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                  >
-                    <FiTrash2 style={{ width: '15px', height: '15px' }} /> Delete ({selectedInvoices.length})
-                  </button>
+                  <AdminButton variant="secondary" onClick={handleBulkDownloadPDFs}>
+                    <FiFileText style={{ color: '#3b82f6' }} /> Download PDFs
+                  </AdminButton>
+                  <AdminButton variant="secondary" onClick={handleBulkExportCSV}>
+                    <FiDownload style={{ color: '#10b981' }} /> Export CSV
+                  </AdminButton>
+                  <AdminButton variant="secondary" onClick={() => setShowBulkDeleteModal(true)}>
+                    <FiTrash2 style={{ color: '#ef4444' }} /> Delete ({selectedInvoices.length})
+                  </AdminButton>
                 </div>
               )}
               <AdminButton variant="secondary" icon={FiLayout} onClick={() => router.push("/invoices/templates")}>
