@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
@@ -170,6 +170,22 @@ export default function InvoicesListPage() {
     }
   };
 
+  const handleDeleteInvoice = async (invoiceId) => {
+    if (!window.confirm("Are you sure you want to delete this invoice? This action cannot be undone.")) return;
+    
+    try {
+      const res = await fetch(`/api/invoices/${invoiceId}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchInvoices();
+      } else {
+        alert("Failed to delete invoice");
+      }
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      alert("Error deleting invoice");
+    }
+  };
+
   return (
     <div className={styles.adminLayout}>
       <Sidebar activeId="invoices" />
@@ -241,6 +257,9 @@ export default function InvoicesListPage() {
                             </button>
                             <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("edit", inv)} title="Update Baseline Parameters">
                               <FiEdit2 />
+                            </button>
+                            <button className={styles.iconActionBtn} onClick={() => handleDeleteInvoice(inv.id)} title="Delete Invoice" style={{ color: "#e11d48" }}>
+                              <FiTrash2 />
                             </button>
                           </div>
                         </td>
