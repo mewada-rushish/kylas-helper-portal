@@ -41,22 +41,38 @@ export default function InvoicesListPage() {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [filterProduct, setFilterProduct] = useState("all");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
 
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = 
       !searchQuery || 
       inv.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
       (inv.customer && inv.customer.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (inv.email && inv.email.toLowerCase().includes(searchQuery.toLowerCase()));
+      (inv.email && inv.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (inv.total && inv.total.toString().includes(searchQuery.toLowerCase()));
       
     const matchesProduct = filterProduct === "all" || inv.productId === filterProduct;
     
-    return matchesSearch && matchesProduct;
+    let matchesDate = true;
+    if (filterStartDate || filterEndDate) {
+      const invDate = new Date(inv.date);
+      if (filterStartDate && new Date(filterStartDate) > invDate) matchesDate = false;
+      
+      // End date check (set end date time to end of day for inclusive comparison if it's just a date string)
+      if (filterEndDate) {
+        const endDateObj = new Date(filterEndDate);
+        endDateObj.setHours(23, 59, 59, 999);
+        if (endDateObj < invDate) matchesDate = false;
+      }
+    }
+    
+    return matchesSearch && matchesProduct && matchesDate;
   });
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterProduct]);
+  }, [searchQuery, filterProduct, filterStartDate, filterEndDate]);
 
   const fetchInvoices = () => {
     setIsLoading(true);
@@ -311,14 +327,32 @@ export default function InvoicesListPage() {
           <div className={styles.tableCardFrame}>
             <div style={{ display: 'flex', gap: '12px', padding: '16px 20px', borderBottom: '1px solid #e1e3e5', backgroundColor: '#f8f9fa', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', alignItems: 'center' }}>
               
-              <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
+              <div style={{ flex: 1, maxWidth: '350px', position: 'relative' }}>
                 <FiSearch style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8c9196', width: '16px', height: '16px' }} />
                 <input 
                   type="text" 
-                  placeholder="Search invoices by ID, Client Name, or Email..." 
+                  placeholder="Search by ID, Client Name, Email, or Amount..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px', color: '#334155', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', background: '#fff' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input 
+                  type="date"
+                  value={filterStartDate}
+                  onChange={(e) => setFilterStartDate(e.target.value)}
+                  style={{ width: '125px', padding: '9px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '12px', color: '#334155', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', background: '#fff' }}
+                  title="Start Date"
+                />
+                <span style={{ color: '#8c9196', fontSize: '12px' }}>to</span>
+                <input 
+                  type="date"
+                  value={filterEndDate}
+                  onChange={(e) => setFilterEndDate(e.target.value)}
+                  style={{ width: '125px', padding: '9px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '12px', color: '#334155', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', background: '#fff' }}
+                  title="End Date"
                 />
               </div>
 
