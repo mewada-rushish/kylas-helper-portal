@@ -385,7 +385,11 @@ export class AutomationEngine {
         fetchOptions.body = bodyStr;
       }
 
-      await this.appendLog(`Calling API: ${method} ${finalUrl}`);
+      let logBody = null;
+      if (bodyStr && method !== "GET" && method !== "HEAD") {
+        try { logBody = JSON.parse(bodyStr); } catch(e) { logBody = bodyStr; }
+      }
+      await this.appendLog(`Calling API: ${method} ${finalUrl}`, logBody ? { requestBody: logBody } : null);
       const response = await fetch(finalUrl, fetchOptions);
       
       let data;
