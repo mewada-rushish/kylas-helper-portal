@@ -336,16 +336,18 @@ export default function WorkflowsPage() {
                   disabled={currentPage === 1} 
                   onClick={() => setCurrentPage(p => p - 1)} 
                   className={styles.pageBtn}
+                  title="Previous Page"
                 >
-                  <FiChevronLeft className={styles.pageIcon} /> Prev
+                  <FiChevronLeft className={styles.pageIcon} />
                 </button>
                 <div className={styles.pageTracker}>Page {currentPage} of {totalPages}</div>
                 <button 
                   disabled={currentPage === totalPages} 
                   onClick={() => setCurrentPage(p => p + 1)} 
                   className={styles.pageBtn}
+                  title="Next Page"
                 >
-                  Next <FiChevronRight className={styles.pageIcon} />
+                  <FiChevronRight className={styles.pageIcon} />
                 </button>
               </div>
             </div>
