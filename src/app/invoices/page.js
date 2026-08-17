@@ -35,6 +35,10 @@ export default function InvoicesListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [filterProduct, setFilterProduct] = useState("all");
 
@@ -232,6 +236,53 @@ export default function InvoicesListPage() {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
+  const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handleSelectInvoice = (id) => {
+    setSelectedInvoices(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const newIds = paginatedInvoices.map(inv => inv.id).filter(id => !selectedInvoices.includes(id));
+      setSelectedInvoices(prev => [...prev, ...newIds]);
+    } else {
+      const paginatedIds = paginatedInvoices.map(inv => inv.id);
+      setSelectedInvoices(prev => prev.filter(id => !paginatedIds.includes(id)));
+    }
+  };
+  
+  const allCurrentPageSelected = paginatedInvoices.length > 0 && paginatedInvoices.every(inv => selectedInvoices.includes(inv.id));
+
+  const confirmBulkDelete = async () => {
+    if (selectedInvoices.length === 0) return;
+    setIsBulkDeleting(true);
+    
+    try {
+      const res = await fetch(`/api/invoices/bulk`, { 
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedInvoices })
+      });
+      if (res.ok) {
+        toast.success(`${selectedInvoices.length} invoices deleted successfully`);
+        setSelectedInvoices([]);
+        setShowBulkDeleteModal(false);
+        fetchInvoices();
+      } else {
+        toast.error("Failed to delete invoices");
+      }
+    } catch (error) {
+      console.error("Error bulk deleting invoices:", error);
+      toast.error("An error occurred during bulk deletion");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   return (
     <div className={styles.adminLayout}>
       <Sidebar activeId="invoices" />
@@ -243,6 +294,11 @@ export default function InvoicesListPage() {
               <p>Track parameter-mapped operations billing ledger records synchronized downstream</p>
             </div>
             <div className={styles.headerActions}>
+              {selectedInvoices.length > 0 && (
+                <AdminButton variant="destructive" icon={FiTrash2} onClick={() => setShowBulkDeleteModal(true)} style={{ backgroundColor: '#e11d48', color: 'white', border: 'none' }}>
+                  Delete Selected ({selectedInvoices.length})
+                </AdminButton>
+              )}
               <AdminButton variant="secondary" icon={FiLayout} onClick={() => router.push("/invoices/templates")}>
                 Templates
               </AdminButton>
@@ -282,6 +338,14 @@ export default function InvoicesListPage() {
             <table className={styles.invoiceTableGrid}>
               <thead>
                 <tr>
+                  <th style={{ width: '40px', textAlign: 'center' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={allCurrentPageSelected}
+                      onChange={handleSelectAll}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </th>
                   <th>Invoice ID</th>
                   <th>Target Client Account</th>
                   <th>Date Generated</th>
@@ -292,19 +356,24 @@ export default function InvoicesListPage() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <SkeletonLoader type="table" rows={4} columns={6} />
+                  <SkeletonLoader type="table" rows={4} columns={7} />
                 ) : filteredInvoices.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: "center", padding: "32px", color: "#6b7280" }}>
+                    <td colSpan="7" style={{ textAlign: "center", padding: "32px", color: "#6b7280" }}>
                       No invoices found matching your criteria.
                     </td>
                   </tr>
                 ) : (
-                  (() => {
-                    const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
-                    const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-                    return paginatedInvoices.map((inv) => (
-                      <tr key={inv.id}>
+                  paginatedInvoices.map((inv) => (
+                      <tr key={inv.id} style={{ backgroundColor: selectedInvoices.includes(inv.id) ? '#f8fafc' : 'transparent' }}>
+                        <td style={{ textAlign: 'center' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedInvoices.includes(inv.id)}
+                            onChange={() => handleSelectInvoice(inv.id)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </td>
                         <td className={styles.fontCodeIdentity}>{inv.id}</td>
                         <td>
                           <div className={styles.customerStackCell}>
@@ -336,8 +405,7 @@ export default function InvoicesListPage() {
                           </div>
                         </td>
                       </tr>
-                    ));
-                  })()
+                    ))
                 )}
               </tbody>
             </table>
@@ -601,6 +669,26 @@ export default function InvoicesListPage() {
               label: "Cancel",
               onClick: () => setInvoiceToDelete(null),
               disabled: isDeleting
+            }}
+          />
+
+          <CentralizedModal
+            isOpen={showBulkDeleteModal}
+            onClose={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
+            type="alert"
+            variant="destructive"
+            title="Bulk Delete Invoices"
+            description={`Are you sure you want to permanently delete ${selectedInvoices.length} selected invoices? This action cannot be undone.`}
+            primaryAction={{
+              label: `Delete ${selectedInvoices.length} Invoices`,
+              onClick: confirmBulkDelete,
+              variant: "destructive",
+              loading: isBulkDeleting
+            }}
+            secondaryAction={{
+              label: "Cancel",
+              onClick: () => setShowBulkDeleteModal(false),
+              disabled: isBulkDeleting
             }}
           />
         </div>
