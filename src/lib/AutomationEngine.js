@@ -481,6 +481,15 @@ export class AutomationEngine {
     let periodStart = resolvedData.payment?.periodStart || resolvedData.periodStart || "";
     let periodEnd = resolvedData.payment?.periodEnd || resolvedData.periodEnd || "";
     
+    // Clean up literal "null" strings resulting from template interpolation
+    if (periodStart === "null") periodStart = "";
+    if (periodEnd === "null") periodEnd = "";
+    
+    // Format periodStart to remove time if it's an ISO string
+    if (periodStart && periodStart.includes('T')) {
+      periodStart = periodStart.split('T')[0];
+    }
+
     if (periodStart && !periodEnd) {
       const pName = productName.toLowerCase();
       let monthsToAdd = 1;
@@ -503,40 +512,48 @@ export class AutomationEngine {
         periodEnd = startDateObj.toISOString().split('T')[0];
       }
     }
+    
+    // Clean up payment date literal "null"
+    let pDate = resolvedData.payment?.date || resolvedData.date;
+    if (pDate === "null" || !pDate) {
+      pDate = new Date().toISOString().split('T')[0];
+    } else if (pDate.includes('T')) {
+      pDate = pDate.split('T')[0];
+    }
 
     const normalizedData = {
       ...resolvedData,
       invoice: {
+        ...resolvedData.invoice,
         id: invoiceId,
-        total: `₹${total.toLocaleString("en-IN")}`,
-        ...resolvedData.invoice
+        total: `₹${total.toLocaleString("en-IN")}`
       },
       customer: {
+        ...resolvedData.customer,
         name: resolvedData.customer?.name || "Unknown",
         email: resolvedData.customer?.email || "",
-        phone: resolvedData.customer?.phone || "",
-        ...resolvedData.customer
+        phone: resolvedData.customer?.phone || ""
       },
       current: {
-        date: resolvedData.date || resolvedData.current?.date || new Date().toISOString().split('T')[0],
-        ...resolvedData.current
+        ...resolvedData.current,
+        date: resolvedData.current?.date || resolvedData.date || new Date().toISOString().split('T')[0]
       },
       product: {
+        ...resolvedData.product,
         name: productName,
         rate: `₹${rawRate.toLocaleString("en-IN")}`,
-        qty,
-        ...resolvedData.product
+        qty
       },
       amount: {
-        words: resolvedData.amount?.words || resolvedData.amount_words || numberToWords(Math.round(total)),
-        ...resolvedData.amount
+        ...resolvedData.amount,
+        words: resolvedData.amount?.words || resolvedData.amount_words || numberToWords(Math.round(total))
       },
       payment: {
+        ...resolvedData.payment,
         method: resolvedData.payment?.method || "Cash",
-        date: resolvedData.payment?.date || resolvedData.date || new Date().toISOString().split('T')[0],
+        date: pDate,
         periodStart,
-        periodEnd,
-        ...resolvedData.payment
+        periodEnd
       },
       memberId: resolvedData.memberId || ""
     };
