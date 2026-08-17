@@ -65,6 +65,16 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
         }
       }
     } else {
+      // Create a local .tmp directory in the project root to bypass /tmp noexec constraints
+      const customTmpDir = process.cwd() + '/.tmp';
+      if (!fs.existsSync(customTmpDir)) {
+        fs.mkdirSync(customTmpDir, { recursive: true });
+      }
+      // Force os.tmpdir() to use our local .tmp directory instead of /tmp
+      process.env.TMPDIR = customTmpDir;
+      process.env.TMP = customTmpDir;
+      process.env.TEMP = customTmpDir;
+
       const chromiumModule = requireNode(sCorePkg);
       sparticuz = chromiumModule.default || chromiumModule;
       executablePath = await sparticuz.executablePath();
