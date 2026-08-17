@@ -388,3 +388,13 @@
   cursor: not-allowed;
   background-color: #fafbfc;
 }
+
+.pageSizeDropdownTrigger {
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  width: 64px !important;
+  background-color: #f8fafc !important;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  height: 28px !important;
+}

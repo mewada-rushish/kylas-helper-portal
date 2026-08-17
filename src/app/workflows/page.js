@@ -309,26 +309,18 @@ export default function WorkflowsPage() {
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
                   <span style={{ fontSize: '12px', color: '#8c9196', fontFamily: 'var(--font-poppins), sans-serif' }}>Show:</span>
-                  <select 
-                    value={itemsPerPage} 
-                    onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                    style={{ 
-                      padding: '4px 8px', 
-                      borderRadius: '8px', 
-                      border: '1px solid #e2e8f0', 
-                      fontSize: '12px', 
-                      background: '#f8fafc', 
-                      color: '#202223', 
-                      fontFamily: 'var(--font-poppins), sans-serif',
-                      cursor: 'pointer' 
-                    }}
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
+                  <Dropdown 
+                    options={[
+                      { value: 5, label: "5" },
+                      { value: 10, label: "10" },
+                      { value: 20, label: "20" },
+                      { value: 50, label: "50" },
+                      { value: 100, label: "100" }
+                    ]} 
+                    selectedValue={itemsPerPage} 
+                    onSelect={(val) => { setItemsPerPage(Number(val)); setCurrentPage(1); }}
+                    triggerClassName={styles.pageSizeDropdownTrigger}
+                  />
                 </div>
               </div>
               <div className={styles.paginationControls}>
