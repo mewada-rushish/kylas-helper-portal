@@ -197,7 +197,11 @@ export class AutomationEngine {
           }
         } else if (node.type === 'generate_invoice') {
           const stepResult = await this.executeGenerateInvoiceNode(node, context);
-          context[`step_${node.id}`] = stepResult;
+          if (node.outputVariableName) {
+            context[`step_${node.id}`] = { [node.outputVariableName]: stepResult };
+          } else {
+            context[`step_${node.id}`] = stepResult;
+          }
         }
 
         // Save updated context
