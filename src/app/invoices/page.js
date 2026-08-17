@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2 } from "react-icons/fi";
+import { toast } from "react-hot-toast";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
+import CentralizedModal from "@/components/ui/modal/modal";
 import styles from "./invoices.module.css";
 import { resolveToken } from "@/lib/variable-resolver";
 
@@ -26,6 +28,8 @@ export default function InvoicesListPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [invoiceModalMode, setInvoiceModalOpen] = useState(null); 
   const [activeInvoice, setActiveInvoice] = useState(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [defaultTemplate, setDefaultTemplate] = useState(null);
   const [systemSettings, setSystemSettings] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -170,19 +174,28 @@ export default function InvoicesListPage() {
     }
   };
 
-  const handleDeleteInvoice = async (invoiceId) => {
-    if (!window.confirm("Are you sure you want to delete this invoice? This action cannot be undone.")) return;
+  const handleDeleteInvoice = (invoiceId) => {
+    setInvoiceToDelete(invoiceId);
+  };
+
+  const confirmDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    setIsDeleting(true);
     
     try {
-      const res = await fetch(`/api/invoices/${invoiceId}`, { method: "DELETE" });
+      const res = await fetch(`/api/invoices/${invoiceToDelete}`, { method: "DELETE" });
       if (res.ok) {
+        toast.success("Invoice deleted successfully");
         fetchInvoices();
       } else {
-        alert("Failed to delete invoice");
+        toast.error("Failed to delete invoice");
       }
     } catch (error) {
       console.error("Error deleting invoice:", error);
-      alert("Error deleting invoice");
+      toast.error("An error occurred while deleting the invoice");
+    } finally {
+      setIsDeleting(false);
+      setInvoiceToDelete(null);
     }
   };
 
@@ -493,6 +506,26 @@ export default function InvoicesListPage() {
               </div>
             </div>
           )}
+
+          <CentralizedModal
+            isOpen={!!invoiceToDelete}
+            onClose={() => !isDeleting && setInvoiceToDelete(null)}
+            type="alert"
+            variant="destructive"
+            title="Delete Invoice"
+            description="Are you sure you want to delete this invoice? This action cannot be undone and the invoice record will be permanently removed."
+            primaryAction={{
+              label: "Delete",
+              onClick: confirmDeleteInvoice,
+              variant: "destructive",
+              loading: isDeleting
+            }}
+            secondaryAction={{
+              label: "Cancel",
+              onClick: () => setInvoiceToDelete(null),
+              disabled: isDeleting
+            }}
+          />
         </div>
       </main>
     </div>
