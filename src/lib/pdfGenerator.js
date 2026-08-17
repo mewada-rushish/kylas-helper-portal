@@ -1,6 +1,7 @@
 import Handlebars from 'handlebars';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import prisma from './prisma';
+import puppeteer from 'puppeteer-core';
 import fs from 'fs';
 
 export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templateId) {
@@ -58,9 +59,6 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
       sparticuz = chromiumModule.default || chromiumModule;
       executablePath = await sparticuz.executablePath();
     }
-
-    const puppeteerModule = await import('puppeteer-core');
-    const puppeteer = puppeteerModule.default || puppeteerModule;
 
     browser = await puppeteer.launch({
       args: isLocal ? [] : sparticuz.args,
