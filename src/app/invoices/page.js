@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -34,6 +34,25 @@ export default function InvoicesListPage() {
   const [systemSettings, setSystemSettings] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterProduct, setFilterProduct] = useState("all");
+
+  const filteredInvoices = invoices.filter(inv => {
+    const matchesSearch = 
+      !searchQuery || 
+      inv.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (inv.customer && inv.customer.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (inv.email && inv.email.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+    const matchesProduct = filterProduct === "all" || inv.productId === filterProduct;
+    
+    return matchesSearch && matchesProduct;
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterProduct]);
 
   const fetchInvoices = () => {
     setIsLoading(true);
@@ -234,6 +253,32 @@ export default function InvoicesListPage() {
           </header>
 
           <div className={styles.tableCardFrame}>
+            <div style={{ display: 'flex', gap: '16px', padding: '20px', borderBottom: '1px solid #e1e3e5', backgroundColor: '#fff', borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <FiSearch style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8c9196' }} />
+                <input 
+                  type="text" 
+                  placeholder="Search by Invoice ID, Client Name, or Email..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: '6px', border: '1px solid #e1e3e5', outline: 'none', fontSize: '14px' }}
+                />
+              </div>
+              <div style={{ width: '300px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FiFilter style={{ color: '#8c9196' }} />
+                <select 
+                  value={filterProduct} 
+                  onChange={(e) => setFilterProduct(e.target.value)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e1e3e5', outline: 'none', fontSize: '14px', background: '#fff' }}
+                >
+                  <option value="all">All Products</option>
+                  {KYLAS_PRODUCTS.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <table className={styles.invoiceTableGrid}>
               <thead>
                 <tr>
@@ -248,16 +293,16 @@ export default function InvoicesListPage() {
               <tbody>
                 {isLoading ? (
                   <SkeletonLoader type="table" rows={4} columns={6} />
-                ) : invoices.length === 0 ? (
+                ) : filteredInvoices.length === 0 ? (
                   <tr>
                     <td colSpan="6" style={{ textAlign: "center", padding: "32px", color: "#6b7280" }}>
-                      No invoices found. Generate a new invoice to get started.
+                      No invoices found matching your criteria.
                     </td>
                   </tr>
                 ) : (
                   (() => {
-                    const totalPages = Math.max(1, Math.ceil(invoices.length / itemsPerPage));
-                    const paginatedInvoices = invoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                    const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
+                    const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
                     return paginatedInvoices.map((inv) => (
                       <tr key={inv.id}>
                         <td className={styles.fontCodeIdentity}>{inv.id}</td>
@@ -299,12 +344,12 @@ export default function InvoicesListPage() {
 
             {/* Pagination Controls */}
             {(() => {
-              const totalPages = Math.max(1, Math.ceil(invoices.length / itemsPerPage));
+              const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
               return (
                 <div className={styles.paginationWrapper}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span className={styles.pageInfo}>
-                      Showing {invoices.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, invoices.length)} of {invoices.length} entries
+                      Showing {filteredInvoices.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredInvoices.length)} of {filteredInvoices.length} entries
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
                       <span style={{ fontSize: '12px', color: '#8c9196', fontFamily: 'var(--font-poppins), sans-serif' }}>Show:</span>
