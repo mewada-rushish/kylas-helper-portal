@@ -2,6 +2,7 @@ import Handlebars from 'handlebars';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import prisma from './prisma';
 import fs from 'fs';
+import { createRequire } from 'module';
 
 export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templateId) {
   // Find template
@@ -45,9 +46,10 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     // Opaque strings to completely hide from Turbopack and prevent chunk generation
     const pCorePkg = "puppeteer-core";
     const sCorePkg = "@sparticuz/chromium";
+    const requireNode = createRequire(import.meta.url);
 
     // Load puppeteer-core natively without Turbopack chunking
-    const pModule = await import(pCorePkg);
+    const pModule = requireNode(pCorePkg);
     puppeteer = pModule.default || pModule;
     
     if (isLocal) {
@@ -63,7 +65,7 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
         }
       }
     } else {
-      const chromiumModule = await import(sCorePkg);
+      const chromiumModule = requireNode(sCorePkg);
       sparticuz = chromiumModule.default || chromiumModule;
       executablePath = await sparticuz.executablePath();
     }
