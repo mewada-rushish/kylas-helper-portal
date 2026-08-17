@@ -139,8 +139,8 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
     groupedFields.push({ stepId: t.id, stepTitle: t.title || "Workflow Trigger", type: 'trigger', fields });
   });
 
-  // 2. Process Actions
-  ancestorNodes.filter(n => n.type === 'action').forEach(n => {
+  // 2. Process Actions and Invoice Generators
+  ancestorNodes.filter(n => ['action', 'generate_invoice'].includes(n.type)).forEach(n => {
     let fields = [];
     
     if (n.outputVariableName) {
@@ -181,7 +181,7 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
       };
       extractKeys(sampleObj, "");
     }
-    groupedFields.push({ stepId: n.id, stepTitle: n.title || "API Call", type: 'action', fields });
+    groupedFields.push({ stepId: n.id, stepTitle: n.title || (n.type === 'generate_invoice' ? 'Generate Invoice' : 'API Call'), type: n.type === 'generate_invoice' ? 'generate_invoice' : 'action', fields });
   });
 
   // 3. System Variables
