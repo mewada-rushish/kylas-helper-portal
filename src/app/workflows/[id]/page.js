@@ -630,10 +630,10 @@ export default function WorkflowCanvasEngine() {
       }
     });
 
-    nodes.filter(n => n.type === 'action' && n.outputVariableName).forEach(n => {
+    nodes.filter(n => ['action', 'generate_invoice'].includes(n.type) && n.outputVariableName).forEach(n => {
       allFields.push({ 
         value: `step_${n.id}.${n.outputVariableName}`, 
-        label: `${n.title || 'Action'}: ${n.outputVariableName}` 
+        label: `${n.title || (n.type === 'generate_invoice' ? 'Generate Invoice' : 'Action')}: ${n.outputVariableName}` 
       });
     });
 
@@ -1642,6 +1642,19 @@ export default function WorkflowCanvasEngine() {
                                 </div>
                               );
                             })()}
+                            
+                            <div style={{ marginTop: '16px' }}>
+                              <label>Save Output As Variable</label>
+                              <input 
+                                type="text" 
+                                className={styles.canvasBlockTextInputCond} 
+                                placeholder="e.g. generated_invoice" 
+                                style={{ marginTop: '4px', width: '100%' }}
+                                value={node.outputVariableName || ""} 
+                                onChange={(e) => setNodes(prev => prev.map(n => n.id === node.id ? { ...n, outputVariableName: e.target.value } : n))}
+                              />
+                              <p className={styles.nodeHelpText} style={{ marginTop: '4px' }}>This variable will be available to subsequent blocks.</p>
+                            </div>
                             
                             <div 
                               className={styles.socketAnchorPlugSource}
