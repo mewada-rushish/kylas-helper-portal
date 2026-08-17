@@ -7,7 +7,7 @@ import {
   FiLayout, FiCreditCard, FiSettings, FiArrowLeft, FiClock, 
   FiMove, FiGrid, FiPlus, FiList, FiCheckCircle, FiAlertCircle,
   FiCode, FiFileText, FiMinus, FiX, FiLoader, FiMoreVertical,
-  FiActivity, FiChevronDown, FiCheck, FiRotateCcw
+  FiActivity, FiChevronDown, FiCheck, FiRotateCcw, FiCopy
 } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -1792,7 +1792,24 @@ export default function WorkflowCanvasEngine() {
                       <p className={styles.inspectorHelpGuideText}>Review the step-by-step logs and variable context below.</p>
                       
                       <div className={styles.jsonBlockWrapperContainer}>
-                        <div className={styles.jsonBlockTitleLabel}><FiCode /> Context Data</div>
+                        <div className={styles.jsonBlockTitleLabel} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiCode /> Context Data</span>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const text = (() => {
+                                try { return JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
+                                catch(e) { return selectedLog.context; }
+                              })();
+                              navigator.clipboard.writeText(text);
+                              toast.success("Copied context data to clipboard!");
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: '#8c9196', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', borderRadius: '4px' }}
+                            title="Copy Context Data"
+                          >
+                            <FiCopy size={14} />
+                          </button>
+                        </div>
                         <pre className={styles.jsonPreformattingBlock}>
                           {(() => {
                             try { return JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
@@ -1802,7 +1819,24 @@ export default function WorkflowCanvasEngine() {
                       </div>
 
                       <div className={styles.jsonBlockWrapperContainer}>
-                        <div className={styles.jsonBlockTitleLabel}><FiGrid /> Execution Trace Logs</div>
+                        <div className={styles.jsonBlockTitleLabel} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiGrid /> Execution Trace Logs</span>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const text = (() => {
+                                try { return JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
+                                catch(e) { return selectedLog.logs; }
+                              })();
+                              navigator.clipboard.writeText(text);
+                              toast.success("Copied execution trace logs to clipboard!");
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: '#8c9196', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', borderRadius: '4px' }}
+                            title="Copy Execution Trace Logs"
+                          >
+                            <FiCopy size={14} />
+                          </button>
+                        </div>
                         <pre className={styles.jsonPreformattingBlock}>
                           {(() => {
                             try { return JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
