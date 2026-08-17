@@ -29,7 +29,7 @@ export default function WorkflowsPage() {
   const [workflowToDelete, setWorkflowToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchWorkflows = async () => {
     setIsLoading(true);
@@ -303,9 +303,34 @@ export default function WorkflowsPage() {
             </div>
 
             <div className={styles.paginationWrapper}>
-              <span className={styles.pageInfo}>
-                Showing {filteredWorkflows.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredWorkflows.length)} of {filteredWorkflows.length} entries
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className={styles.pageInfo}>
+                  Showing {filteredWorkflows.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredWorkflows.length)} of {filteredWorkflows.length} entries
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
+                  <span style={{ fontSize: '12px', color: '#8c9196', fontFamily: 'var(--font-poppins), sans-serif' }}>Show:</span>
+                  <select 
+                    value={itemsPerPage} 
+                    onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                    style={{ 
+                      padding: '4px 8px', 
+                      borderRadius: '8px', 
+                      border: '1px solid #e2e8f0', 
+                      fontSize: '12px', 
+                      background: '#f8fafc', 
+                      color: '#202223', 
+                      fontFamily: 'var(--font-poppins), sans-serif',
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
               <div className={styles.paginationControls}>
                 <button 
                   disabled={currentPage === 1} 

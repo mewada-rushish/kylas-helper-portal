@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiLoader, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
@@ -28,6 +28,8 @@ export default function InvoicesListPage() {
   const [activeInvoice, setActiveInvoice] = useState(null);
   const [defaultTemplate, setDefaultTemplate] = useState(null);
   const [systemSettings, setSystemSettings] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchInvoices = () => {
     setIsLoading(true);
@@ -210,40 +212,98 @@ export default function InvoicesListPage() {
                     </td>
                   </tr>
                 ) : (
-                  invoices.map((inv) => (
-                    <tr key={inv.id}>
-                      <td className={styles.fontCodeIdentity}>{inv.id}</td>
-                      <td>
-                        <div className={styles.customerStackCell}>
-                          <span className={styles.custPrimaryName}>{inv.customer}</span>
-                          <span className={styles.custSubEmail}>{inv.email}</span>
-                        </div>
-                      </td>
-                      <td className={styles.dateStampCell}>{inv.date}</td>
-                      <td className={styles.productCell}>
-                        {KYLAS_PRODUCTS.find(p => p.value === inv.productId)?.label || inv.productId}
-                      </td>
-                      <td className={styles.valueTotalBoldCell}>₹{inv.total.toLocaleString("en-IN")}</td>
-                      <td>
-                        <div className={styles.actionsCellRow}>
-                          {inv.pdfUrl && (
-                            <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className={styles.iconActionBtn} title="Download PDF" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <FiDownload />
-                            </a>
-                          )}
-                          <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("view", inv)} title="Preview Invoice parameters">
-                            <FiEye />
-                          </button>
-                          <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("edit", inv)} title="Update Baseline Parameters">
-                            <FiEdit2 />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  (() => {
+                    const totalPages = Math.max(1, Math.ceil(invoices.length / itemsPerPage));
+                    const paginatedInvoices = invoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                    return paginatedInvoices.map((inv) => (
+                      <tr key={inv.id}>
+                        <td className={styles.fontCodeIdentity}>{inv.id}</td>
+                        <td>
+                          <div className={styles.customerStackCell}>
+                            <span className={styles.custPrimaryName}>{inv.customer}</span>
+                            <span className={styles.custSubEmail}>{inv.email}</span>
+                          </div>
+                        </td>
+                        <td className={styles.dateStampCell}>{inv.date}</td>
+                        <td className={styles.productCell}>
+                          {KYLAS_PRODUCTS.find(p => p.value === inv.productId)?.label || inv.productId}
+                        </td>
+                        <td className={styles.valueTotalBoldCell}>₹{inv.total.toLocaleString("en-IN")}</td>
+                        <td>
+                          <div className={styles.actionsCellRow}>
+                            {inv.pdfUrl && (
+                              <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className={styles.iconActionBtn} title="Download PDF" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <FiDownload />
+                              </a>
+                            )}
+                            <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("view", inv)} title="Preview Invoice parameters">
+                              <FiEye />
+                            </button>
+                            <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("edit", inv)} title="Update Baseline Parameters">
+                              <FiEdit2 />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ));
+                  })()
                 )}
               </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            {(() => {
+              const totalPages = Math.max(1, Math.ceil(invoices.length / itemsPerPage));
+              return (
+                <div className={styles.paginationWrapper}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span className={styles.pageInfo}>
+                      Showing {invoices.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, invoices.length)} of {invoices.length} entries
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
+                      <span style={{ fontSize: '12px', color: '#8c9196', fontFamily: 'var(--font-poppins), sans-serif' }}>Show:</span>
+                      <select 
+                        value={itemsPerPage} 
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        style={{ 
+                          padding: '4px 8px', 
+                          borderRadius: '8px', 
+                          border: '1px solid #e2e8f0', 
+                          fontSize: '12px', 
+                          background: '#f8fafc', 
+                          color: '#202223', 
+                          fontFamily: 'var(--font-poppins), sans-serif',
+                          cursor: 'pointer' 
+                        }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className={styles.paginationControls}>
+                    <button 
+                      disabled={currentPage === 1} 
+                      onClick={() => setCurrentPage(p => p - 1)} 
+                      className={styles.pageBtn}
+                    >
+                      <FiChevronLeft className={styles.pageIcon} /> Prev
+                    </button>
+                    <div className={styles.pageTracker}>Page {currentPage} of {totalPages}</div>
+                    <button 
+                      disabled={currentPage === totalPages} 
+                      onClick={() => setCurrentPage(p => p + 1)} 
+                      className={styles.pageBtn}
+                    >
+                      Next <FiChevronRight className={styles.pageIcon} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {invoiceModalMode && (

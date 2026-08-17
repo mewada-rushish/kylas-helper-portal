@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiEye, FiEdit2, FiTrash2, FiArrowLeft } from "react-icons/fi";
+import { FiPlus, FiEye, FiEdit2, FiTrash2, FiArrowLeft, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
@@ -24,6 +24,8 @@ export default function TemplatesListingDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [systemSettings, setSystemSettings] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchTemplates = async () => {
     setIsLoading(true);
@@ -109,40 +111,98 @@ export default function TemplatesListingDashboard() {
                     </td>
                   </tr>
                 ) : (
-                  templates.map((tmpl) => {
-                    const linkedProduct = KYLAS_PRODUCTS.find(p => p.value === tmpl.attachedProductId);
-                    return (
-                      <tr key={tmpl.id}>
-                        <td className={styles.custPrimaryName}>{tmpl.name}</td>
-                        <td className={styles.dateStampCell}>
-                          {tmpl.isDefault ? "Global Core Fallback Configuration Layer" : `Exclusive Product Overwrite: ${linkedProduct?.label || "Alternative General"}`}
-                        </td>
-                        <td>
-                          <span className={`${styles.statusLabelBadge} ${tmpl.isDefault ? styles.statusActive : styles.statusMapped}`}>
-                            {tmpl.isDefault ? "Standard Default Blueprint" : "Dynamic Override Registered"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.actionsCellRow}>
-                            <button className={styles.iconActionBtn} onClick={() => setPreviewTemplate(tmpl)} title="View Layout Blueprint">
-                              <FiEye />
-                            </button>
-                            <button className={styles.iconActionBtn} onClick={() => router.push(`/invoices/templates/${tmpl.id}`)} title="Open Template Designer">
-                              <FiEdit2 />
-                            </button>
-                            {!tmpl.isDefault && (
-                              <button className={styles.iconActionBtn} onClick={() => handleDelete(tmpl.id)} title="Delete Blueprint">
-                                <FiTrash2 />
+                  (() => {
+                    const totalPages = Math.max(1, Math.ceil(templates.length / itemsPerPage));
+                    const paginatedTemplates = templates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                    return paginatedTemplates.map((tmpl) => {
+                      const linkedProduct = KYLAS_PRODUCTS.find(p => p.value === tmpl.attachedProductId);
+                      return (
+                        <tr key={tmpl.id}>
+                          <td className={styles.custPrimaryName}>{tmpl.name}</td>
+                          <td className={styles.dateStampCell}>
+                            {tmpl.isDefault ? "Global Core Fallback Configuration Layer" : `Exclusive Product Overwrite: ${linkedProduct?.label || "Alternative General"}`}
+                          </td>
+                          <td>
+                            <span className={`${styles.statusLabelBadge} ${tmpl.isDefault ? styles.statusActive : styles.statusMapped}`}>
+                              {tmpl.isDefault ? "Standard Default Blueprint" : "Dynamic Override Registered"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actionsCellRow}>
+                              <button className={styles.iconActionBtn} onClick={() => setPreviewTemplate(tmpl)} title="View Layout Blueprint">
+                                <FiEye />
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                              <button className={styles.iconActionBtn} onClick={() => router.push(`/invoices/templates/${tmpl.id}`)} title="Open Template Designer">
+                                <FiEdit2 />
+                              </button>
+                              {!tmpl.isDefault && (
+                                <button className={styles.iconActionBtn} onClick={() => handleDelete(tmpl.id)} title="Delete Blueprint">
+                                  <FiTrash2 />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()
                 )}
               </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            {(() => {
+              const totalPages = Math.max(1, Math.ceil(templates.length / itemsPerPage));
+              return (
+                <div className={styles.paginationWrapper}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span className={styles.pageInfo}>
+                      Showing {templates.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, templates.length)} of {templates.length} entries
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
+                      <span style={{ fontSize: '12px', color: '#8c9196', fontFamily: 'var(--font-poppins), sans-serif' }}>Show:</span>
+                      <select 
+                        value={itemsPerPage} 
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        style={{ 
+                          padding: '4px 8px', 
+                          borderRadius: '8px', 
+                          border: '1px solid #e2e8f0', 
+                          fontSize: '12px', 
+                          background: '#f8fafc', 
+                          color: '#202223', 
+                          fontFamily: 'var(--font-poppins), sans-serif',
+                          cursor: 'pointer' 
+                        }}
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className={styles.paginationControls}>
+                    <button 
+                      disabled={currentPage === 1} 
+                      onClick={() => setCurrentPage(p => p - 1)} 
+                      className={styles.pageBtn}
+                    >
+                      <FiChevronLeft className={styles.pageIcon} /> Prev
+                    </button>
+                    <div className={styles.pageTracker}>Page {currentPage} of {totalPages}</div>
+                    <button 
+                      disabled={currentPage === totalPages} 
+                      onClick={() => setCurrentPage(p => p + 1)} 
+                      className={styles.pageBtn}
+                    >
+                      Next <FiChevronRight className={styles.pageIcon} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {previewTemplate && (
