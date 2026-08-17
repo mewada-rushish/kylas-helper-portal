@@ -49,7 +49,7 @@ function evaluateTemplate(template, context) {
 
   // 2. String interpolation (e.g., "Hello {{payload.user.name}}")
   if (template.includes('{{')) {
-    return template.replace(/\{\{([\w.]+)\}\}/g, (match, path) => {
+    return template.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
       const val = resolveContextVariable(path, context);
       return val !== undefined ? (typeof val === 'object' ? JSON.stringify(val) : String(val)) : "";
     });
@@ -521,16 +521,7 @@ export class AutomationEngine {
       pDate = pDate.split('T')[0];
     }
 
-    const formatDDMMYYYY = (isoStr) => {
-      if (!isoStr) return "";
-      let dStr = isoStr;
-      if (dStr.includes('T')) dStr = dStr.split('T')[0];
-      const parts = dStr.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]} / ${parts[1]} / ${parts[0]}`;
-      }
-      return isoStr;
-    };
+
 
     const normalizedData = {
       ...resolvedData,
@@ -569,20 +560,9 @@ export class AutomationEngine {
       memberId: resolvedData.memberId || ""
     };
 
-    const pdfTemplateData = {
-      ...normalizedData,
-      current: { ...normalizedData.current, date: formatDDMMYYYY(normalizedData.current.date) },
-      payment: {
-        ...normalizedData.payment,
-        date: formatDDMMYYYY(normalizedData.payment.date),
-        periodStart: formatDDMMYYYY(normalizedData.payment.periodStart),
-        periodEnd: formatDDMMYYYY(normalizedData.payment.periodEnd)
-      }
-    };
-
     await this.appendLog("Generating PDF using Puppeteer...", { invoiceId });
 
-    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, pdfTemplateData, node.templateId);
+    const { publicUrl, htmlOutput } = await generateAndUploadInvoicePDF(invoiceId, normalizedData, node.templateId);
 
     // Save to the database
     try {

@@ -23,6 +23,25 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
   });
   resolvedData.settings = systemSettings || {};
 
+  const dateFormat = systemSettings?.dateFormat || "YYYY-MM-DD";
+  const formatWithSetting = (dateStr) => {
+    if (!dateStr) return "";
+    let dStr = dateStr;
+    if (dStr.includes('T')) dStr = dStr.split('T')[0];
+    const parts = dStr.split('-');
+    if (parts.length === 3) {
+      if (dateFormat === "DD/MM/YYYY") return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      if (dateFormat === "DD-MM-YYYY") return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      if (dateFormat === "MM/DD/YYYY") return `${parts[1]}/${parts[2]}/${parts[0]}`;
+    }
+    return dateStr;
+  };
+
+  if (resolvedData.current?.date) resolvedData.current.date = formatWithSetting(resolvedData.current.date);
+  if (resolvedData.payment?.date) resolvedData.payment.date = formatWithSetting(resolvedData.payment.date);
+  if (resolvedData.payment?.periodStart) resolvedData.payment.periodStart = formatWithSetting(resolvedData.payment.periodStart);
+  if (resolvedData.payment?.periodEnd) resolvedData.payment.periodEnd = formatWithSetting(resolvedData.payment.periodEnd);
+
   const compiledTemplate = Handlebars.compile(template.config || "");
   let htmlOutput = compiledTemplate(resolvedData);
 

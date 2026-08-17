@@ -351,7 +351,25 @@ export default function InvoicesListPage() {
                         <div 
                           id="invoice-preview-container"
                           className={styles.pdfInvoiceLayoutContainerMock}
-                          dangerouslySetInnerHTML={{ __html: resolveToken(defaultTemplate.config, { ...activeInvoice, settings: systemSettings || {} }) }}
+                          dangerouslySetInnerHTML={{ 
+                      __html: resolveToken(defaultTemplate.config, { 
+                        ...activeInvoice,
+                        customer: { name: activeInvoice.customer, email: activeInvoice.email },
+                        current: { date: activeInvoice.date ? activeInvoice.date.split('T')[0] : "" },
+                        payment: {
+                          periodStart: activeInvoice.periodStart || "",
+                          periodEnd: activeInvoice.periodEnd || "",
+                          date: activeInvoice.paymentDate || "",
+                          method: activeInvoice.paymentMethod || "",
+                          bankName: activeInvoice.paymentBankName || "",
+                          referenceNo: activeInvoice.paymentReferenceNo || ""
+                        },
+                        invoice: { id: activeInvoice.id, total: `₹${Number(activeInvoice.total).toLocaleString("en-IN")}` },
+                        product: { name: KYLAS_PRODUCTS[activeInvoice.productId] || activeInvoice.productId },
+                        amount: { words: activeInvoice.amountWords || "" },
+                        settings: systemSettings || {} 
+                      }) 
+                    }}
                         />
                       ) : (
                         <div id="invoice-preview-container" className={styles.pdfInvoiceLayoutContainerMock} style={{ backgroundColor: FALLBACK_THEME.backgroundColor, color: FALLBACK_THEME.textColor, padding: "40px" }}>
