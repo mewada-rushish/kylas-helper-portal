@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function POST(request, { params }) {
+  let routeId = null;
+  let execId = null;
   try {
     const { id, executionId } = await params;
+    routeId = id;
+    execId = executionId;
 
     // Fetch the original execution
     const execution = await prisma.workflowExecution.findUnique({
@@ -40,11 +44,13 @@ export async function POST(request, { params }) {
     return NextResponse.json({ success: true, message: "Workflow rerun initiated", newExecutionId: engine.executionLog.id });
   } catch (error) {
     console.error('Error rerunning workflow:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : null;
     return NextResponse.json({ 
       success: false, 
-      error: error.message,
-      stack: error.stack,
-      debug: { id, executionId }
+      error: msg,
+      stack: stack,
+      debug: { routeId, execId }
     }, { status: 500 });
   }
 }
