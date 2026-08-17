@@ -38,7 +38,7 @@ export async function POST(request) {
     // generate ID if not provided, just in case
     const id = body.id || `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const newInvoice = await prisma.invoice.create({
+    let newInvoice = await prisma.invoice.create({
       data: {
         id: id,
         customer: body.customer,
@@ -58,6 +58,39 @@ export async function POST(request) {
         periodEnd: body.payment?.periodEnd
       }
     });
+
+    const KYLAS_PRODUCTS = {
+      "prod_crm_ent": "Kylas CRM Premium Enterprise License",
+      "prod_iot_node": "Smart Home IoT Sensor Node (AsmitA Hub)",
+      "prod_bbps_gw": "BBPS Settlement Core Gateway API",
+      "prod_devops_supp": "Dedicated Cloud DevOps Maintenance Hours"
+    };
+    const productName = KYLAS_PRODUCTS[newInvoice.productId] || newInvoice.productId;
+
+    const resolvedData = {
+      customer: { name: newInvoice.customer, email: newInvoice.email },
+      current: { date: newInvoice.date ? new Date(newInvoice.date).toISOString().split('T')[0] : "" },
+      product: { name: productName, rate: `₹${newInvoice.rate.toLocaleString("en-IN")}`, qty: newInvoice.qty },
+      invoice: { id: id, subtotal: `₹${newInvoice.rate.toLocaleString("en-IN")}`, total: `₹${newInvoice.total.toLocaleString("en-IN")}` },
+      memberId: newInvoice.memberId,
+      amount: { words: newInvoice.amountWords },
+      payment: {
+        method: newInvoice.paymentMethod,
+        referenceNo: newInvoice.paymentReferenceNo,
+        bankName: newInvoice.paymentBankName,
+        date: newInvoice.paymentDate,
+        periodStart: newInvoice.periodStart,
+        periodEnd: newInvoice.periodEnd
+      }
+    };
+
+    try {
+      const { generateAndUploadInvoicePDF } = require('@/lib/pdfGenerator');
+      const { publicUrl } = await generateAndUploadInvoicePDF(id, resolvedData);
+      newInvoice = await prisma.invoice.update({ where: { id: id }, data: { pdfUrl: publicUrl } });
+    } catch (pdfErr) {
+      console.error("Failed to generate PDF on create:", pdfErr);
+    }
 
     return NextResponse.json(newInvoice, { status: 201 });
   } catch (error) {

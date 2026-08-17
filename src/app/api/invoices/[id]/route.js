@@ -31,11 +31,19 @@ export async function PUT(request, { params }) {
       }
     });
 
+    const KYLAS_PRODUCTS = {
+      "prod_crm_ent": "Kylas CRM Premium Enterprise License",
+      "prod_iot_node": "Smart Home IoT Sensor Node (AsmitA Hub)",
+      "prod_bbps_gw": "BBPS Settlement Core Gateway API",
+      "prod_devops_supp": "Dedicated Cloud DevOps Maintenance Hours"
+    };
+    const productName = KYLAS_PRODUCTS[updatedInvoice.productId] || updatedInvoice.productId;
+
     const resolvedData = {
       customer: { name: updatedInvoice.customer, email: updatedInvoice.email },
-      current: { date: updatedInvoice.date },
-      product: { name: updatedInvoice.productId },
-      invoice: { subtotal: updatedInvoice.rate, total: updatedInvoice.total },
+      current: { date: updatedInvoice.date ? new Date(updatedInvoice.date).toISOString().split('T')[0] : "" },
+      product: { name: productName, rate: `₹${updatedInvoice.rate.toLocaleString("en-IN")}`, qty: updatedInvoice.qty },
+      invoice: { id: id, subtotal: `₹${updatedInvoice.rate.toLocaleString("en-IN")}`, total: `₹${updatedInvoice.total.toLocaleString("en-IN")}` },
       memberId: updatedInvoice.memberId,
       amount: { words: updatedInvoice.amountWords },
       payment: {
