@@ -20,7 +20,7 @@ export default function GeneralSettings() {
   // Component state definitions
   const [logoPreview, setLogoPreview] = useState(null);
   const [companyName, setCompanyName] = useState("");
-    const [authorizedSignatory, setAuthorizedSignatory] = useState("");
+    const [signaturePreview, setSignaturePreview] = useState(null);
     const [companyAddress, setCompanyAddress] = useState("");
     const [contactNumber, setContactNumber] = useState("");
 
@@ -83,7 +83,7 @@ export default function GeneralSettings() {
         const data = await res.json();
 
         setCompanyName(data.companyName || "");
-        setAuthorizedSignatory(data.authorizedSignatory || "");
+        setSignaturePreview(data.signatureUrl || null);
         setCompanyAddress(data.companyAddress || "");
         setContactNumber(data.contactNumber || "");
         setInvoicePrefixBase(data.invoicePrefixBase || "INV");
@@ -108,7 +108,6 @@ export default function GeneralSettings() {
     fetchSettings();
   }, []);
 
-  // File upload handling
   const handleLogoFileIntercept = (e) => {
     const assetFile = e.target.files[0];
     if (assetFile) {
@@ -124,6 +123,21 @@ export default function GeneralSettings() {
     }
   };
 
+  const handleSignatureFileIntercept = (e) => {
+    const assetFile = e.target.files[0];
+    if (assetFile) {
+      if (assetFile.size > 2 * 1024 * 1024) {
+        toast.error("File size must not exceed 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result); // Base64 encoded string
+      };
+      reader.readAsDataURL(assetFile);
+    }
+  };
+
   // Save Settings handler
   const handleSaveSettings = async () => {
     setIsSaving(true);
@@ -133,7 +147,7 @@ export default function GeneralSettings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           companyName,
-          authorizedSignatory,
+          signatureUrl: signaturePreview,
           companyAddress,
           contactNumber,
           invoicePrefixBase,
@@ -226,15 +240,28 @@ export default function GeneralSettings() {
                   </div>
                 </div>
                 <div className={styles.formInputGroupField}>
-                  <label className={styles.fieldLabel}>Authorized Signatory Full Name</label>
-                  <div className={styles.inputIconWrapperFrame}>
-                    <FiUser className={styles.fieldInputIconAddon} />
-                    <input
-                      type="text"
-                      value={authorizedSignatory}
-                      onChange={(e) => setAuthorizedSignatory(e.target.value)}
-                      className={styles.primaryTextInputWithIcon}
-                    />
+                  <label className={styles.fieldLabel}>Authorized Signatory</label>
+                  <div className={styles.logoFlexUploadContainer}>
+                    <div className={styles.logoFramePreviewBox}>
+                      {signaturePreview ? (
+                        <img src={signaturePreview} alt="Signature Preview" className={styles.renderedLogoImage} />
+                      ) : (
+                        <FiImage size={22} className={styles.fallbackLogoPlaceholderIcon} />
+                      )}
+                    </div>
+                    <div className={styles.uploadActionWrapperInteractiveArea}>
+                      <label className={styles.fileUploadCustomTriggerBtn}>
+                        <FiUpload size={13} />
+                        <span>Upload Signature</span>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg, image/svg+xml"
+                          onChange={handleSignatureFileIntercept}
+                          className={styles.hiddenNativeFileInput}
+                        />
+                      </label>
+                      <p className={styles.uploadGuidelinesSubtext}>Supports PNG, JPEG, SVG up to 2MB.</p>
+                    </div>
                   </div>
                 </div>
               </div>

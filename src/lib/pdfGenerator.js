@@ -40,6 +40,23 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     }
   }
 
+  // Convert relative signature to base64
+  if (systemSettings?.signatureUrl && systemSettings.signatureUrl.startsWith('/')) {
+    try {
+      const filePath = path.join(process.cwd(), 'public', systemSettings.signatureUrl);
+      if (fs.existsSync(filePath)) {
+        const ext = path.extname(filePath).replace('.', '');
+        let mime = `image/${ext}`;
+        if (ext === 'svg') mime = 'image/svg+xml';
+        if (ext === 'jpg') mime = 'image/jpeg';
+        const base64 = fs.readFileSync(filePath).toString('base64');
+        systemSettings.signatureUrl = `data:${mime};base64,${base64}`;
+      }
+    } catch (e) {
+      console.error("Failed to base64 encode signature:", e);
+    }
+  }
+
   resolvedData.settings = systemSettings || {};
 
   const dateFormat = systemSettings?.dateFormat || "YYYY-MM-DD";

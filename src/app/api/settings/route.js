@@ -6,8 +6,8 @@ import fs from "fs";
 import path from "path";
 import { logSystemAction } from "@/lib/logger";
 
-// Helper to save base64 logo to public/uploads
-function saveBase64Image(base64Data) {
+// Helper to save base64 image to public/uploads
+function saveBase64Image(base64Data, prefix = "image") {
   if (!base64Data || !base64Data.startsWith("data:image/")) {
     return base64Data; // Return as is if it's already a URL or empty
   }
@@ -29,14 +29,13 @@ function saveBase64Image(base64Data) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    // Clean up old logo files if necessary, or just write with a unique timestamp
-    const filename = `logo-${Date.now()}.${ext}`;
+    const filename = `${prefix}-${Date.now()}.${ext}`;
     const filePath = path.join(uploadDir, filename);
 
     fs.writeFileSync(filePath, buffer);
     return `/uploads/${filename}`;
   } catch (error) {
-    console.error("Error saving logo asset:", error);
+    console.error("Error saving image asset:", error);
     return base64Data;
   }
 }
@@ -89,7 +88,11 @@ export async function PUT(request) {
 
     // Convert base64 data to locally saved public file url
     if (updateData.logoUrl) {
-      updateData.logoUrl = saveBase64Image(updateData.logoUrl);
+      updateData.logoUrl = saveBase64Image(updateData.logoUrl, "logo");
+    }
+    
+    if (updateData.signatureUrl) {
+      updateData.signatureUrl = saveBase64Image(updateData.signatureUrl, "signature");
     }
 
     const settings = await prisma.systemSetting.upsert({
