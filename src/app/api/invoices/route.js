@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 const prisma = new PrismaClient();
 
@@ -92,6 +93,9 @@ export async function POST(request) {
     } catch (pdfErr) {
       console.error("Failed to generate PDF on create:", pdfErr);
     }
+
+    revalidatePath('/api/invoices');
+    revalidatePath('/invoices');
 
     return NextResponse.json(newInvoice, { status: 201 });
   } catch (error) {

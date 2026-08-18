@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 const prisma = new PrismaClient();
 
@@ -14,6 +15,9 @@ export async function DELETE(request) {
     const result = await prisma.invoice.deleteMany({
       where: { id: { in: ids } }
     });
+
+    revalidatePath('/api/invoices');
+    revalidatePath('/invoices');
 
     return NextResponse.json({ success: true, count: result.count });
   } catch (error) {

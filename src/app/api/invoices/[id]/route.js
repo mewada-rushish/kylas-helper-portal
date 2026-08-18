@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { generateAndUploadInvoicePDF } from '@/lib/pdfGenerator';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { revalidatePath } from 'next/cache';
 
 const prisma = new PrismaClient();
 
@@ -66,6 +67,9 @@ export async function PUT(request, { params }) {
       console.error("Failed to regenerate PDF on edit:", pdfErr);
     }
 
+    revalidatePath('/api/invoices');
+    revalidatePath('/invoices');
+
     return NextResponse.json(updatedInvoice);
   } catch (error) {
     console.error('Error updating invoice:', error);
@@ -87,6 +91,9 @@ export async function DELETE(request, { params }) {
       where: { id: id },
       data: { isDeleted: true }
     });
+
+    revalidatePath('/api/invoices');
+    revalidatePath('/invoices');
 
     return NextResponse.json({ success: true });
   } catch (error) {

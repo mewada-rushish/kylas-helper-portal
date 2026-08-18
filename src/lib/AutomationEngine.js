@@ -714,9 +714,16 @@ export class AutomationEngine {
           id: invoiceId,
           ...dbPayload
         },
-        update: dbPayload
+        update: {
+          ...dbPayload,
+          isDeleted: false
+        }
       });
       await this.appendLog("Invoice saved/updated to database", { invoiceId });
+      
+      const { revalidatePath } = require('next/cache');
+      revalidatePath('/api/invoices');
+      revalidatePath('/invoices');
     } catch (dbErr) {
       console.error("Failed to save invoice to DB:", dbErr);
       await this.appendLog("Warning: Failed to save invoice to DB", { error: dbErr.message });

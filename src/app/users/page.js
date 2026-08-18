@@ -266,7 +266,7 @@ export default function UsersPage() {
                           <button onClick={() => { generateResetLink(user.id); setOpenMenuId(null); }}>
                             <FiKey /> Reset Password
                           </button>
-                          {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && session?.user?.id !== user.id && (
+                          {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && session?.user?.email !== user.email && (
                             <button className={styles.dangerText} onClick={() => { setUserToDelete(user); setDeleteConfirmationText(""); setOpenMenuId(null); }}>
                               <FiTrash2 /> Delete User
                             </button>

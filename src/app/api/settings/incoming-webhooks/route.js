@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { logSystemAction } from "@/lib/logger";
 
 // GET /api/settings/incoming-webhooks
+export const dynamic = 'force-dynamic';
 export async function GET() {
   const session = await getServerSession(authOptions);
   
@@ -14,7 +15,6 @@ export async function GET() {
 
   try {
     const configs = await prisma.incomingWebhookConfig.findMany({
-      where: { isDeleted: false },
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json(configs);
@@ -113,9 +113,8 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    await prisma.incomingWebhookConfig.update({
-      where: { id },
-      data: { isDeleted: true }
+    await prisma.incomingWebhookConfig.delete({
+      where: { id }
     });
 
     await logSystemAction(

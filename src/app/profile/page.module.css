@@ -166,26 +166,30 @@
 
 .inputWrapper input {
   width: 100%;
-  padding: 12px 14px 12px 40px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 12px 14px 12px 42px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   font-size: 14px;
-  color: #111827;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .inputWrapper input:focus {
   outline: none;
   background-color: #ffffff;
   border-color: #4f46e5;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  transform: translateY(-1px);
 }
 
 .inputWrapper input:disabled {
-  background: #f9fafb;
+  background: #f8fafc;
   cursor: not-allowed;
-  color: #9ca3af;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  box-shadow: none;
 }
 
 .saveButton {
@@ -196,29 +200,30 @@
   background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
+  border-radius: 10px;
+  padding: 14px 24px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-top: 12px;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 16px;
   width: fit-content;
 }
 
 .saveButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
 }
 
 .saveButton:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(0);
   box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
 }
 
 .saveButton:disabled {
-  background: #9ca3af;
+  background: #cbd5e1;
+  color: #64748b;
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
