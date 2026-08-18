@@ -23,37 +23,45 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     where: { id: "default" }
   });
 
-  // Convert relative logo to base64 to ensure Puppeteer can render it without network roundtrips
-  if (systemSettings?.logoUrl && systemSettings.logoUrl.startsWith('/')) {
+  const getBase64Image = async (urlStr) => {
+    if (!urlStr) return urlStr;
     try {
-      const filePath = path.join(process.cwd(), 'public', systemSettings.logoUrl);
-      if (fs.existsSync(filePath)) {
-        const ext = path.extname(filePath).replace('.', '');
-        let mime = `image/${ext}`;
-        if (ext === 'svg') mime = 'image/svg+xml';
-        if (ext === 'jpg') mime = 'image/jpeg';
-        const base64 = fs.readFileSync(filePath).toString('base64');
-        systemSettings.logoUrl = `data:${mime};base64,${base64}`;
+      if (urlStr.startsWith('/')) {
+        const filePath = path.join(process.cwd(), 'public', urlStr);
+        if (fs.existsSync(filePath)) {
+          const ext = path.extname(filePath).replace('.', '');
+          let mime = `image/${ext}`;
+          if (ext === 'svg') mime = 'image/svg+xml';
+          if (ext === 'jpg') mime = 'image/jpeg';
+          const base64 = fs.readFileSync(filePath).toString('base64');
+          return `data:${mime};base64,${base64}`;
+        }
+        
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}${urlStr}`);
+        const arrayBuffer = await res.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const mime = res.headers.get('content-type') || 'image/png';
+        return `data:${mime};base64,${buffer.toString('base64')}`;
+      } else if (urlStr.startsWith('http')) {
+        const res = await fetch(urlStr);
+        const arrayBuffer = await res.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const mime = res.headers.get('content-type') || 'image/png';
+        return `data:${mime};base64,${buffer.toString('base64')}`;
       }
     } catch (e) {
-      console.error("Failed to base64 encode logo:", e);
+      console.error("Failed to convert image to base64:", e);
     }
-  }
+    return urlStr;
+  };
 
-  // Convert relative signature to base64
-  if (systemSettings?.signatureUrl && systemSettings.signatureUrl.startsWith('/')) {
-    try {
-      const filePath = path.join(process.cwd(), 'public', systemSettings.signatureUrl);
-      if (fs.existsSync(filePath)) {
-        const ext = path.extname(filePath).replace('.', '');
-        let mime = `image/${ext}`;
-        if (ext === 'svg') mime = 'image/svg+xml';
-        if (ext === 'jpg') mime = 'image/jpeg';
-        const base64 = fs.readFileSync(filePath).toString('base64');
-        systemSettings.signatureUrl = `data:${mime};base64,${base64}`;
-      }
-    } catch (e) {
-      console.error("Failed to base64 encode signature:", e);
+  if (systemSettings) {
+    if (systemSettings.logoUrl) {
+      systemSettings.logoUrl = await getBase64Image(systemSettings.logoUrl);
+    }
+    if (systemSettings.signatureUrl) {
+      systemSettings.signatureUrl = await getBase64Image(systemSettings.signatureUrl);
     }
   }
 
