@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiLogOut, FiLayout, FiGitBranch, FiCreditCard, FiSettings, FiUsers } from "react-icons/fi";
 import { useSession, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 import styles from "./sidebar.module.css";
 
 const CENTRAL_NAVIGATION_ITEMS = [
@@ -25,6 +26,19 @@ const BASE_ACCESS = {
 export default function Sidebar({ activeId }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.companyName) {
+          setSettings(data);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const role = session?.user?.role || "MARKETING";
   const rawCustomAccess = session?.user?.customAccess || [];
@@ -45,9 +59,13 @@ export default function Sidebar({ activeId }) {
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
         <div className={styles.storeProfile}>
-          <div className={styles.storeAvatar}>A</div>
+          {settings?.logoUrl ? (
+            <img src={settings.logoUrl} alt="Logo" className={styles.storeAvatar} style={{ objectFit: 'contain', background: 'transparent' }} />
+          ) : (
+            <div className={styles.storeAvatar}>{settings?.companyName?.charAt(0) || "A"}</div>
+          )}
           <div className={styles.storeDetails}>
-            <span className={styles.storeName}>AsmitA Operations</span>
+            <span className={styles.storeName}>{settings?.companyName || "AsmitA Operations"}</span>
             <span className={styles.storeLink}>Admin Console</span>
           </div>
         </div>
