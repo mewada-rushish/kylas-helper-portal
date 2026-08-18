@@ -26,7 +26,7 @@ const BASE_ACCESS = {
 export default function Sidebar({ activeId }) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  
+
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Sidebar({ activeId }) {
       if (Array.isArray(parsed)) {
         customAccess = parsed;
       }
-    } catch (e) {}
+    } catch (e) { }
   } else if (Array.isArray(rawCustomAccess)) {
     customAccess = rawCustomAccess;
   }
@@ -66,7 +66,7 @@ export default function Sidebar({ activeId }) {
           )}
           <div className={styles.storeDetails}>
             <span className={styles.storeName}>{settings?.companyName || "AsmitA Operations"}</span>
-            <span className={styles.storeLink}>Admin Console</span>
+            <span className={styles.storeLink}>Admin Portal</span>
           </div>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function Sidebar({ activeId }) {
 
           const hasBaseAccess = allowedPaths.includes("*") || allowedPaths.some(p => item.href.startsWith(p));
           const hasCustomAccess = customAccess.some(p => item.href.startsWith(p));
-          
+
           if (customAccess.length > 0) {
             return hasCustomAccess;
           }
