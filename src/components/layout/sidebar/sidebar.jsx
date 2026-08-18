@@ -123,7 +123,7 @@ export default function Sidebar({ activeId }) {
         <Link
           href="/profile"
           className={`${styles.navItem} ${activeId === "profile" ? styles.activeNav : ""}`}
-          style={{ marginBottom: "8px", fontWeight: 600 }}
+          style={{ marginBottom: "8px" }}
         >
           <FiUser className={styles.navIcon} />
           <span>My Profile</span>
