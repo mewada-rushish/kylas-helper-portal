@@ -262,6 +262,9 @@
   font-size: 13px;
   color: #c9d1d9; 
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .jsonString { color: #a5d6ff; }
