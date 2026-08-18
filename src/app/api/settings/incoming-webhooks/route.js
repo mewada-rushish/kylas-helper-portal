@@ -56,10 +56,14 @@ export async function POST(request) {
           selectedVariables: selectedVarsStr
         }
       });
+      const logPayload = { ...config };
+      if (logPayload.authToken) logPayload.authToken = "********";
+      
       await logSystemAction(
         "Incoming Webhooks",
         "info",
-        `Updated incoming webhook config: ${safeName}`
+        `Updated incoming webhook config: ${safeName}`,
+        JSON.stringify(logPayload, null, 2)
       );
     } else {
       config = await prisma.incomingWebhookConfig.create({
@@ -74,10 +78,14 @@ export async function POST(request) {
           selectedVariables: selectedVarsStr
         }
       });
+      const logPayload = { ...config };
+      if (logPayload.authToken) logPayload.authToken = "********";
+      
       await logSystemAction(
         "Incoming Webhooks",
         "info",
-        `Created new incoming webhook config: ${safeName}`
+        `Created new incoming webhook config: ${safeName}`,
+        JSON.stringify(logPayload, null, 2)
       );
     }
 

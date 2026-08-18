@@ -49,10 +49,19 @@ export async function POST(request) {
       }
     });
 
+    const logPayload = { ...webhook };
+    if (logPayload.headers) {
+      try {
+        const parsed = JSON.parse(logPayload.headers);
+        logPayload.headers = JSON.stringify(parsed.map(h => ({ ...h, value: h.isSecret ? "********" : h.value })));
+      } catch(e) {}
+    }
+
     await logSystemAction(
-      "Automation Workflows",
+      "Outgoing Webhooks",
       "info",
-      `Created new automation workflow: ${webhook.name}`
+      `Created new outgoing webhook/API: ${webhook.name}`,
+      JSON.stringify(logPayload, null, 2)
     );
 
     return NextResponse.json(webhook);

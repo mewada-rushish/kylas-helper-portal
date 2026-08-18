@@ -104,7 +104,8 @@ export async function PUT(request) {
     await logSystemAction(
       "General Settings",
       "success",
-      `System configuration properties and runtime bounds were successfully updated by user.`
+      `System configuration properties and runtime bounds were successfully updated by user.`,
+      JSON.stringify(updateData, null, 2)
     );
 
     return NextResponse.json(settings);

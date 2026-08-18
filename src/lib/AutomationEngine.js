@@ -1,5 +1,7 @@
 import { prisma } from "./prisma";
 import { generateAndUploadInvoicePDF } from "./pdfGenerator";
+import { logSystemAction } from "./logger";
+
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
  */
@@ -134,9 +136,19 @@ export class AutomationEngine {
       where: { id: this.executionLog.id },
       data: { logs: JSON.stringify(currentLogs) }
     });
+    
+    // Mirror to SystemLog for deep auditing
+    if (this.workflow) {
+      await logSystemAction(
+        "Automation Workflows", 
+        "info", 
+        `[${this.workflow.name}] ${message}`, 
+        details ? JSON.stringify(details) : null
+      );
+    }
   }
 
-  async fail(errorMessage) {
+  async fail(errorMessage, context = null) {
     await prisma.workflowExecution.update({
       where: { id: this.executionLog.id },
       data: {
@@ -145,6 +157,14 @@ export class AutomationEngine {
       }
     });
     await this.appendLog(`ERROR: ${errorMessage}`);
+    if (this.workflow) {
+      await logSystemAction(
+        "Automation Workflows", 
+        "error", 
+        `Workflow Execution Failed: ${this.workflow.name}`, 
+        JSON.stringify({ error: errorMessage, finalContext: context })
+      );
+    }
   }
 
   async run(initialPayload = {}) {
@@ -242,13 +262,13 @@ export class AutomationEngine {
         currentNodeId = nextNodeId;
 
       } catch (error) {
-        await this.fail(`Node ${node.id} failed: ${error.message}`);
+        await this.fail(`Node ${node.id} failed: ${error.message}`, context);
         return; // Abort on error
       }
     }
 
     if (stepCount >= maxSteps) {
-      await this.fail("Maximum step limit reached (possible infinite loop).");
+      await this.fail("Maximum step limit reached (possible infinite loop).", context);
       return;
     }
 
@@ -256,7 +276,7 @@ export class AutomationEngine {
       where: { id: this.executionLog.id },
       data: { status: finalStatus === "SUCCESS" ? "SUCCESS" : "FAILED" }
     });
-    await this.appendLog(finalStatus === "SUCCESS" ? "Workflow completed successfully" : "Workflow completed with errors: condition not met.");
+    await this.appendLog(finalStatus === "SUCCESS" ? "Workflow completed successfully" : "Workflow completed with errors: condition not met.", { finalContext: context });
   }
 
   async evaluateConditionNode(node, context) {
@@ -447,7 +467,7 @@ export class AutomationEngine {
         }
       }
       
-      await this.appendLog(`Calling API: ${method} ${finalUrl}`, { headers: logHeaders, requestBody: logBody });
+      await this.appendLog(`Initiating API Request: ${method} ${finalUrl}`, { headers: logHeaders, requestBody: logBody });
       
       let response;
       try {
@@ -464,10 +484,18 @@ export class AutomationEngine {
         data = await response.text();
       }
 
+      const responseHeaders = {};
+      response.headers.forEach((value, key) => responseHeaders[key] = value);
+
+      await this.appendLog(`API Response Received: ${method} ${finalUrl} [${response.status}]`, { 
+        responseHeaders, 
+        responseBody: data 
+      });
+
       if (!response.ok) {
         throw new Error(`API call failed with status ${response.status}: ${typeof data === 'object' ? JSON.stringify(data) : data}`);
       }
-      return { status: response.status, response: data };
+      return { status: response.status, headers: responseHeaders, response: data };
 
     } else if (actionType === 'transform_concat') {
       const separator = params.separator || "";

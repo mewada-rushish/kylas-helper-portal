@@ -32,6 +32,9 @@ export async function POST(request, { params }) {
     // 3. Parse the incoming payload
     const payload = await request.json();
 
+    const headersList = {};
+    request.headers.forEach((value, key) => headersList[key] = value);
+
     // 4. If Test Mode is ON, log the payload
     if (config.isTestMode) {
       await prisma.webhookLog.create({
@@ -42,12 +45,12 @@ export async function POST(request, { params }) {
       });
     }
 
-    // Always log to System Logs so it shows up in the UI
+    // Always log to System Logs
     await logSystemAction(
       "Incoming Webhooks",
       "success",
-      `Received payload from ${config.provider || "External Service"} at endpoint: ${pathname}`,
-      JSON.stringify(payload, null, 2)
+      `Received payload at custom endpoint: /api/webhooks/incoming/${slugPath}`,
+      JSON.stringify({ requestHeaders: headersList, requestBody: payload }, null, 2)
     );
 
     // 5. Trigger Automation Workflows

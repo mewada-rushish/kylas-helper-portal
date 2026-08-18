@@ -226,6 +226,32 @@ export default function GeneralSettings() {
                 </div>
               </div>
 
+              <div className={styles.formInputGroupField}>
+                <label className={styles.fieldLabel}>Authorized Signatory</label>
+                <div className={styles.logoFlexUploadContainer}>
+                  <div className={styles.logoFramePreviewBox}>
+                    {signaturePreview ? (
+                      <img src={signaturePreview} alt="Signature Preview" className={styles.renderedLogoImage} />
+                    ) : (
+                      <FiImage size={22} className={styles.fallbackLogoPlaceholderIcon} />
+                    )}
+                  </div>
+                  <div className={styles.uploadActionWrapperInteractiveArea}>
+                    <label className={styles.fileUploadCustomTriggerBtn}>
+                      <FiUpload size={13} />
+                      <span>Upload Signature</span>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/svg+xml"
+                        onChange={handleSignatureFileIntercept}
+                        className={styles.hiddenNativeFileInput}
+                      />
+                    </label>
+                    <p className={styles.uploadGuidelinesSubtext}>Supports PNG, JPEG, SVG up to 2MB.</p>
+                  </div>
+                </div>
+              </div>
+
               <div className={styles.formFieldsInlineDoubleGridRow}>
                 <div className={styles.formInputGroupField}>
                   <label className={styles.fieldLabel}>Company Legal Name</label>
@@ -240,28 +266,15 @@ export default function GeneralSettings() {
                   </div>
                 </div>
                 <div className={styles.formInputGroupField}>
-                  <label className={styles.fieldLabel}>Authorized Signatory</label>
-                  <div className={styles.logoFlexUploadContainer}>
-                    <div className={styles.logoFramePreviewBox}>
-                      {signaturePreview ? (
-                        <img src={signaturePreview} alt="Signature Preview" className={styles.renderedLogoImage} />
-                      ) : (
-                        <FiImage size={22} className={styles.fallbackLogoPlaceholderIcon} />
-                      )}
-                    </div>
-                    <div className={styles.uploadActionWrapperInteractiveArea}>
-                      <label className={styles.fileUploadCustomTriggerBtn}>
-                        <FiUpload size={13} />
-                        <span>Upload Signature</span>
-                        <input
-                          type="file"
-                          accept="image/png, image/jpeg, image/svg+xml"
-                          onChange={handleSignatureFileIntercept}
-                          className={styles.hiddenNativeFileInput}
-                        />
-                      </label>
-                      <p className={styles.uploadGuidelinesSubtext}>Supports PNG, JPEG, SVG up to 2MB.</p>
-                    </div>
+                  <label className={styles.fieldLabel}>Official Contact Number</label>
+                  <div className={styles.inputIconWrapperFrame}>
+                    <FiHash className={styles.fieldInputIconAddon} />
+                    <input
+                      type="text"
+                      value={contactNumber}
+                      onChange={(e) => setContactNumber(e.target.value)}
+                      className={styles.primaryTextInputWithIcon}
+                    />
                   </div>
                 </div>
               </div>
@@ -275,19 +288,6 @@ export default function GeneralSettings() {
                     onChange={(e) => setCompanyAddress(e.target.value)}
                     className={styles.primaryTextareaInputWithIcon}
                     rows={2}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formInputGroupField}>
-                <label className={styles.fieldLabel}>Official Contact Number</label>
-                <div className={styles.inputIconWrapperFrame}>
-                  <FiHash className={styles.fieldInputIconAddon} />
-                  <input
-                    type="text"
-                    value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
-                    className={styles.primaryTextInputWithIcon}
                   />
                 </div>
               </div>

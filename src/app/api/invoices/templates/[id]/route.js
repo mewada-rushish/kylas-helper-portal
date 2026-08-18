@@ -48,7 +48,8 @@ export async function PUT(request, { params }) {
     await logSystemAction(
       "Invoice Templates",
       "success",
-      `Updated template: ${updatedTemplate.name} (${id})`
+      `Updated template: ${updatedTemplate.name} (${id})`,
+      JSON.stringify(updatedTemplate, null, 2)
     );
 
     return NextResponse.json(updatedTemplate);
@@ -73,7 +74,8 @@ export async function DELETE(request, { params }) {
     await logSystemAction(
       "Invoice Templates",
       "warning",
-      `Deleted template: ${template.name} (${id})`
+      `Deleted template: ${template.name} (${id})`,
+      JSON.stringify({ deletedTemplateId: id }, null, 2)
     );
 
     return NextResponse.json({ success: true });

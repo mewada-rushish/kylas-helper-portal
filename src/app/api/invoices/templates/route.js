@@ -42,7 +42,8 @@ export async function POST(request) {
     await logSystemAction(
       "Invoice Templates",
       "success",
-      `Created new invoice template: ${newTemplate.name} (${newTemplate.id})`
+      `Created new invoice template: ${newTemplate.name} (${newTemplate.id})`,
+      JSON.stringify(newTemplate, null, 2)
     );
 
     return NextResponse.json(newTemplate, { status: 201 });

@@ -49,7 +49,8 @@ export async function POST(request) {
     await logSystemAction(
       "Automation Workflows",
       "info",
-      `Created new workflow rule: ${workflow.name}`
+      `Created new workflow rule: ${workflow.name}`,
+      JSON.stringify(workflow, null, 2)
     );
 
     return NextResponse.json(workflow);

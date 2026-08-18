@@ -64,7 +64,8 @@ export async function PUT(request, { params }) {
     await logSystemAction(
       "Automation Workflows",
       "info",
-      `Updated workflow rule: ${workflow.name}`
+      `Updated workflow rule: ${workflow.name}`,
+      JSON.stringify(workflow, null, 2)
     );
 
     return NextResponse.json(workflow);
@@ -91,7 +92,8 @@ export async function DELETE(request, { params }) {
     await logSystemAction(
       "Automation Workflows",
       "warning",
-      `Deleted workflow rule with ID: ${id}`
+      `Deleted workflow rule with ID: ${id}`,
+      JSON.stringify({ deletedWorkflowId: id }, null, 2)
     );
 
     return NextResponse.json({ success: true });

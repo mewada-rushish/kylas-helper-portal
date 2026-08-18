@@ -41,10 +41,19 @@ export async function PUT(request, { params }) {
       data: updateData
     });
 
+    const logPayload = { ...webhook };
+    if (logPayload.headers) {
+      try {
+        const parsed = JSON.parse(logPayload.headers);
+        logPayload.headers = JSON.stringify(parsed.map(h => ({ ...h, value: h.isSecret ? "********" : h.value })));
+      } catch(e) {}
+    }
+
     await logSystemAction(
-      "Automation Workflows",
+      "Outgoing Webhooks",
       "info",
-      `Updated automation workflow: ${webhook.name || id}`
+      `Updated outgoing webhook: ${webhook.name || id}`,
+      JSON.stringify(logPayload, null, 2)
     );
 
     return NextResponse.json(webhook);
@@ -69,9 +78,9 @@ export async function DELETE(request, { params }) {
     });
 
     await logSystemAction(
-      "Automation Workflows",
+      "Outgoing Webhooks",
       "warning",
-      `Deleted automation workflow with ID: ${id}`
+      `Deleted outgoing webhook with ID: ${id}`
     );
 
     return NextResponse.json({ success: true });
