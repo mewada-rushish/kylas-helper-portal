@@ -15,6 +15,11 @@ export async function generateMetadata() {
     return {
       title: settings?.companyName || "Kylas Helper Portal",
       description: "Enterprise Automation and Lead Ingestion System",
+      icons: settings?.logoUrl ? {
+        icon: settings.logoUrl,
+        shortcut: settings.logoUrl,
+        apple: settings.logoUrl,
+      } : undefined,
     };
   } catch (e) {
     return {
