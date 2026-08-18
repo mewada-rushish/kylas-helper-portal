@@ -530,7 +530,7 @@ export class AutomationEngine {
       current[parts[parts.length - 1]] = value;
     }
     
-    const invoiceId = resolvedData.invoiceId || `inv_${Date.now()}`;
+    const invoiceId = resolvedData.invoiceId || resolvedData.invoice?.id || `inv_${Date.now()}`;
     resolvedData.invoiceId = invoiceId;
 
     // Helper to safely parse stringified JSON objects/arrays (from evaluateTemplate interpolation)
