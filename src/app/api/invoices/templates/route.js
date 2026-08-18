@@ -6,6 +6,7 @@ import { logSystemAction } from "@/lib/logger";
 export async function GET(request) {
   try {
     const templates = await prisma.invoiceTemplate.findMany({
+      where: { isDeleted: false },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(templates);

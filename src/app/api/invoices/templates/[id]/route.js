@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import prisma from "@/lib/prisma";
 import { logSystemAction } from "@/lib/logger";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(request, { params }) {
   try {
@@ -65,10 +67,17 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
-    const template = await prisma.invoiceTemplate.delete({
+    const template = await prisma.invoiceTemplate.update({
       where: { id },
+      data: { isDeleted: true }
     });
 
     await logSystemAction(

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { generateAndUploadInvoicePDF } from '@/lib/pdfGenerator';
-
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -73,11 +74,18 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
 
-    await prisma.invoice.delete({
-      where: { id: id }
+    await prisma.invoice.update({
+      where: { id: id },
+      data: { isDeleted: true }
     });
 
     return NextResponse.json({ success: true });

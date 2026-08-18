@@ -56,8 +56,9 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
     }
 
-    await prisma.user.delete({
-      where: { id }
+    await prisma.user.update({
+      where: { id },
+      data: { isDeleted: true }
     });
 
     return NextResponse.json({ success: true });

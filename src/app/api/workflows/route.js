@@ -8,12 +8,13 @@ import { logSystemAction } from "@/lib/logger";
 export async function GET(request) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role === "ACCOUNTING") {
+  if (!session || session.user.role === "ACCOUNTING" || session.user.role === "MARKETING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   try {
     const workflows = await prisma.workflowRule.findMany({
+      where: { isDeleted: false },
       orderBy: { createdAt: "desc" }
     });
     return NextResponse.json(workflows);
@@ -27,7 +28,7 @@ export async function GET(request) {
 export async function POST(request) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role === "ACCOUNTING") {
+  if (!session || session.user.role === "ACCOUNTING" || session.user.role === "MARKETING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

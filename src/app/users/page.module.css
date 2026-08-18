@@ -81,7 +81,7 @@
   border: var(--glass-border);
   border-radius: 12px;
   box-shadow: var(--shadow-raised);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .usersTable {
@@ -337,3 +337,90 @@
   margin-bottom: 1rem;
 }
 
+.actionsCell {
+  position: relative;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.actionMenuWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.iconBtn:hover, .iconBtnActive {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.actionDropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 50;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  animation: slideDown 0.2s ease-out;
+}
+
+.actionDropdown button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: var(--font-poppins), sans-serif;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.2s;
+}
+
+.actionDropdown button:hover {
+  background-color: #f8fafc;
+}
+
+.actionDropdown button svg {
+  color: #64748B;
+  font-size: 14px;
+}
+
+.dangerText {
+  color: #ef4444 !important;
+}
+
+.dangerText:hover {
+  background-color: #fef2f2 !important;
+}
+
+.dangerText svg {
+  color: #ef4444 !important;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

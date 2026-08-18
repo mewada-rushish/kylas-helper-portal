@@ -11,6 +11,7 @@ import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import CentralizedModal from "@/components/ui/modal/modal";
 import styles from "./invoices.module.css";
 import { resolveToken } from "@/lib/variable-resolver";
+import { useSession } from "next-auth/react";
 
 const KYLAS_PRODUCTS = [
   { value: "prod_crm_ent", label: "Kylas CRM Premium Enterprise License" },
@@ -22,6 +23,7 @@ const KYLAS_PRODUCTS = [
 const FALLBACK_THEME = { primaryColor: "#27347B", textColor: "#202223", backgroundColor: "#ffffff", borderColor: "#e1e3e5" };
 
 export default function InvoicesListPage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [invoices, setInvoices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -375,9 +377,11 @@ export default function InvoicesListPage() {
                   <AdminButton variant="secondary" onClick={handleBulkExportCSV}>
                     <FiDownload style={{ color: '#10b981' }} /> Export CSV
                   </AdminButton>
-                  <AdminButton variant="secondary" onClick={() => setShowBulkDeleteModal(true)}>
-                    <FiTrash2 style={{ color: '#ef4444' }} /> Delete ({selectedInvoices.length})
-                  </AdminButton>
+                  {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && (
+                    <AdminButton variant="secondary" onClick={() => setShowBulkDeleteModal(true)}>
+                      <FiTrash2 style={{ color: '#ef4444' }} /> Delete ({selectedInvoices.length})
+                    </AdminButton>
+                  )}
                 </div>
               )}
               <AdminButton variant="secondary" icon={FiLayout} onClick={() => router.push("/invoices/templates")}>
@@ -537,9 +541,11 @@ export default function InvoicesListPage() {
                                       <FiDownload /> Download Invoice
                                     </a>
                                   )}
-                                  <button className={styles.dangerText} onClick={() => handleDeleteInvoice(inv.id)}>
-                                    <FiTrash2 /> Delete Invoice
-                                  </button>
+                                  {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && (
+                                    <button className={styles.dangerText} onClick={() => handleDeleteInvoice(inv.id)}>
+                                      <FiTrash2 /> Delete Invoice
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>

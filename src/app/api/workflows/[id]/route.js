@@ -8,7 +8,7 @@ import { logSystemAction } from "@/lib/logger";
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role === "ACCOUNTING") {
+  if (!session || session.user.role === "ACCOUNTING" || session.user.role === "MARKETING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -33,7 +33,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role === "ACCOUNTING") {
+  if (!session || session.user.role === "ACCOUNTING" || session.user.role === "MARKETING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -79,14 +79,15 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role === "ACCOUNTING") {
+  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   try {
     const { id } = await params;
-    await prisma.workflowRule.delete({
-      where: { id }
+    await prisma.workflowRule.update({
+      where: { id },
+      data: { isDeleted: true }
     });
 
     await logSystemAction(

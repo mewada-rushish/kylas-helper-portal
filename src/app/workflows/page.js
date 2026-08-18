@@ -13,11 +13,13 @@ import Dropdown from "@/components/ui/dropdown/dropdown";
 import CentralizedModal from "@/components/ui/modal/modal";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 import styles from "./workflows-list.module.css";
 
 
 
 export default function WorkflowsPage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [workflows, setWorkflows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -286,9 +288,11 @@ export default function WorkflowsPage() {
                                       <FiPause /> Disable Workflow
                                     </button>
                                   )}
-                                  <button className={styles.dangerText} onClick={() => handleDelete(wf.id)}>
-                                    <FiTrash2 /> Delete Workflow
-                                  </button>
+                                  {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && (
+                                    <button className={styles.dangerText} onClick={() => handleDelete(wf.id)}>
+                                      <FiTrash2 /> Delete Workflow
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>

@@ -55,12 +55,10 @@
 }
 
 .headerTitle h1 {
-  font-family: var(--font-montserrat), sans-serif !important;
-  font-weight: 700 !important;
-  font-size: 24px;
-  color: #202223;
-  margin: 0 0 4px 0;
-  letter-spacing: -0.5px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e1e2d;
+  margin-bottom: 4px;
 }
 
 .headerTitle p {

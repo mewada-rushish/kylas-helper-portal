@@ -14,6 +14,7 @@ export async function GET(request) {
 
   try {
     const webhooks = await prisma.webhook.findMany({
+      where: { isDeleted: false },
       orderBy: { createdAt: "desc" }
     });
     return NextResponse.json(webhooks);

@@ -14,6 +14,7 @@ export async function GET() {
 
   try {
     const configs = await prisma.incomingWebhookConfig.findMany({
+      where: { isDeleted: false },
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json(configs);
@@ -112,8 +113,9 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    await prisma.incomingWebhookConfig.delete({
-      where: { id }
+    await prisma.incomingWebhookConfig.update({
+      where: { id },
+      data: { isDeleted: true }
     });
 
     await logSystemAction(

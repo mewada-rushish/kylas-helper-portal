@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiPlus, FiEdit, FiKey, FiTrash2, FiCheck, FiX, FiShield, FiAlertTriangle } from "react-icons/fi";
+import { FiPlus, FiEdit, FiKey, FiTrash2, FiCheck, FiX, FiShield, FiAlertTriangle, FiMoreVertical } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
@@ -47,6 +47,7 @@ const getCustomAccessArray = (customAccess) => {
 export default function UsersPage() {
   const { data: session } = useSession();
   const [users, setUsers] = useState([]);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal States
@@ -65,7 +66,14 @@ export default function UsersPage() {
   const [isSavingAccess, setIsSavingAccess] = useState(false);
 
   useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(`.${styles.actionMenuWrapper}`)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
     fetchUsers();
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const fetchUsers = async () => {
@@ -240,30 +248,32 @@ export default function UsersPage() {
                   )}
                 </td>
                 <td>
-                  <div className={styles.actionButtons}>
-                    <button 
-                      className={styles.iconButton} 
-                      onClick={() => { setSelectedUser(user); setIsAccessModalOpen(true); }}
-                      title="Edit Access"
-                    >
-                      <FiEdit />
-                    </button>
-                    <button 
-                      className={styles.iconButton} 
-                      onClick={() => generateResetLink(user.id)}
-                      title="Generate Reset Link"
-                    >
-                      <FiKey />
-                    </button>
-                    <button 
-                      className={`${styles.iconButton} ${styles.danger}`} 
-                      onClick={() => { setUserToDelete(user); setDeleteConfirmationText(""); }}
-                      title={user.email === session?.user?.email ? "You cannot delete your own account" : "Delete User"}
-                      disabled={user.email === session?.user?.email}
-                      style={user.email === session?.user?.email ? { opacity: 0.35, cursor: "not-allowed" } : {}}
-                    >
-                      <FiTrash2 />
-                    </button>
+                  <div className={styles.actionsCell}>
+                    <div className={styles.actionMenuWrapper}>
+                      <button 
+                        className={`${styles.iconBtn} ${openMenuId === user.id ? styles.iconBtnActive : ""}`} 
+                        title="More Options"
+                        onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                      >
+                        <FiMoreVertical />
+                      </button>
+                      
+                      {openMenuId === user.id && (
+                        <div className={styles.actionDropdown}>
+                          <button onClick={() => { setSelectedUser(user); setIsAccessModalOpen(true); setOpenMenuId(null); }}>
+                            <FiEdit /> Edit Access
+                          </button>
+                          <button onClick={() => { generateResetLink(user.id); setOpenMenuId(null); }}>
+                            <FiKey /> Reset Password
+                          </button>
+                          {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && (
+                            <button className={styles.dangerText} onClick={() => { setUserToDelete(user); setDeleteConfirmationText(""); setOpenMenuId(null); }}>
+                              <FiTrash2 /> Delete User
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>

@@ -13,19 +13,14 @@
 .mainCanvas {
   flex: 1;
   margin-left: 240px;
-  width: calc(100% - 240px);
-  padding: 32px;
-  box-sizing: border-box;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding: 40px 48px;
+  background-color: var(--background);
 }
 
 .pageMaxWidth {
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 /* --- PANEL NAVIGATION HEADERS CONTAINER --- */
@@ -33,25 +28,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 20px;
-  border-bottom: var(--glass-border);
-  flex-shrink: 0;
+  margin-bottom: 32px;
 }
 
 .headerLeftBlock h1 {
-  font-family: var(--font-montserrat), sans-serif !important;
-  font-weight: 700 !important;
-  font-size: 22px;
-  color: #202223;
-  margin: 0;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e1e2d;
+  margin-bottom: 4px;
 }
 
 .headerLeftBlock p {
-  font-family: var(--font-poppins), sans-serif;
-  font-size: 13px;
-  color: #64748B;
-  margin: 6px 0 0 0;
+  font-size: 14px;
+  color: #6d7175;
+  margin: 0;
 }
 
 .headerActions {

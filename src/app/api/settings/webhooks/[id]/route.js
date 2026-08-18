@@ -73,8 +73,9 @@ export async function DELETE(request, { params }) {
 
   try {
     const { id } = await params;
-    await prisma.webhook.delete({
-      where: { id }
+    await prisma.webhook.update({
+      where: { id },
+      data: { isDeleted: true }
     });
 
     await logSystemAction(

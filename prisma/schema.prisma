@@ -17,6 +17,7 @@ model User {
   resetTokenExpiry   DateTime?
   passwordChangedAt  DateTime?
   createdAt          DateTime  @default(now())
+  isDeleted          Boolean   @default(false)
 }
 
 model WorkflowRule {
@@ -30,6 +31,7 @@ model WorkflowRule {
   updatedAt   DateTime @updatedAt
   executions  WorkflowExecution[]
   versions    WorkflowVersion[]
+  isDeleted   Boolean @default(false)
 }
 
 model WorkflowVersion {
@@ -76,6 +78,7 @@ model InvoiceTemplate {
   config            String   @db.Text                 
   theme             String?  @db.Text
   createdAt         DateTime @default(now())
+  isDeleted         Boolean  @default(false)
 }
 
 model Invoice {
@@ -97,6 +100,7 @@ model Invoice {
   periodEnd          String?  @db.VarChar(50)
   pdfUrl             String?  @db.Text
   createdAt          DateTime @default(now())
+  isDeleted          Boolean  @default(false)
 }
 
 model SystemSetting {

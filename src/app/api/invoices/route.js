@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const invoices = await prisma.invoice.findMany({
+      where: { isDeleted: false },
       orderBy: { createdAt: 'desc' }
     });
     
