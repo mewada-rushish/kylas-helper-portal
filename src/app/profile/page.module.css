@@ -12,7 +12,7 @@
 }
 
 .pageMaxWidth {
-  max-width: 900px;
+  max-width: 760px;
   margin: 0 auto;
   width: 100%;
 }
@@ -40,17 +40,42 @@
 }
 
 .settingsSection {
-  background: var(--card-bg);
-  border: var(--glass-border);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .sectionHeader {
-  margin-bottom: 24px;
+  margin-bottom: 0;
   padding-bottom: 16px;
   border-bottom: 1px solid #f0f0f0;
+}
+
+@media (min-width: 768px) {
+  .settingsSection {
+    flex-direction: row;
+    gap: 64px;
+    border-top: 4px solid #4f46e5;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .settingsSection:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  .sectionHeader {
+    flex: 0 0 240px;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .sectionBody {
+    flex: 1;
+    max-width: 440px;
+  }
 }
 
 .sectionHeader h2 {
@@ -94,21 +119,24 @@
 
 .infoBadge {
   display: inline-flex;
-  padding: 4px 10px;
-  background: #eef2ff;
-  color: #4f46e5;
-  border-radius: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   width: fit-content;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.05);
 }
 
 /* Password Form Layout */
 .passwordForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 400px;
+  gap: 20px;
+  width: 100%;
 }
 
 .inputGroup {
@@ -138,17 +166,20 @@
 
 .inputWrapper input {
   width: 100%;
-  padding: 10px 12px 10px 36px;
-  border: 1px solid #d1d5db;
+  padding: 12px 14px 12px 40px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-size: 14px;
-  transition: all 0.2s ease;
+  color: #111827;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .inputWrapper input:focus {
   outline: none;
+  background-color: #ffffff;
   border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
 }
 
 .inputWrapper input:disabled {
@@ -162,26 +193,35 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--cta-bg);
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 12px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 12px;
   width: fit-content;
 }
 
 .saveButton:hover:not(:disabled) {
-  background: var(--cta-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+.saveButton:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
 }
 
 .saveButton:disabled {
-  opacity: 0.7;
+  background: #9ca3af;
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
 .spinAnimation {
