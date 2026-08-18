@@ -34,12 +34,14 @@ export async function POST(request) {
       }
     }
 
-    // Prepare headers
+    // Prepare headers and their masked equivalents for logging
     const fetchHeaders = new Headers();
+    const logHeaders = {};
     if (headers && headers.length > 0) {
       headers.forEach(h => {
         if (h.key && h.value) {
           fetchHeaders.append(h.key, h.value);
+          logHeaders[h.key] = h.isSecret ? "********" : h.value;
         }
       });
     }
@@ -47,24 +49,47 @@ export async function POST(request) {
     // Execute the request
     const startTime = Date.now();
     
+    // Default timeout or load from DB if needed
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const fetchOptions = {
       method: method || "POST",
       headers: fetchHeaders,
+      signal: controller.signal
     };
     
     if (method !== "GET" && method !== "HEAD" && bodyPayload) {
       fetchOptions.body = bodyPayload;
     }
 
+    let logBody = null;
+    if (fetchOptions.body) {
+      try { logBody = JSON.parse(fetchOptions.body); } catch(e) { logBody = fetchOptions.body; }
+      if (typeof logBody === 'object' && logBody !== null) {
+        logBody = { ...logBody };
+        ['password', 'token', 'secret', 'key', 'authorization'].forEach(k => {
+          if (logBody[k]) logBody[k] = "********";
+        });
+      }
+      if (typeof logBody === 'string' && logBody.length > 1000) {
+        logBody = logBody.substring(0, 1000) + "... [TRUNCATED]";
+      }
+    }
+
     console.log("=== WEBHOOK TEST REQUEST ===");
     console.log("URL:", finalUrl);
     console.log("Method:", fetchOptions.method);
-    console.log("Headers:");
-    fetchHeaders.forEach((value, key) => console.log(`  ${key}: ${value}`));
-    console.log("Body Payload:", fetchOptions.body);
+    console.log("Headers:", logHeaders);
+    console.log("Body Payload:", logBody);
     console.log("============================");
 
-    const response = await fetch(finalUrl, fetchOptions);
+    let response;
+    try {
+      response = await fetch(finalUrl, fetchOptions);
+    } finally {
+      clearTimeout(timeoutId);
+    }
     const executionTimeMs = Date.now() - startTime;
     
     const status = response.status;

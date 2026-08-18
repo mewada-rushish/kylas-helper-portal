@@ -90,6 +90,12 @@ export class AutomationEngine {
     
     if (!this.workflow) throw new Error(`Workflow ${this.workflowId} not found`);
 
+    // Fetch system settings to apply globally across automations
+    this.systemSettings = await prisma.systemSetting.findUnique({
+      where: { id: "default" }
+    });
+    if (!this.systemSettings) this.systemSettings = {};
+
     let config;
     try {
       config = JSON.parse(this.workflow.config || "{}");
@@ -149,7 +155,8 @@ export class AutomationEngine {
       trigger: { payload: initialPayload },
       sys: {
         date: now.toISOString().split('T')[0],
-        time: now.toTimeString().split(' ')[0]
+        time: now.toTimeString().split(' ')[0],
+        settings: this.systemSettings
       }
     };
     
@@ -191,14 +198,20 @@ export class AutomationEngine {
           const stepResult = await this.executeActionNode(node, context);
           
           if (node.outputVariableName) {
-            context[`step_${node.id}`] = { [node.outputVariableName]: stepResult.result || stepResult.response };
+            context[`step_${node.id}`] = { 
+              ...stepResult, 
+              [node.outputVariableName]: stepResult.result || stepResult.response 
+            };
           } else {
             context[`step_${node.id}`] = stepResult;
           }
         } else if (node.type === 'generate_invoice') {
           const stepResult = await this.executeGenerateInvoiceNode(node, context);
           if (node.outputVariableName) {
-            context[`step_${node.id}`] = { [node.outputVariableName]: stepResult };
+            context[`step_${node.id}`] = { 
+              ...stepResult, 
+              [node.outputVariableName]: stepResult 
+            };
           } else {
             context[`step_${node.id}`] = stepResult;
           }
@@ -328,6 +341,7 @@ export class AutomationEngine {
       let finalUrl = "";
       let method = "GET";
       let headersObj = {};
+      let logHeaders = {};
       let bodyStr = null;
 
       if (node.externalApiId) {
@@ -339,7 +353,7 @@ export class AutomationEngine {
 
         method = apiConfig.method || "GET";
         let rawUrl = apiConfig.url || "";
-        let rawHeaders = apiConfig.headers || "";
+        let rawHeaders = apiConfig.headers || "[]";
         let rawBody = apiConfig.bodyPayload || "";
 
         for (const [token, mappedPath] of Object.entries(node.mappings || {})) {
@@ -353,7 +367,22 @@ export class AutomationEngine {
         }
 
         finalUrl = rawUrl;
-        try { headersObj = rawHeaders ? JSON.parse(rawHeaders) : {}; } catch(e){}
+        
+        try { 
+          const parsedHeaders = JSON.parse(rawHeaders);
+          if (Array.isArray(parsedHeaders)) {
+            for (const h of parsedHeaders) {
+              if (h.key) {
+                headersObj[h.key] = h.value;
+                logHeaders[h.key] = h.isSecret ? "********" : h.value;
+              }
+            }
+          } else {
+            headersObj = parsedHeaders;
+            logHeaders = { ...parsedHeaders };
+          }
+        } catch(e) {}
+        
         bodyStr = rawBody ? rawBody : null;
 
       } else {
@@ -364,16 +393,20 @@ export class AutomationEngine {
         let rawHeaders = node.apiHeaders || params.headers;
         if (rawHeaders) {
           if (Array.isArray(rawHeaders)) {
-            // UI passes [{key: '...', value: '...'}]
-            headersObj = {};
+            // UI passes [{key: '...', value: '...', isSecret: true}]
             for (const h of rawHeaders) {
               if (h.key) {
-                headersObj[h.key] = evaluateTemplate(h.value, context);
+                const val = evaluateTemplate(h.value, context);
+                headersObj[h.key] = val;
+                logHeaders[h.key] = h.isSecret ? "********" : val;
               }
             }
           } else {
             rawHeaders = evaluateTemplate(rawHeaders, context);
-            try { headersObj = typeof rawHeaders === 'string' ? JSON.parse(rawHeaders) : rawHeaders; } catch(e){}
+            try { 
+              headersObj = typeof rawHeaders === 'string' ? JSON.parse(rawHeaders) : rawHeaders; 
+              logHeaders = { ...headersObj };
+            } catch(e){}
           }
         }
 
@@ -384,7 +417,17 @@ export class AutomationEngine {
         }
       }
 
-      const fetchOptions = { method, headers: headersObj };
+      // Add default timeout from sys settings if available
+      const timeoutMs = context.sys?.settings?.apiTimeout || 15000;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      const fetchOptions = { 
+        method, 
+        headers: headersObj,
+        signal: controller.signal
+      };
+      
       if (bodyStr && method !== "GET" && method !== "HEAD") {
         fetchOptions.body = bodyStr;
       }
@@ -392,9 +435,26 @@ export class AutomationEngine {
       let logBody = null;
       if (bodyStr && method !== "GET" && method !== "HEAD") {
         try { logBody = JSON.parse(bodyStr); } catch(e) { logBody = bodyStr; }
+        // Simple sanitization for logs to prevent data leaks of passwords/tokens
+        if (typeof logBody === 'object' && logBody !== null) {
+          logBody = { ...logBody };
+          ['password', 'token', 'secret', 'key', 'authorization'].forEach(k => {
+            if (logBody[k]) logBody[k] = "********";
+          });
+        }
+        if (typeof logBody === 'string' && logBody.length > 1000) {
+          logBody = logBody.substring(0, 1000) + "... [TRUNCATED]";
+        }
       }
-      await this.appendLog(`Calling API: ${method} ${finalUrl}`, logBody ? { requestBody: logBody } : null);
-      const response = await fetch(finalUrl, fetchOptions);
+      
+      await this.appendLog(`Calling API: ${method} ${finalUrl}`, { headers: logHeaders, requestBody: logBody });
+      
+      let response;
+      try {
+        response = await fetch(finalUrl, fetchOptions);
+      } finally {
+        clearTimeout(timeoutId);
+      }
       
       let data;
       const contentType = response.headers.get("content-type");
