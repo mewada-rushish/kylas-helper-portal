@@ -6,8 +6,23 @@ import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
 import styles from "./SystemLogs.module.css";
-import { JsonView, darkStyles, defaultStyles } from 'react-json-view-lite';
-import 'react-json-view-lite/dist/index.css';
+import { JsonView } from 'react-json-view-lite';
+
+const customJsonStyles = {
+  container: styles.jsonContainer,
+  basicChildStyle: styles.jsonBasicChildStyle,
+  label: styles.jsonLabel,
+  nullValue: styles.jsonNullValue,
+  undefinedValue: styles.jsonUndefinedValue,
+  stringValue: styles.jsonStringValue,
+  booleanValue: styles.jsonBooleanValue,
+  numberValue: styles.jsonNumberValue,
+  otherValue: styles.jsonOtherValue,
+  punctuation: styles.jsonPunctuation,
+  collapseIcon: styles.jsonCollapseIcon,
+  expandIcon: styles.jsonExpandIcon,
+  collapsedContent: styles.jsonCollapsedContent,
+};
 
 // No INITIAL_LOGS anymore
 
@@ -274,7 +289,7 @@ export default function SystemLogs() {
             </button>
           </div>
           <div className={styles.drawerCodeBlockTerminalBox}>
-            <JsonView data={activeInspectedLog} shouldExpandNode={() => true} style={darkStyles} />
+            <JsonView data={activeInspectedLog} shouldExpandNode={() => true} style={customJsonStyles} />
           </div>
         </div>
       )}
