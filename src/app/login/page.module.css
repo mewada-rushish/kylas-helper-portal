@@ -214,6 +214,8 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-.rememberMeGroup { display: flex; align-items: center; margin-bottom: 16px; padding-left: 4px; }
+.rememberMeGroup { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-left: 4px; }
 .checkboxLabel { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4b4b4b; cursor: pointer; user-select: none; }
 .checkboxLabel input { width: 16px; height: 16px; cursor: pointer; accent-color: #007aff; border-radius: 4px; }
+.forgotPasswordLink { font-size: 13px; font-weight: 500; color: #007aff; text-decoration: none; transition: color 0.2s; }
+.forgotPasswordLink:hover { color: #0056b3; text-decoration: underline; }

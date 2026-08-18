@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const isAuth = !!req.nextauth.token;
-    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/reset-password");
+    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/reset-password") || req.nextUrl.pathname.startsWith("/forgot-password");
 
     if (isAuthPage) {
       if (isAuth) {
@@ -27,7 +27,7 @@ export default withAuth(
 
     // Role-Based Access Control (RBAC) Logic
     const token = req.nextauth.token;
-    const role = token?.role || "MARKETING";
+    const role = (token?.role || "MARKETING").toUpperCase();
     const rawCustomAccess = token?.customAccess || [];
     let customAccess = [];
     if (typeof rawCustomAccess === "string") {
@@ -44,9 +44,9 @@ export default withAuth(
 
     // Define base modules
     const baseAccess = {
-      MARKETING: ["/dashboard", "/workflows"],
-      AUTOMATION_ENGINEER: [],
-      ACCOUNTING: ["/dashboard", "/invoices"],
+      MARKETING: ["/dashboard", "/invoices", "/profile"],
+      AUTOMATION_ENGINEER: ["/dashboard", "/invoices", "/workflows", "/profile"],
+      ACCOUNTING: ["/dashboard", "/invoices", "/profile"],
       SUPER_ADMIN: ["*"], // All access
       DEVELOPER: ["*"] // All access
     };
@@ -98,7 +98,9 @@ export const config = {
     "/invoices/:path*",
     "/settings/:path*",
     "/users/:path*",
+    "/profile/:path*",
     "/login",
     "/reset-password",
+    "/forgot-password",
   ],
 };

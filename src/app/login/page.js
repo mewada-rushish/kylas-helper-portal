@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FiLock, FiMail, FiAlertCircle, FiLoader, FiEye, FiEyeOff } from "react-icons/fi";
@@ -111,6 +112,9 @@ function LoginContent() {
               />
               <span>Remember me for 30 days</span>
             </label>
+            <Link href="/forgot-password" className={styles.forgotPasswordLink}>
+              Forgot Password?
+            </Link>
           </div>
 
           <button 

@@ -590,12 +590,25 @@ export class AutomationEngine {
       const pName = productName.toLowerCase();
       let monthsToAdd = 1;
       
-      if (pName.includes("half yearly") || pName.includes("half year") || pName.includes("half - yearly") || pName.includes("half-yearly")) {
-        monthsToAdd = 6;
-      } else if (pName.includes("quarterly") || pName.includes("quaterly")) {
-        monthsToAdd = 3;
-      } else if (pName.includes("yearly") || pName.includes("annual")) {
-        monthsToAdd = 12;
+      try {
+        const settings = await prisma.systemSetting.findUnique({ where: { id: "default" } });
+        let billingMapping = {
+          "half yearly": 6, "half year": 6, "half - yearly": 6, "half-yearly": 6,
+          "quarterly": 3, "quaterly": 3,
+          "yearly": 12, "annual": 12
+        };
+        if (settings?.billingPeriodMappings) {
+          billingMapping = JSON.parse(settings.billingPeriodMappings);
+        }
+        
+        for (const [key, val] of Object.entries(billingMapping)) {
+          if (pName.includes(key.toLowerCase())) {
+            monthsToAdd = parseInt(val, 10) || 1;
+            break;
+          }
+        }
+      } catch (err) {
+        console.error("Error evaluating billing periods:", err);
       }
       
       const startDateObj = new Date(periodStart);

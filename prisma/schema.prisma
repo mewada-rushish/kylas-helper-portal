@@ -128,6 +128,7 @@ model SystemSetting {
   templateNullStrategy String  @default("fallback") @db.VarChar(50)
   webhookMappings     String?  @db.Text
   templateVariablesSchema String? @db.Text
+  billingPeriodMappings String? @db.Text
   updatedAt           DateTime @updatedAt
 }
 

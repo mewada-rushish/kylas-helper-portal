@@ -40,6 +40,7 @@ export default function GeneralSettings() {
   const [timeoutBound, setTimeoutBound] = useState("");
   const [alertEmail, setAlertEmail] = useState("");
   const [logRetentionDays, setLogRetentionDays] = useState("0");
+  const [billingPeriodMappings, setBillingPeriodMappings] = useState('{\n  "half yearly": 6,\n  "half year": 6,\n  "half - yearly": 6,\n  "half-yearly": 6,\n  "quarterly": 3,\n  "quaterly": 3,\n  "yearly": 12,\n  "annual": 12\n}');
 
   const currentSystemYear = new Date().getFullYear();
 
@@ -99,6 +100,9 @@ export default function GeneralSettings() {
         setAlertEmail(data.alertEmail || "");
         setLogRetentionDays(data.logRetentionDays || "0");
         setLogoPreview(data.logoUrl || null);
+        if (data.billingPeriodMappings) {
+          setBillingPeriodMappings(data.billingPeriodMappings);
+        }
       } catch (err) {
         toast.error(err.message);
       } finally {
@@ -162,7 +166,8 @@ export default function GeneralSettings() {
           timeoutBound,
           alertEmail,
           logRetentionDays,
-          logoUrl: logoPreview
+          logoUrl: logoPreview,
+          billingPeriodMappings
         })
       });
 
@@ -458,6 +463,28 @@ export default function GeneralSettings() {
               </div>
             </div>
 
+          </div>
+
+          {/* Billing Mapping Settings Card */}
+          <div className={styles.premiumDashboardFormGridCanvas} style={{ marginTop: '32px' }}>
+            <div className={styles.formSectionGridBlockCard}>
+              <h3>Billing Period Mappings</h3>
+              <p className={styles.sectionSubtitleText} style={{ marginBottom: '16px' }}>
+                Map invoice keyword identifiers to the number of billing months they represent. Ensure this is valid JSON.
+              </p>
+
+              <div className={styles.formInputGroupField}>
+                <div className={styles.inputIconWrapperFrame}>
+                  <textarea
+                    value={billingPeriodMappings}
+                    onChange={(e) => setBillingPeriodMappings(e.target.value)}
+                    className={styles.primaryTextareaInputWithIcon}
+                    style={{ paddingLeft: '16px', fontFamily: 'monospace' }}
+                    rows={10}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Core Updates Submission Rail */}

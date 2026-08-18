@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiLogOut, FiLayout, FiGitBranch, FiCreditCard, FiSettings, FiUsers } from "react-icons/fi";
+import { FiLogOut, FiLayout, FiGitBranch, FiCreditCard, FiSettings, FiUsers, FiUser } from "react-icons/fi";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import styles from "./sidebar.module.css";
@@ -40,7 +40,7 @@ export default function Sidebar({ activeId }) {
       .catch(console.error);
   }, []);
 
-  const role = session?.user?.role || "MARKETING";
+  const role = (session?.user?.role || "MARKETING").toUpperCase();
   const rawCustomAccess = session?.user?.customAccess || [];
   let customAccess = [];
   if (typeof rawCustomAccess === "string") {
@@ -120,6 +120,14 @@ export default function Sidebar({ activeId }) {
       </nav>
 
       <footer className={styles.sidebarFooter}>
+        <Link
+          href="/profile"
+          className={`${styles.navItem} ${activeId === "profile" ? styles.activeNav : ""}`}
+          style={{ marginBottom: "8px", fontWeight: 600 }}
+        >
+          <FiUser className={styles.navIcon} />
+          <span>My Profile</span>
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className={styles.logoutBtn}
