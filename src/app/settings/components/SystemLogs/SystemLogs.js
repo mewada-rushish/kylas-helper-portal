@@ -6,6 +6,8 @@ import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
 import styles from "./SystemLogs.module.css";
+import { JsonView, darkStyles, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 // No INITIAL_LOGS anymore
 
@@ -272,30 +274,7 @@ export default function SystemLogs() {
             </button>
           </div>
           <div className={styles.drawerCodeBlockTerminalBox}>
-            <pre 
-              className={styles.jsonPreViewer}
-              dangerouslySetInnerHTML={{
-                __html: (() => {
-                  let str = JSON.stringify(activeInspectedLog, null, 2);
-                  str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                  return str.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                    let cls = styles.jsonNumber;
-                    if (/^"/.test(match)) {
-                      if (/:$/.test(match)) {
-                        cls = styles.jsonKey;
-                      } else {
-                        cls = styles.jsonString;
-                      }
-                    } else if (/true|false/.test(match)) {
-                      cls = styles.jsonBoolean;
-                    } else if (/null/.test(match)) {
-                      cls = styles.jsonNull;
-                    }
-                    return `<span class="${cls}">${match}</span>`;
-                  });
-                })()
-              }}
-            ></pre>
+            <JsonView data={activeInspectedLog} shouldExpandNode={() => true} style={darkStyles} />
           </div>
         </div>
       )}
