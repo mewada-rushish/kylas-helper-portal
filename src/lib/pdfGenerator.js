@@ -167,16 +167,21 @@ export async function generateAndUploadInvoicePDF(invoiceId, resolvedData, templ
     // Ensure all remote web fonts are fully loaded before rendering
     await page.evaluateHandle('document.fonts.ready');
     
-    const format = systemSettings?.templatePageSize || 'A4';
-    const landscape = systemSettings?.templateOrientation === 'landscape';
-    const marginValue = systemSettings?.templateMargin !== undefined ? `${systemSettings.templateMargin}px` : '30px';
+    const pageFormat = systemSettings?.templatePageSize || 'A4';
+    const isLandscape = systemSettings?.templateOrientation === 'landscape';
+    const marginSize = systemSettings?.templateMargin !== undefined ? systemSettings.templateMargin : 30;
 
     pdfBuffer = await page.pdf({
-      format: format,
-      landscape: landscape,
+      format: pageFormat,
       scale: 0.95,
       printBackground: true,
-      margin: { top: marginValue, bottom: marginValue, left: marginValue, right: marginValue }
+      landscape: isLandscape,
+      margin: { 
+        top: `${marginSize}px`, 
+        bottom: `${marginSize}px`, 
+        left: `${marginSize}px`, 
+        right: `${marginSize}px` 
+      }
     });
   } catch (error) {
     console.error("Puppeteer PDF generation failed:", error);

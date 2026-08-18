@@ -34,7 +34,7 @@ const DEFAULT_VARS = [
 export default function TemplateGeometry() {
   const [defaultPageSize, setDefaultPageSize] = useState("A4");
   const [defaultOrientation, setDefaultOrientation] = useState("portrait");
-  const [globalMargin, setGlobalMargin] = useState(24);
+  const [globalMargin, setGlobalMargin] = useState(30);
   const [nullStrategy, setNullStrategy] = useState("fallback");
   
   const [isFetching, setIsFetching] = useState(true);
