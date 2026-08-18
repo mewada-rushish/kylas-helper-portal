@@ -689,28 +689,34 @@ export class AutomationEngine {
 
     // Save to the database
     try {
-      await prisma.invoice.create({
-        data: {
+      const dbPayload = {
+        customer: normalizedData.customer.name,
+        email: normalizedData.customer.email,
+        date: parseDateString(normalizedData.current.date),
+        productId: normalizedData.product.name,
+        qty: qty,
+        rate: rawRate,
+        total: total,
+        memberId: normalizedData.memberId,
+        amountWords: normalizedData.amount.words,
+        paymentMethod: normalizedData.payment.method,
+        paymentReferenceNo: normalizedData.payment.referenceNo || "",
+        paymentBankName: normalizedData.payment.bankName || "",
+        paymentDate: normalizedData.payment.date || "",
+        periodStart: normalizedData.payment.periodStart || "",
+        periodEnd: normalizedData.payment.periodEnd || "",
+        pdfUrl: publicUrl
+      };
+
+      await prisma.invoice.upsert({
+        where: { id: invoiceId },
+        create: {
           id: invoiceId,
-          customer: normalizedData.customer.name,
-          email: normalizedData.customer.email,
-          date: parseDateString(normalizedData.current.date),
-          productId: normalizedData.product.name,
-          qty: qty,
-          rate: rawRate,
-          total: total,
-          memberId: normalizedData.memberId,
-          amountWords: normalizedData.amount.words,
-          paymentMethod: normalizedData.payment.method,
-          paymentReferenceNo: normalizedData.payment.referenceNo || "",
-          paymentBankName: normalizedData.payment.bankName || "",
-          paymentDate: normalizedData.payment.date || "",
-          periodStart: normalizedData.payment.periodStart || "",
-          periodEnd: normalizedData.payment.periodEnd || "",
-          pdfUrl: publicUrl
-        }
+          ...dbPayload
+        },
+        update: dbPayload
       });
-      await this.appendLog("Invoice saved to database", { invoiceId });
+      await this.appendLog("Invoice saved/updated to database", { invoiceId });
     } catch (dbErr) {
       console.error("Failed to save invoice to DB:", dbErr);
       await this.appendLog("Warning: Failed to save invoice to DB", { error: dbErr.message });
