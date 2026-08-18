@@ -263,6 +263,14 @@ export default function WorkflowsPage() {
                               
                               {openMenuId === wf.id && (
                                 <div className={styles.actionDropdown}>
+                                  <button onClick={() => handleEdit(wf.id)}>
+                                    <FiEdit2 /> Edit Workflow
+                                  </button>
+                                  {wf.status !== "draft" && (
+                                    <button onClick={() => changeStatus(wf.id, "draft")}>
+                                      <FiFileText /> Save as Draft
+                                    </button>
+                                  )}
                                   {wf.status === "draft" && (
                                     <button onClick={() => changeStatus(wf.id, "active")}>
                                       <FiPlay /> Publish Workflow
@@ -278,14 +286,6 @@ export default function WorkflowsPage() {
                                       <FiPause /> Disable Workflow
                                     </button>
                                   )}
-                                  {wf.status !== "draft" && (
-                                    <button onClick={() => changeStatus(wf.id, "draft")}>
-                                      <FiFileText /> Save as Draft
-                                    </button>
-                                  )}
-                                  <button onClick={() => handleEdit(wf.id)}>
-                                    <FiEdit2 /> Edit Workflow
-                                  </button>
                                   <button className={styles.dangerText} onClick={() => handleDelete(wf.id)}>
                                     <FiTrash2 /> Delete Workflow
                                   </button>
