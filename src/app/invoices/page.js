@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiFileText, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter, FiBox, FiRefreshCw } from "react-icons/fi";
+import { FiPlus, FiLayout, FiEye, FiEdit2, FiX, FiPrinter, FiDownload, FiFileText, FiLoader, FiChevronLeft, FiChevronRight, FiTrash2, FiSearch, FiFilter, FiBox, FiRefreshCw, FiMoreVertical } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
@@ -43,6 +43,7 @@ export default function InvoicesListPage() {
   const [filterProduct, setFilterProduct] = useState("all");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = 
@@ -460,7 +461,8 @@ export default function InvoicesListPage() {
               </button>
             </div>
 
-            <table className={styles.invoiceTableGrid}>
+            <div style={{ minHeight: '260px' }}>
+              <table className={styles.invoiceTableGrid}>
               <thead>
                 <tr>
                   <th style={{ width: '40px', textAlign: 'center' }}>
@@ -476,7 +478,7 @@ export default function InvoicesListPage() {
                   <th>Date Generated</th>
                   <th>Associated Product Scope</th>
                   <th>Gross Matrix Value</th>
-                  <th className={styles.textRight}>Available Options</th>
+                  <th className={styles.textRight}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -512,21 +514,35 @@ export default function InvoicesListPage() {
                         </td>
                         <td className={styles.valueTotalBoldCell}>₹{inv.total.toLocaleString("en-IN")}</td>
                         <td>
-                          <div className={styles.actionsCellRow}>
-                            {inv.pdfUrl && (
-                              <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className={styles.iconActionBtn} title="Download PDF" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <FiDownload />
-                              </a>
-                            )}
-                            <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("view", inv)} title="Preview Invoice parameters">
-                              <FiEye />
-                            </button>
-                            <button className={styles.iconActionBtn} onClick={() => handleOpenInvoiceModal("edit", inv)} title="Update Baseline Parameters">
-                              <FiEdit2 />
-                            </button>
-                            <button className={styles.iconActionBtn} onClick={() => handleDeleteInvoice(inv.id)} title="Delete Invoice" style={{ color: "#e11d48" }}>
-                              <FiTrash2 />
-                            </button>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <div className={styles.actionMenuWrapper}>
+                              <button 
+                                className={`${styles.iconBtn} ${openMenuId === inv.id ? styles.iconBtnActive : ""}`} 
+                                title="More Options"
+                                onClick={() => setOpenMenuId(openMenuId === inv.id ? null : inv.id)}
+                              >
+                                <FiMoreVertical />
+                              </button>
+                              
+                              {openMenuId === inv.id && (
+                                <div className={styles.actionDropdown}>
+                                  <button onClick={() => handleOpenInvoiceModal("edit", inv)}>
+                                    <FiEdit2 /> Edit Invoice
+                                  </button>
+                                  <button onClick={() => handleOpenInvoiceModal("view", inv)}>
+                                    <FiEye /> View Invoice
+                                  </button>
+                                  {inv.pdfUrl && (
+                                    <a href={`/api/download?url=${encodeURIComponent(inv.pdfUrl)}&filename=${encodeURIComponent(inv.id + '.pdf')}`} className={styles.dropdownLinkBtn} title="Download Invoice">
+                                      <FiDownload /> Download Invoice
+                                    </a>
+                                  )}
+                                  <button className={styles.dangerText} onClick={() => handleDeleteInvoice(inv.id)}>
+                                    <FiTrash2 /> Delete Invoice
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -534,6 +550,7 @@ export default function InvoicesListPage() {
                 )}
               </tbody>
             </table>
+            </div>
 
             {/* Pagination Controls */}
             {(() => {

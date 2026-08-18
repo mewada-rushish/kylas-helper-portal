@@ -150,3 +150,88 @@
   min-height: 38px !important;
   padding: 8px 12px !important;
 }
+
+
+.actionMenuWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.actionDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: #ffffff;
+  border: var(--glass-border, 1px solid #e2e8f0);
+  border-radius: 12px;
+  box-shadow: var(--shadow-raised, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
+  padding: 6px;
+  min-width: 170px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideDown 0.15s ease-out;
+}
+
+.actionDropdown button, .actionDropdown a.dropdownLinkBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  font-family: var(--font-poppins, 'Poppins'), sans-serif;
+  font-size: 13px;
+  color: #202223;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.actionDropdown button:hover, .actionDropdown a.dropdownLinkBtn:hover {
+  background-color: var(--active-bg, #f1f5f9);
+  color: var(--deep-navy, #27347B);
+}
+
+.actionDropdown button.dangerText {
+  color: var(--action-red, #E21F26);
+}
+
+.actionDropdown button.dangerText:hover {
+  background-color: #fff4f4;
+  color: var(--action-red, #E21F26);
+}
+
+.iconBtnActive {
+  background-color: var(--active-bg, #f1f5f9) !important;
+  color: var(--deep-navy, #27347B) !important;
+}
+
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  color: #6d7175;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover, .iconBtnActive {
+  background-color: var(--active-bg, #f1f5f9);
+  color: #202223;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

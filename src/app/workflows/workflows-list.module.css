@@ -268,7 +268,7 @@
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  background-color: var(--card-bg);
+  background-color: #ffffff;
   border: var(--glass-border);
   border-radius: 12px;
   box-shadow: var(--shadow-raised);

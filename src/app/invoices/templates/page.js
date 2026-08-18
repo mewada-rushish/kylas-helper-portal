@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiEye, FiEdit2, FiTrash2, FiArrowLeft, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiEye, FiEdit2, FiTrash2, FiArrowLeft, FiChevronLeft, FiChevronRight, FiMoreVertical } from "react-icons/fi";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
@@ -27,6 +27,7 @@ export default function TemplatesListingDashboard() {
   const [systemSettings, setSystemSettings] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const fetchTemplates = async () => {
     setIsLoading(true);
@@ -93,13 +94,14 @@ export default function TemplatesListingDashboard() {
           </header>
 
           <div className={styles.tableCardFrame}>
-            <table className={styles.invoiceTableGrid}>
+            <div style={{ minHeight: '260px' }}>
+              <table className={styles.invoiceTableGrid}>
               <thead>
                 <tr>
                   <th>Layout Template Blueprint Name</th>
                   <th>Operational Scope Priority Mapping</th>
                   <th>System Rule Flag</th>
-                  <th className={styles.textRight}>Available Options</th>
+                  <th className={styles.textRight}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -129,18 +131,32 @@ export default function TemplatesListingDashboard() {
                             </span>
                           </td>
                           <td>
-                            <div className={styles.actionsCellRow}>
-                              <button className={styles.iconActionBtn} onClick={() => setPreviewTemplate(tmpl)} title="View Layout Blueprint">
-                                <FiEye />
-                              </button>
-                              <button className={styles.iconActionBtn} onClick={() => router.push(`/invoices/templates/${tmpl.id}`)} title="Open Template Designer">
-                                <FiEdit2 />
-                              </button>
-                              {!tmpl.isDefault && (
-                                <button className={styles.iconActionBtn} onClick={() => handleDelete(tmpl.id)} title="Delete Blueprint">
-                                  <FiTrash2 />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                              <div className={styles.actionMenuWrapper}>
+                                <button 
+                                  className={`${styles.iconBtn} ${openMenuId === tmpl.id ? styles.iconBtnActive : ""}`} 
+                                  title="More Options"
+                                  onClick={() => setOpenMenuId(openMenuId === tmpl.id ? null : tmpl.id)}
+                                >
+                                  <FiMoreVertical />
                                 </button>
-                              )}
+                                
+                                {openMenuId === tmpl.id && (
+                                  <div className={styles.actionDropdown}>
+                                    <button onClick={() => setPreviewTemplate(tmpl)}>
+                                      <FiEye /> View Layout
+                                    </button>
+                                    <button onClick={() => router.push(`/invoices/templates/${tmpl.id}`)}>
+                                      <FiEdit2 /> Open Designer
+                                    </button>
+                                    {!tmpl.isDefault && (
+                                      <button className={styles.dangerText} onClick={() => handleDelete(tmpl.id)}>
+                                        <FiTrash2 /> Delete Blueprint
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -150,6 +166,7 @@ export default function TemplatesListingDashboard() {
                 )}
               </tbody>
             </table>
+            </div>
 
             {/* Pagination Controls */}
             {(() => {

@@ -218,7 +218,7 @@ export default function WorkflowsPage() {
                     <th>Complexity</th>
                     <th>Last Updated</th>
                     <th>Status</th>
-                    <th className={styles.textRight}>Actions</th>
+                    <th className={styles.textRight}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -252,13 +252,6 @@ export default function WorkflowsPage() {
                         </td>
                         <td>
                           <div className={styles.actionsCell}>
-                            <button className={styles.iconBtn} onClick={() => handleEdit(wf.id)} title="Edit Workflow">
-                              <FiEdit2 />
-                            </button>
-                            <button className={`${styles.iconBtn} ${styles.dangerBtn}`} onClick={() => handleDelete(wf.id)} title="Delete Workflow">
-                              <FiTrash2 />
-                            </button>
-                            
                             <div className={styles.actionMenuWrapper}>
                               <button 
                                 className={`${styles.iconBtn} ${openMenuId === wf.id ? styles.iconBtnActive : ""}`} 
@@ -290,6 +283,12 @@ export default function WorkflowsPage() {
                                       <FiFileText /> Save as Draft
                                     </button>
                                   )}
+                                  <button onClick={() => handleEdit(wf.id)}>
+                                    <FiEdit2 /> Edit Workflow
+                                  </button>
+                                  <button className={styles.dangerText} onClick={() => handleDelete(wf.id)}>
+                                    <FiTrash2 /> Delete Workflow
+                                  </button>
                                 </div>
                               )}
                             </div>
