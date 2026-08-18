@@ -250,7 +250,7 @@
   flex: 1;
   padding: 16px 20px;
   overflow-y: auto;
-  background: var(--card-bg);
+  background: #0d1117;
   margin: 12px 20px;
   border: var(--glass-border);
   border-radius: 12px;
@@ -259,10 +259,16 @@
 .drawerCodeBlockTerminalBox pre {
   margin: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: 12px;
-  color: #0F172A; 
+  font-size: 13px;
+  color: #c9d1d9; 
   line-height: 1.6;
 }
+
+.jsonString { color: #a5d6ff; }
+.jsonNumber { color: #79c0ff; }
+.jsonBoolean { color: #ff7b72; font-weight: bold; }
+.jsonNull { color: #ff7b72; font-style: italic; }
+.jsonKey { color: #7ee787; font-weight: 500; }
 
 /* --- EMPTY DATASET ALERT --- */
 .logsEmptyDatasetAlertPlate {

@@ -21,6 +21,29 @@ export default function SystemLogs() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
 
+  const parseRecursively = (data) => {
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        if (typeof parsed === 'object' && parsed !== null) {
+          return parseRecursively(parsed);
+        }
+        return parsed;
+      } catch(e) {
+        return data;
+      }
+    } else if (Array.isArray(data)) {
+      return data.map(parseRecursively);
+    } else if (typeof data === 'object' && data !== null) {
+      const result = {};
+      for (const [key, value] of Object.entries(data)) {
+        result[key] = parseRecursively(value);
+      }
+      return result;
+    }
+    return data;
+  };
+
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
@@ -36,13 +59,10 @@ export default function SystemLogs() {
         const hh = String(dateObj.getHours()).padStart(2, '0');
         const min = String(dateObj.getMinutes()).padStart(2, '0');
         const ss = String(dateObj.getSeconds()).padStart(2, '0');
+        
         let parsedDetails = null;
         if (log.details) {
-          try {
-            parsedDetails = JSON.parse(log.details);
-          } catch(e) {
-            parsedDetails = log.details;
-          }
+          parsedDetails = parseRecursively(log.details);
         }
         
         return {
@@ -207,7 +227,7 @@ export default function SystemLogs() {
       </div>
 
       {/* PAGINATION CONTROLS */}
-      {!isLoading && totalPages > 1 && (
+      {!isLoading && totalPages > 1 && !activeInspectedLog && (
         <div className={styles.paginationControlsContainer}>
           <button 
             type="button"
@@ -252,7 +272,30 @@ export default function SystemLogs() {
             </button>
           </div>
           <div className={styles.drawerCodeBlockTerminalBox}>
-            <pre>{JSON.stringify(activeInspectedLog, null, 2)}</pre>
+            <pre 
+              className={styles.jsonPreViewer}
+              dangerouslySetInnerHTML={{
+                __html: (() => {
+                  let str = JSON.stringify(activeInspectedLog, null, 2);
+                  str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                  return str.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    let cls = styles.jsonNumber;
+                    if (/^"/.test(match)) {
+                      if (/:$/.test(match)) {
+                        cls = styles.jsonKey;
+                      } else {
+                        cls = styles.jsonString;
+                      }
+                    } else if (/true|false/.test(match)) {
+                      cls = styles.jsonBoolean;
+                    } else if (/null/.test(match)) {
+                      cls = styles.jsonNull;
+                    }
+                    return `<span class="${cls}">${match}</span>`;
+                  });
+                })()
+              }}
+            ></pre>
           </div>
         </div>
       )}
