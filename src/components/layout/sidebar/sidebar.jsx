@@ -15,18 +15,18 @@ const CENTRAL_NAVIGATION_ITEMS = [
 ];
 
 const BASE_ACCESS = {
-  META_MARKETING: ["/dashboard", "/workflows"],
+  MARKETING: ["/dashboard", "/workflows"],
+  AUTOMATION_ENGINEER: [],
   ACCOUNTING: ["/dashboard", "/invoices"],
-  WEB_DEVELOPER: ["/dashboard", "/workflows", "/settings"],
-  SUPER_ADMIN: ["*"],
-  DEVELOPER: ["*"]
+  SUPER_ADMIN: ["*"], // All access
+  DEVELOPER: ["*"] // All access
 };
 
 export default function Sidebar({ activeId }) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const role = session?.user?.role || "META_MARKETING";
+  const role = session?.user?.role || "MARKETING";
   const rawCustomAccess = session?.user?.customAccess || [];
   let customAccess = [];
   if (typeof rawCustomAccess === "string") {

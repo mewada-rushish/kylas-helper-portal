@@ -11,7 +11,7 @@ model User {
   id                 String    @id @default(cuid())
   email              String    @unique @db.VarChar(255)
   password           String    @db.VarChar(255)
-  role               String    @default("META_MARKETING") @db.VarChar(50)
+  role               String    @default("MARKETING") @db.VarChar(50)
   customAccess       String?   @db.Text
   resetToken         String?   @db.VarChar(255)
   resetTokenExpiry   DateTime?

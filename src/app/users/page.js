@@ -18,9 +18,9 @@ const ALL_MODULES = [
 ];
 
 const ROLES = [
-  "META_MARKETING",
+  "MARKETING",
   "ACCOUNTING",
-  "WEB_DEVELOPER",
+  "AUTOMATION_ENGINEER",
   "SUPER_ADMIN",
   "DEVELOPER"
 ];
@@ -54,7 +54,7 @@ export default function UsersPage() {
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   
   // Forms
-  const [newUser, setNewUser] = useState({ email: "", password: "", role: "META_MARKETING", customAccess: [] });
+  const [newUser, setNewUser] = useState({ email: "", password: "", role: "MARKETING", customAccess: [] });
   const [selectedUser, setSelectedUser] = useState(null);
 
   // Deletion States
@@ -100,7 +100,7 @@ export default function UsersPage() {
       }
       toast.success("User created successfully");
       setIsCreateModalOpen(false);
-      setNewUser({ email: "", password: "", role: "META_MARKETING", customAccess: [] });
+      setNewUser({ email: "", password: "", role: "MARKETING", customAccess: [] });
       fetchUsers();
     } catch (err) {
       toast.error(err.message);

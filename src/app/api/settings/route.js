@@ -45,7 +45,7 @@ function saveBase64Image(base64Data) {
 export async function GET(request) {
   const session = await getServerSession(authOptions);
   
-  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER" && session.user.role !== "WEB_DEVELOPER")) {
+  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -72,7 +72,7 @@ export async function GET(request) {
 export async function PUT(request) {
   const session = await getServerSession(authOptions);
   
-  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER" && session.user.role !== "WEB_DEVELOPER")) {
+  if (!session || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "DEVELOPER")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

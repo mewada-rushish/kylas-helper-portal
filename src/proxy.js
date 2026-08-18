@@ -27,7 +27,7 @@ export default withAuth(
 
     // Role-Based Access Control (RBAC) Logic
     const token = req.nextauth.token;
-    const role = token?.role || "META_MARKETING";
+    const role = token?.role || "MARKETING";
     const rawCustomAccess = token?.customAccess || [];
     let customAccess = [];
     if (typeof rawCustomAccess === "string") {
@@ -44,9 +44,9 @@ export default withAuth(
 
     // Define base modules
     const baseAccess = {
-      META_MARKETING: ["/dashboard", "/workflows"],
+      MARKETING: ["/dashboard", "/workflows"],
+      AUTOMATION_ENGINEER: [],
       ACCOUNTING: ["/dashboard", "/invoices"],
-      WEB_DEVELOPER: ["/dashboard", "/workflows", "/settings"],
       SUPER_ADMIN: ["*"], // All access
       DEVELOPER: ["*"] // All access
     };
