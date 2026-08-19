@@ -10,6 +10,8 @@ generator client {
 model User {
   id                 String    @id @default(cuid())
   email              String    @unique @db.VarChar(255)
+  firstName          String?   @db.VarChar(100)
+  lastName           String?   @db.VarChar(100)
   password           String    @db.VarChar(255)
   role               String    @default("MARKETING") @db.VarChar(50)
   customAccess       String?   @db.Text

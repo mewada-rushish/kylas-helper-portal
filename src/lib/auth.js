@@ -73,6 +73,8 @@ export const authOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
         token.customAccess = user.customAccess;
         token.rememberMe = user.rememberMe;
         // Record exactly when this session was issued (Unix timestamp)
@@ -91,7 +93,7 @@ export const authOptions = {
         const prisma = (await import("./prisma")).default;
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { passwordChangedAt: true, role: true, customAccess: true },
+          select: { passwordChangedAt: true, role: true, customAccess: true, firstName: true, lastName: true },
         });
 
         if (dbUser) {
@@ -117,6 +119,8 @@ export const authOptions = {
       if (token) {
         session.user.role = token.role;
         session.user.id = token.id;
+        session.user.firstName = token.firstName;
+        session.user.lastName = token.lastName;
         session.user.customAccess = token.customAccess;
         session.error = token.error;
       }

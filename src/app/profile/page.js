@@ -14,6 +14,40 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Initialize profile form when session is available
+  if (status === "authenticated" && !email && session?.user?.email) {
+    setEmail(session.user.email);
+    setFirstName(session.user.firstName || "");
+    setLastName(session.user.lastName || "");
+  }
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    try {
+      const res = await fetch("/api/users/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update profile");
+      
+      toast.success("Profile updated successfully! Some changes might require a re-login to take effect.");
+      setIsEditingProfile(false);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   if (status === "loading") {
     return (
       <div className={styles.adminLayout}>
@@ -87,15 +121,98 @@ export default function ProfilePage() {
                 <h2>Account Details</h2>
                 <p>Your current session information.</p>
               </div>
+              
               <div className={styles.sectionBody}>
-                <div className={styles.infoGroup}>
-                  <span className={styles.infoLabel}>Email</span>
-                  <span className={styles.infoValue}>{session?.user?.email || "Loading..."}</span>
-                </div>
-                <div className={styles.infoGroup}>
-                  <span className={styles.infoLabel}>Role</span>
-                  <span className={styles.infoBadge}>{session?.user?.role || "Unknown"}</span>
-                </div>
+                {!isEditingProfile ? (
+                  <>
+                    <div className={styles.infoGroup}>
+                      <span className={styles.infoLabel}>Name</span>
+                      <span className={styles.infoValue}>
+                        {(session?.user?.firstName || session?.user?.lastName) 
+                          ? `${session?.user?.firstName || ''} ${session?.user?.lastName || ''}`.trim() 
+                          : "Not set"}
+                      </span>
+                    </div>
+                    <div className={styles.infoGroup}>
+                      <span className={styles.infoLabel}>Email</span>
+                      <span className={styles.infoValue}>{session?.user?.email || "Loading..."}</span>
+                    </div>
+                    <div className={styles.infoGroup}>
+                      <span className={styles.infoLabel}>Role</span>
+                      <span className={styles.infoBadge}>{session?.user?.role || "Unknown"}</span>
+                    </div>
+                    <button 
+                      onClick={() => setIsEditingProfile(true)} 
+                      className={styles.saveButton} 
+                      style={{ marginTop: "8px", background: "transparent", color: "#4f46e5", border: "1px solid #4f46e5", padding: "10px 20px" }}
+                    >
+                      Edit Profile
+                    </button>
+                  </>
+                ) : (
+                  <form onSubmit={handleProfileSave} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div className={styles.inputGroup}>
+                      <label>First Name</label>
+                      <div className={styles.inputWrapper}>
+                        <input 
+                          type="text" 
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="e.g. John"
+                          disabled={isSavingProfile}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.inputGroup}>
+                      <label>Last Name</label>
+                      <div className={styles.inputWrapper}>
+                        <input 
+                          type="text" 
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="e.g. Doe"
+                          disabled={isSavingProfile}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.inputGroup}>
+                      <label>Email</label>
+                      <div className={styles.inputWrapper}>
+                        <input 
+                          type="email" 
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="your.email@example.com"
+                          disabled={isSavingProfile}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                      <button 
+                        type="submit" 
+                        className={styles.saveButton}
+                        disabled={isSavingProfile || !email}
+                      >
+                        {isSavingProfile ? <><FiLoader className={styles.spinAnimation} /> Saving...</> : "Save Changes"}
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setEmail(session?.user?.email || "");
+                          setFirstName(session?.user?.firstName || "");
+                          setLastName(session?.user?.lastName || "");
+                        }}
+                        className={styles.saveButton}
+                        style={{ background: "transparent", color: "#64748b", border: "1px solid #cbd5e1" }}
+                        disabled={isSavingProfile}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </section>
 
