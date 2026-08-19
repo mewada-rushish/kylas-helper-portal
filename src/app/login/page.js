@@ -145,7 +145,12 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", gap: "16px" }}>
+        <div className="page-loader-spinner" />
+        <span className="page-loader-text">Loading login...</span>
+      </div>
+    }>
       <LoginContent />
     </Suspense>
   );

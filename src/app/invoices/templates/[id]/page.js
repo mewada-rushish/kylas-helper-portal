@@ -45,7 +45,23 @@ const DEFAULT_MARKUP_TEMPLATE = `<div style="padding: 30px; font-family: 'Poppin
           <td style="padding: 12px 10px; font-weight: 500; color: #0f172a;">{{product.name}}</td>
           <td style="padding: 12px 10px; text-align: center; color: #475569;">{{product.qty}}</td>
           <td style="padding: 12px 10px; text-align: right; color: #475569;">{{product.rate}}</td>
-          <td style="padding: 12px 10px; text-align: right; font-weight: 600; color: #27347B;">{{invoice.total}}</td>
+          <td style="padding: 12px 10px; text-align: right; color: #475569;">{{invoice.subtotal}}</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="padding: 8px 10px; text-align: right; color: #475569; font-weight: 500;">Basic</td>
+          <td style="padding: 8px 10px; text-align: right; color: #475569; font-weight: 500;">{{invoice.subtotal}}</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="padding: 8px 10px; text-align: right; color: #475569; font-weight: 500;">CGST @ 9%</td>
+          <td style="padding: 8px 10px; text-align: right; color: #475569; font-weight: 500;">{{invoice.cgst}}</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="padding: 8px 10px; text-align: right; color: #475569; font-weight: 500;">SGST @ 9%</td>
+          <td style="padding: 8px 10px; text-align: right; color: #475569; font-weight: 500;">{{invoice.sgst}}</td>
+        </tr>
+        <tr style="border-top: 1px solid #e2e8f0;">
+          <td colspan="3" style="padding: 12px 10px; text-align: right; color: #0f172a; font-weight: 700;">Total</td>
+          <td style="padding: 12px 10px; text-align: right; font-weight: 700; color: #27347B;">{{invoice.total}}</td>
         </tr>
       </tbody>
     </table>

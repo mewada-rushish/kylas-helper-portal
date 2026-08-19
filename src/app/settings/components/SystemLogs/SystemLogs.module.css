@@ -192,7 +192,10 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  box-shadow: var(--shadow-raised);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
 }
 
 .drawerHeaderFlexLine {
@@ -332,44 +335,94 @@
   stroke-width: 1.5;
 }
 /* Pagination Controls */
-.paginationControlsContainer {
+.paginationWrapper {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px;
   padding: 16px 20px;
+  background-color: var(--card-bg);
   border-top: var(--glass-border);
-  background: var(--card-bg);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
-.paginationBtn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color, #E2E8F0);
-  background: #FFFFFF;
+.pageInfo {
+  font-family: var(--font-poppins), sans-serif;
+  font-size: 12px;
+  color: #8c9196;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTracker {
   font-family: var(--font-poppins), sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: #334155;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  color: #202223;
 }
 
-.paginationBtn:hover:not(:disabled) {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
-}
-
-.paginationBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.paginationStatusText {
-  font-family: var(--font-montserrat), sans-serif;
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 32px; 
+  background-color: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 12px;
+  font-family: var(--font-poppins), sans-serif;
   font-size: 13px;
-  font-weight: 600;
-  color: #64748B;
+  font-weight: 500;
+  color: #202223;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1; 
+}
+
+.pageIcon {
+  font-size: 16px;
+  display: block;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: var(--active-bg);
+  border-color: var(--deep-navy, #27347B);
+  color: var(--deep-navy, #27347B);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #fafbfc;
+}
+
+.pageSizeDropdownTrigger {
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  width: 64px !important;
+  background-color: #f8fafc !important;
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  height: 28px !important;
+  min-height: unset !important;
+}
+
+.pageSizeDropdownTrigger + ul {
+  top: auto !important;
+  bottom: calc(100% + 4px) !important;
+}
+
+.pageSizeDropdownTrigger [class*="labelText"] {
+  font-size: 12px !important;
+}
+
+.pageSizeDropdownTrigger [class*="arrowIcon"] {
+  font-size: 10px !important;
 }
 
 .refreshBtn {

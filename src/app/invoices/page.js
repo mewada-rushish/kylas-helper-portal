@@ -10,7 +10,7 @@ import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import CentralizedModal from "@/components/ui/modal/modal";
 import styles from "./invoices.module.css";
-import { resolveToken } from "@/lib/variable-resolver";
+import { resolveToken, generateProductAcronym } from "@/lib/variable-resolver";
 import { useSession } from "next-auth/react";
 
 const KYLAS_PRODUCTS = [
@@ -144,9 +144,17 @@ export default function InvoicesListPage() {
       setActiveInvoice(invoice);
       setInvCustomer(invoice.customer || "");
       setInvEmail(invoice.email || "");
-      setInvMemberId(invoice.memberId || "");
       setInvAmountWords(invoice.amount?.words || "");
       setInvProduct(invoice.productId || "prod_crm_ent");
+      
+      const acronym = generateProductAcronym(KYLAS_PRODUCTS.find(p => p.value === (invoice.productId || "prod_crm_ent"))?.label);
+      let rawId = invoice.memberId || "";
+      if (acronym && rawId.startsWith(`${acronym}-`)) {
+        rawId = rawId.substring(acronym.length + 1);
+      } else if (acronym && rawId === acronym) {
+        rawId = "";
+      }
+      setInvMemberId(rawId);
       setInvQty(invoice.qty || 1);
       setInvRate(invoice.rate || 0);
       setInvPeriodStart(invoice.payment?.periodStart || "");
@@ -180,10 +188,18 @@ export default function InvoicesListPage() {
     const rateNum = Number(invRate);
     const calculatedTotal = (qtyNum * rateNum) * 1.18; 
 
+    const acronym = generateProductAcronym(KYLAS_PRODUCTS.find(p => p.value === invProduct)?.label);
+    let finalMemberId = invMemberId || "";
+    if (acronym && finalMemberId && !finalMemberId.startsWith(acronym)) {
+      finalMemberId = `${acronym}-${finalMemberId}`;
+    } else if (acronym && !finalMemberId) {
+      finalMemberId = acronym;
+    }
+
     const invoiceData = {
       customer: invCustomer,
       email: invEmail,
-      memberId: invMemberId,
+      memberId: finalMemberId,
       productId: invProduct,
       qty: qtyNum,
       rate: rateNum,
@@ -715,7 +731,22 @@ export default function InvoicesListPage() {
                     <div className={styles.formRowTwoColumnGrid}>
                       <div className={styles.inputFieldGroupBlock}>
                         <label>Member ID</label>
-                        <input type="text" placeholder="e.g. SCC - 1" value={invMemberId} onChange={(e) => setInvMemberId(e.target.value)} />
+                        <div style={{ display: "flex", alignItems: "stretch", borderRadius: "8px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
+                          <span style={{ 
+                            display: "flex", alignItems: "center", padding: "0 12px", 
+                            background: "#f1f5f9", color: "#475569", fontSize: "13px", 
+                            fontWeight: 500, borderRight: "1px solid #e2e8f0" 
+                          }}>
+                            {generateProductAcronym(KYLAS_PRODUCTS.find(p => p.value === invProduct)?.label) ? `${generateProductAcronym(KYLAS_PRODUCTS.find(p => p.value === invProduct)?.label)}-` : ""}
+                          </span>
+                          <input 
+                            type="text" 
+                            placeholder="e.g. 1" 
+                            value={invMemberId} 
+                            onChange={(e) => setInvMemberId(e.target.value)} 
+                            style={{ border: "none", borderRadius: 0, flex: 1, margin: 0, boxShadow: "none" }} 
+                          />
+                        </div>
                       </div>
                       <div className={styles.inputFieldGroupBlock}>
                         <label>Amount In Words</label>

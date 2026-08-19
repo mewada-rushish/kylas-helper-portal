@@ -167,6 +167,8 @@ export default function WorkflowsPage() {
     ...uniqueTriggers.map(t => ({ label: t, value: t }))
   ];
 
+  const canEdit = session?.user?.role !== "MARKETING" && session?.user?.role !== "ACCOUNTING";
+
   return (
     <div className={styles.adminLayout}>
       <Sidebar activeId="workflows" />
@@ -178,11 +180,13 @@ export default function WorkflowsPage() {
               <h1>Workflow Automations</h1>
               <p>Manage conditional triggers and Kylas event routing</p>
             </div>
-            <div className={styles.headerActions}>
-              <AdminButton variant="primary" icon={FiPlus} onClick={handleCreateNew}>
-                Create Automation
-              </AdminButton>
-            </div>
+            {canEdit && (
+              <div className={styles.headerActions}>
+                <AdminButton variant="primary" icon={FiPlus} onClick={handleCreateNew}>
+                  Create Automation
+                </AdminButton>
+              </div>
+            )}
           </header>
 
           <div className={styles.tableContainer}>
@@ -218,18 +222,23 @@ export default function WorkflowsPage() {
                     <th>Automation Name</th>
                     <th>Kylas Trigger</th>
                     <th>Complexity</th>
-                    <th>Last Updated</th>
+                    <th>Last Modified</th>
                     <th>Status</th>
-                    <th className={styles.textRight}>ACTIONS</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading ? (
-                    <SkeletonLoader type="table" rows={itemsPerPage} columns={6} />
+                    <tr>
+                      <td colSpan="6" className={styles.loadingCell}>
+                        <div className={styles.spinner} />
+                        Loading workflows...
+                      </td>
+                    </tr>
                   ) : paginatedWorkflows.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className={styles.emptyState}>
-                        {searchQuery || statusFilter !== "all" || triggerFilter !== "all"
+                      <td colSpan="6" className={styles.emptyCell}>
+                        {searchQuery || triggerFilter !== "all" || statusFilter !== "all"
                           ? "No workflows match your search filters." 
                           : "No workflows found. Create one to automate Kylas actions."}
                       </td>
@@ -266,32 +275,44 @@ export default function WorkflowsPage() {
                               {openMenuId === wf.id && (
                                 <div className={styles.actionDropdown}>
                                   <button onClick={() => handleEdit(wf.id)}>
-                                    <FiEdit2 /> Edit Workflow
+                                    {canEdit ? (
+                                      <>
+                                        <FiEdit2 /> Edit Workflow
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FiEdit2 /> View Workflow
+                                      </>
+                                    )}
                                   </button>
-                                  {wf.status !== "draft" && (
-                                    <button onClick={() => changeStatus(wf.id, "draft")}>
-                                      <FiFileText /> Save as Draft
-                                    </button>
-                                  )}
-                                  {wf.status === "draft" && (
-                                    <button onClick={() => changeStatus(wf.id, "active")}>
-                                      <FiPlay /> Publish Workflow
-                                    </button>
-                                  )}
-                                  {wf.status === "inactive" && (
-                                    <button onClick={() => changeStatus(wf.id, "active")}>
-                                      <FiPlay /> Enable Workflow
-                                    </button>
-                                  )}
-                                  {wf.status === "active" && (
-                                    <button className={styles.dangerText} onClick={() => changeStatus(wf.id, "inactive")}>
-                                      <FiPause /> Disable Workflow
-                                    </button>
-                                  )}
-                                  {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && (
-                                    <button className={styles.dangerText} onClick={() => handleDelete(wf.id)}>
-                                      <FiTrash2 /> Delete Workflow
-                                    </button>
+                                  {canEdit && (
+                                    <>
+                                      {wf.status !== "draft" && (
+                                        <button onClick={() => changeStatus(wf.id, "draft")}>
+                                          <FiFileText /> Save as Draft
+                                        </button>
+                                      )}
+                                      {wf.status === "draft" && (
+                                        <button onClick={() => changeStatus(wf.id, "active")}>
+                                          <FiPlay /> Publish Workflow
+                                        </button>
+                                      )}
+                                      {wf.status === "inactive" && (
+                                        <button onClick={() => changeStatus(wf.id, "active")}>
+                                          <FiPlay /> Enable Workflow
+                                        </button>
+                                      )}
+                                      {wf.status === "active" && (
+                                        <button className={styles.dangerText} onClick={() => changeStatus(wf.id, "inactive")}>
+                                          <FiPause /> Disable Workflow
+                                        </button>
+                                      )}
+                                      {(session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "DEVELOPER") && (
+                                        <button className={styles.dangerText} onClick={() => handleDelete(wf.id)}>
+                                          <FiTrash2 /> Delete Workflow
+                                        </button>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               )}

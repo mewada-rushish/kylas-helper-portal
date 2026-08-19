@@ -8,7 +8,7 @@ import { logSystemAction } from "@/lib/logger";
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || session.user.role === "ACCOUNTING" || session.user.role === "MARKETING") {
+  if (!session || session.user.role === "ACCOUNTING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

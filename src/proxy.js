@@ -44,7 +44,7 @@ export default withAuth(
 
     // Define base modules
     const baseAccess = {
-      MARKETING: ["/dashboard", "/invoices", "/profile"],
+      MARKETING: ["/dashboard", "/invoices", "/workflows", "/profile"],
       AUTOMATION_ENGINEER: ["/dashboard", "/invoices", "/workflows", "/profile"],
       ACCOUNTING: ["/dashboard", "/invoices", "/profile"],
       SUPER_ADMIN: ["*"], // All access

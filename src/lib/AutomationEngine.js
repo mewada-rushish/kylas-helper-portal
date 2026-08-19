@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { generateAndUploadInvoicePDF } from "./pdfGenerator";
 import { logSystemAction } from "./logger";
+import { generateProductAcronym } from "./variable-resolver";
 
 /**
  * Resolves a variable path exactly against the context, returning the raw object/array.
@@ -632,6 +633,15 @@ export class AutomationEngine {
 
 
 
+    const acronym = generateProductAcronym(productName);
+    let baseMemberId = resolvedData.memberId || "";
+
+    if (baseMemberId && !baseMemberId.startsWith(acronym)) {
+      baseMemberId = `${acronym}-${baseMemberId}`;
+    } else if (!baseMemberId) {
+      baseMemberId = acronym;
+    }
+
     const normalizedData = {
       ...resolvedData,
       invoice: {
@@ -666,7 +676,7 @@ export class AutomationEngine {
         periodStart: periodStart,
         periodEnd: periodEnd
       },
-      memberId: resolvedData.memberId || ""
+      memberId: baseMemberId
     };
 
     await this.appendLog("Generating PDF using Puppeteer...", { invoiceId });

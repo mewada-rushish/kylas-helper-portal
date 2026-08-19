@@ -64,6 +64,8 @@ export default function UsersPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isSavingAccess, setIsSavingAccess] = useState(false);
+  const [resetLinkModalOpen, setResetLinkModalOpen] = useState(false);
+  const [generatedResetLink, setGeneratedResetLink] = useState("");
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -186,8 +188,8 @@ export default function UsersPage() {
       const res = await fetch(`/api/users/${id}/reset`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to generate link");
       const data = await res.json();
-      await copyToClipboard(data.resetLink);
-      toast.success("Reset link copied to clipboard!");
+      setGeneratedResetLink(data.resetLink);
+      setResetLinkModalOpen(true);
     } catch (err) {
       toast.error(err.message);
     }
@@ -464,6 +466,43 @@ export default function UsersPage() {
               value={deleteConfirmationText}
               onChange={(e) => setDeleteConfirmationText(e.target.value)}
               autoFocus
+            />
+          </div>
+        </div>
+      </CentralizedModal>
+
+      {/* RESET LINK MODAL */}
+      <CentralizedModal
+        isOpen={resetLinkModalOpen}
+        onClose={() => setResetLinkModalOpen(false)}
+        title="Password Reset Link"
+        type="content"
+        size="md"
+        primaryAction={{
+          label: "Copy Link",
+          icon: <FiCheck size={14} />,
+          onClick: async () => {
+            await copyToClipboard(generatedResetLink);
+            toast.success("Reset link copied to clipboard!");
+            setResetLinkModalOpen(false);
+          }
+        }}
+        secondaryAction={{
+          label: "Close",
+          onClick: () => setResetLinkModalOpen(false)
+        }}
+      >
+        <div style={{ padding: "16px 0" }}>
+          <p style={{ marginBottom: "12px", fontSize: "14px", color: "#64748b" }}>
+            Share this link with the user to allow them to securely reset their password. This link is valid for 24 hours.
+          </p>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <input 
+              type="text" 
+              readOnly 
+              value={generatedResetLink} 
+              style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #e2e8f0", backgroundColor: "#f8fafc", fontSize: "13px", color: "#334155" }}
+              onFocus={(e) => e.target.select()}
             />
           </div>
         </div>

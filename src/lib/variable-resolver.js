@@ -8,18 +8,30 @@ const KYLAS_PRODUCTS = [
   { value: "prod_devops_supp", label: "Dedicated Cloud DevOps Maintenance Hours" }
 ];
 
+export const generateProductAcronym = (productName) => {
+  if (!productName) return "";
+  const cleanName = productName.replace(/\(.*?\)/g, '');
+  return cleanName
+    .split(/[\s-]+/)
+    .filter(word => word.length > 0)
+    .map(word => word[0].toUpperCase())
+    .join('');
+};
+
 export const resolveToken = (content, context = {}) => {
   if (!content) return "";
   
   const prodObj = KYLAS_PRODUCTS.find(p => p.value === context.productId);
 
-  const rate = context.rate || 45000;
+  const rate = context.rate;
   const qty = context.qty || 1;
-  const subtotal = rate * qty;
-  const cgst = subtotal * 0.09;
-  const sgst = subtotal * 0.09;
+  const inputTotal = context.total || (rate ? rate * qty : 4500);
+  
+  const cgst = inputTotal * 0.09;
+  const sgst = inputTotal * 0.09;
   const gst = cgst + sgst;
-  const total = context.total || (subtotal + gst);
+  const subtotal = inputTotal - gst;
+  const total = inputTotal;
 
   // Build the complete data model for Handlebars
   const hbsData = {

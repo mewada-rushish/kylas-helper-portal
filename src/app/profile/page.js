@@ -8,11 +8,25 @@ import toast from "react-hot-toast";
 import styles from "./page.module.css";
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  if (status === "loading") {
+    return (
+      <div className={styles.adminLayout}>
+        <Sidebar activeId="profile" />
+        <main className={styles.mainCanvas}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "70vh", gap: "16px" }}>
+            <div className="page-loader-spinner" />
+            <span className="page-loader-text">Loading profile...</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();

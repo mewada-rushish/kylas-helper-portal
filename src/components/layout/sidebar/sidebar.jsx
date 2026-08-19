@@ -16,7 +16,7 @@ const CENTRAL_NAVIGATION_ITEMS = [
 ];
 
 const BASE_ACCESS = {
-  MARKETING: ["/dashboard", "/invoices"],
+  MARKETING: ["/dashboard", "/invoices", "/workflows"],
   AUTOMATION_ENGINEER: ["/dashboard", "/invoices", "/workflows"],
   ACCOUNTING: ["/dashboard", "/invoices"],
   SUPER_ADMIN: ["*"], // All access

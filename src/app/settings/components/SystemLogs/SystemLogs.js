@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiPlay, FiAlertCircle, FiTerminal, FiRefreshCw } from "react-icons/fi";
+import { FiSearch, FiPlay, FiAlertCircle, FiTerminal, FiRefreshCw, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
@@ -36,7 +36,7 @@ export default function SystemLogs() {
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 25;
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const parseRecursively = (data) => {
     if (typeof data === 'string') {
@@ -244,27 +244,47 @@ export default function SystemLogs() {
       </div>
 
       {/* PAGINATION CONTROLS */}
-      {!isLoading && totalPages > 1 && !activeInspectedLog && (
-        <div className={styles.paginationControlsContainer}>
-          <button 
-            type="button"
-            className={styles.paginationBtn}
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <span className={styles.paginationStatusText}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button 
-            type="button"
-            className={styles.paginationBtn}
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
+      {!isLoading && filteredLogs.length > 0 && !activeInspectedLog && (
+        <div className={styles.paginationWrapper}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span className={styles.pageInfo}>
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredLogs.length)} of {filteredLogs.length} entries
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
+              <span style={{ fontSize: '12px', color: '#8c9196', fontFamily: 'var(--font-poppins), sans-serif' }}>Show:</span>
+              <CustomDropdown 
+                options={[
+                  { value: "5", label: "5" },
+                  { value: "10", label: "10" },
+                  { value: "25", label: "25" },
+                  { value: "50", label: "50" },
+                  { value: "100", label: "100" }
+                ]} 
+                selectedValue={itemsPerPage.toString()} 
+                onSelect={(val) => { setItemsPerPage(Number(val)); setCurrentPage(1); }}
+                triggerClassName={styles.pageSizeDropdownTrigger}
+              />
+            </div>
+          </div>
+          <div className={styles.paginationControls}>
+            <button 
+              disabled={currentPage === 1} 
+              onClick={() => setCurrentPage(p => p - 1)} 
+              className={styles.pageBtn}
+              title="Previous Page"
+            >
+              <FiChevronLeft className={styles.pageIcon} />
+            </button>
+            <div className={styles.pageTracker}>Page {currentPage} of {totalPages}</div>
+            <button 
+              disabled={currentPage === totalPages} 
+              onClick={() => setCurrentPage(p => p + 1)} 
+              className={styles.pageBtn}
+              title="Next Page"
+            >
+              <FiChevronRight className={styles.pageIcon} />
+            </button>
+          </div>
         </div>
       )}
 

@@ -120,8 +120,9 @@ function SettingsDashboardContent() {
 export default function GlobalSettingsOrchestrator() {
   return (
     <Suspense fallback={
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        Loading...
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100vh", gap: "16px" }}>
+        <div className="page-loader-spinner" />
+        <span className="page-loader-text">Loading settings...</span>
       </div>
     }>
       <SettingsDashboardContent />

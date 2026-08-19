@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { 
   FiZap, FiGitBranch, FiPlayCircle, FiSave, FiTrash2, 
   FiLayout, FiCreditCard, FiSettings, FiArrowLeft, FiClock, 
@@ -221,6 +222,9 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
 export default function WorkflowCanvasEngine() {
   const router = useRouter();
   const params = useParams();
+  const { data: session } = useSession();
+  const userRole = session?.user?.role || "MARKETING";
+  const canEdit = userRole !== "MARKETING" && userRole !== "ACCOUNTING";
 
   // Workflow Core Database States
   const [workflowName, setWorkflowName] = useState("Kylas Free-Form Workflow");
@@ -256,6 +260,12 @@ export default function WorkflowCanvasEngine() {
   const [selectedLog, setSelectedLog] = useState(null);
   const [revertedVersion, setRevertedVersion] = useState(null);
   const pollIntervalRef = useRef(null);
+
+  useEffect(() => {
+    if (!canEdit) {
+      setSaveStatus("View Only Mode");
+    }
+  }, [canEdit]);
 
   // Fetch Workflow data on mount
   useEffect(() => {
@@ -596,6 +606,7 @@ export default function WorkflowCanvasEngine() {
 
   const isInitialMount = useRef(true);
   useEffect(() => {
+    if (!canEdit) return;
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
@@ -1069,7 +1080,8 @@ export default function WorkflowCanvasEngine() {
                     value={workflowName}
                     onChange={(e) => setWorkflowName(e.target.value)}
                     className={styles.headerTitleInput}
-                    title="Click to rename workflow"
+                    title={canEdit ? "Click to rename workflow" : "Workflow Name (Read Only)"}
+                    readOnly={!canEdit}
                   />
                   <span className={`${styles.statusBadge} ${workflowStatus === 'active' ? styles.statusActive : ''}`}>{workflowStatus}</span>
                 </div>
@@ -1077,15 +1089,19 @@ export default function WorkflowCanvasEngine() {
               </div>
             </div>
             <div className={styles.headerActions}>
-              <AdminButton variant="secondary" icon={FiPlayCircle} onClick={isTestingMode ? cancelTestWorkflow : handleTestWorkflow} disabled={isSaving}>
-                {isTestingMode ? "Listening... (Cancel)" : "Test Workflow"}
-              </AdminButton>
-              <AdminButton variant="secondary" icon={FiFileText} onClick={() => handleManualSave("draft")} disabled={isSaving || isTestingMode}>
-                Save Draft
-              </AdminButton>
-              <AdminButton variant="primary" icon={FiSave} onClick={() => handleManualSave("active")} disabled={isSaving || isTestingMode}>
-                Save Workflow
-              </AdminButton>
+              {canEdit && (
+                <>
+                  <AdminButton variant="secondary" icon={FiPlayCircle} onClick={isTestingMode ? cancelTestWorkflow : handleTestWorkflow} disabled={isSaving}>
+                    {isTestingMode ? "Listening... (Cancel)" : "Test Workflow"}
+                  </AdminButton>
+                  <AdminButton variant="secondary" icon={FiFileText} onClick={() => handleManualSave("draft")} disabled={isSaving || isTestingMode}>
+                    Save Draft
+                  </AdminButton>
+                  <AdminButton variant="primary" icon={FiSave} onClick={() => handleManualSave("active")} disabled={isSaving || isTestingMode}>
+                    Save Workflow
+                  </AdminButton>
+                </>
+              )}
             </div>
           </header>
 
@@ -1108,7 +1124,7 @@ export default function WorkflowCanvasEngine() {
               <div 
                 ref={canvasRef}
                 className={`${styles.graphWorkspaceFrame} ${isPanning ? styles.panningWorkspaceState : ""}`}
-                onContextMenu={handleContextMenu}
+                onContextMenu={canEdit ? handleContextMenu : undefined}
                 onMouseDown={handleCanvasMouseDown}
               >
                 <div 
@@ -1698,6 +1714,10 @@ export default function WorkflowCanvasEngine() {
                     );
                   })}
                 </div>
+
+                {!canEdit && (
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 900, cursor: 'not-allowed' }} />
+                )}
 
                 <div className={styles.zoomControlsPanel}>
                   <span className={styles.zoomPercentage}>{Math.round(zoom * 100)}%</span>
