@@ -27,10 +27,10 @@ export const resolveToken = (content, context = {}) => {
   const qty = context.qty || 1;
   const inputTotal = context.total || (rate ? rate * qty : 4500);
   
-  const cgst = inputTotal * 0.09;
-  const sgst = inputTotal * 0.09;
+  const subtotal = inputTotal / 1.18;
+  const cgst = subtotal * 0.09;
+  const sgst = subtotal * 0.09;
   const gst = cgst + sgst;
-  const subtotal = inputTotal - gst;
   const total = inputTotal;
 
   // Build the complete data model for Handlebars
@@ -38,11 +38,11 @@ export const resolveToken = (content, context = {}) => {
     ...context,
     invoice: {
       id: context.id || "INV-DEMO-99",
-      total: `₹${total.toLocaleString("en-IN")}`,
-      subtotal: `₹${subtotal.toLocaleString("en-IN")}`,
-      cgst: `₹${cgst.toLocaleString("en-IN")}`,
-      sgst: `₹${sgst.toLocaleString("en-IN")}`,
-      gst: `₹${gst.toLocaleString("en-IN")}`,
+      total: `₹${total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      subtotal: `₹${subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      cgst: `₹${cgst.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      sgst: `₹${sgst.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      gst: `₹${gst.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       ...context.invoice
     },
     customer: {

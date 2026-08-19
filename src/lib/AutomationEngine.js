@@ -642,12 +642,21 @@ export class AutomationEngine {
       baseMemberId = acronym;
     }
 
+    const subtotalVal = total / 1.18;
+    const cgstVal = subtotalVal * 0.09;
+    const sgstVal = subtotalVal * 0.09;
+    const gstVal = cgstVal + sgstVal;
+
     const normalizedData = {
       ...resolvedData,
       invoice: {
         ...resolvedData.invoice,
         id: invoiceId,
-        total: `₹${total.toLocaleString("en-IN")}`
+        total: `₹${total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        subtotal: `₹${subtotalVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        cgst: `₹${cgstVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        sgst: `₹${sgstVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        gst: `₹${gstVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       },
       customer: {
         ...resolvedData.customer,
