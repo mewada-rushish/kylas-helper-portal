@@ -49,7 +49,7 @@ export async function POST(request, { params }) {
     await logSystemAction(
       "Incoming Webhooks",
       "success",
-      `Received payload at custom endpoint: /api/webhooks/incoming/${slugPath}`,
+      `Received payload at custom endpoint: ${pathname}`,
       JSON.stringify({ requestHeaders: headersList, requestBody: payload }, null, 2)
     );
 
