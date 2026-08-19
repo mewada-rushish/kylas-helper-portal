@@ -95,7 +95,7 @@ const DEFAULT_MARKUP_TEMPLATE = `<div style="padding: 30px; font-family: 'Poppin
   </div>
 
   <div style="margin-top: 40px; border-top: 1px dashed #cbd5e1; padding-top: 16px; text-align: center; color: #64748b; font-size: 11px;">
-    This accounts statement is secure, encrypted, and compiled via AsmitA Core ERP Infrastructure Stack.
+    This accounts statement is secure, encrypted, and compiled via AsmitA Core Infrastructure Stack.
   </div>
 </div>`;
 

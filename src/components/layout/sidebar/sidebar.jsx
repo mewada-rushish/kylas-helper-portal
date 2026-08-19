@@ -10,7 +10,7 @@ import styles from "./sidebar.module.css";
 const CENTRAL_NAVIGATION_ITEMS = [
   { id: "canvas", label: "Overview Canvas", icon: FiLayout, href: "/dashboard" },
   { id: "workflows", label: "Workflows", icon: FiGitBranch, href: "/workflows" },
-  { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, href: "/invoices" },
+  { id: "invoices", label: "Invoices", icon: FiCreditCard, href: "/invoices" },
   { id: "settings", label: "Settings", icon: FiSettings, href: "/settings" },
   { id: "users", label: "User Management", icon: FiUsers, href: "/users" }
 ];

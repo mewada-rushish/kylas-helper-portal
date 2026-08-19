@@ -264,7 +264,7 @@ export default function WorkflowSettings() {
   const categoryOptions = [
     { label: "All Categories", value: "ALL" },
     { label: "Kylas CRM", value: "Kylas" },
-    { label: "Payment / ERP", value: "Payment" },
+    { label: "Payment", value: "Payment" },
     { label: "Custom Hooks", value: "Custom" }
   ];
 

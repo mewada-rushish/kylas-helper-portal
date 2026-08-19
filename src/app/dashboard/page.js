@@ -182,7 +182,7 @@ export default function MasterDashboard() {
             </div>
 
             <div id="invoices" className={styles.sectionScrollOffset}>
-              <Accordion title="Financial ERP Ledger (BBPS)" icon={FiCreditCard}>
+              <Accordion title="Financial Ledger (BBPS)" icon={FiCreditCard}>
                 {renderBentoGrid("invoices")}
               </Accordion>
             </div>

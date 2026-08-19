@@ -1010,7 +1010,7 @@ export default function WorkflowCanvasEngine() {
   const sidebarMenuItems = [
     { id: "canvas", label: "Overview Canvas", icon: FiLayout, onClick: () => router.push('/dashboard') },
     { id: "workflows", label: "Workflows Builder", icon: FiGitBranch, onClick: () => router.push('/workflows') },
-    { id: "invoices", label: "Invoices & ERP", icon: FiCreditCard, onClick: () => router.push('/dashboard') },
+    { id: "invoices", label: "Invoices", icon: FiCreditCard, onClick: () => router.push('/dashboard') },
     { id: "settings", label: "Settings", icon: FiSettings, disabled: true }
   ];
 

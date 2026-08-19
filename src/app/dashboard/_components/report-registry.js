@@ -1,4 +1,4 @@
-/* --- ASMITA CLUB & ERP REPORT CATALOG --- */
+/* --- ASMITA CLUB REPORT CATALOG --- */
 export const REPORT_CATALOG = [
   // WORKFLOW METRICS
   { id: "lead_ingestion", title: "Kylas Lead Ingestion Velocity", partition: "workflows", defaultSize: "2x1", defaultVis: "line" },
