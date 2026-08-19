@@ -33,19 +33,36 @@ export async function POST(request) {
 
     const resetLink = `${process.env.NEXTAUTH_URL || request.headers.get("origin")}/reset-password?token=${resetToken}`;
 
-    // Try to send email if SMTP is configured
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT) || 587,
-          secure: process.env.SMTP_SECURE === "true",
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
+    let transporter;
 
+    // 1. Try OAuth2 (Recommended for company emails)
+    if (process.env.OAUTH_CLIENT_ID && process.env.OAUTH_CLIENT_SECRET && process.env.OAUTH_REFRESH_TOKEN && process.env.SMTP_USER) {
+      transporter = nodemailer.createTransport({
+        service: 'gmail', // Defaulting to gmail, can be changed based on provider
+        auth: {
+          type: 'OAuth2',
+          user: process.env.SMTP_USER,
+          clientId: process.env.OAUTH_CLIENT_ID,
+          clientSecret: process.env.OAUTH_CLIENT_SECRET,
+          refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+        }
+      });
+    } 
+    // 2. Try Basic SMTP (Username/Password)
+    else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+    }
+
+    if (transporter) {
+      try {
         await transporter.sendMail({
           from: `"AsmitA Admin Portal" <${process.env.SMTP_USER}>`,
           to: user.email,
@@ -69,7 +86,7 @@ export async function POST(request) {
       }
     } else {
       console.log("\n=================================");
-      console.log("SMTP not configured. Printing reset link to console:");
+      console.log("Email not configured. Printing reset link to console:");
       console.log(`[FORGOT PASSWORD LINK FOR ${user.email}]`);
       console.log(resetLink);
       console.log("=================================\n");
