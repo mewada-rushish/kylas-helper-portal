@@ -31,7 +31,10 @@ export async function POST(request) {
       },
     });
 
-    const resetLink = `${process.env.NEXTAUTH_URL || request.headers.get("origin")}/reset-password?token=${resetToken}`;
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.headers.get("origin");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const origin = host ? (host.startsWith('http') ? host : `${proto}://${host}`) : (process.env.NEXTAUTH_URL || "http://localhost:3000");
+    const resetLink = `${origin}/reset-password?token=${resetToken}`;
 
     let transporter;
 
