@@ -98,6 +98,8 @@ export const authOptions = {
 
         if (dbUser) {
           token.role = dbUser.role;
+          token.firstName = dbUser.firstName;
+          token.lastName = dbUser.lastName;
           token.customAccess = dbUser.customAccess ? JSON.parse(dbUser.customAccess) : [];
 
           if (dbUser.passwordChangedAt) {

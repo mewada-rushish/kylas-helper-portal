@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Sidebar from "@/components/layout/sidebar/sidebar";
-import { FiLock, FiCheck, FiLoader, FiAlertCircle } from "react-icons/fi";
+import { FiLock, FiCheck, FiLoader, FiAlertCircle, FiUser, FiMail } from "react-icons/fi";
 import { useSession, signOut } from "next-auth/react";
 import toast from "react-hot-toast";
 import styles from "./page.module.css";
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,7 +39,10 @@ export default function ProfilePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
       
-      toast.success("Profile updated successfully! Some changes might require a re-login to take effect.");
+      // Update local NextAuth session cache
+      await update();
+
+      toast.success("Profile updated successfully!");
       setIsEditingProfile(false);
     } catch (err) {
       toast.error(err.message);
@@ -114,12 +117,15 @@ export default function ProfilePage() {
             </div>
           </header>
 
-          <div className={styles.profileContent}>
+          <div className={styles.premiumDashboardFormGridCanvas}>
             {/* User Info Section */}
-            <section className={styles.settingsSection}>
-              <div className={styles.sectionHeader}>
-                <h2>Account Details</h2>
-                <p>Your current session information.</p>
+            <section className={styles.formSectionGridBlockCard}>
+              <div className={styles.sectionHeader} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <h2>Account Details</h2>
+                  <p>Your current session information.</p>
+                </div>
+                <span className={styles.infoBadge}>{session?.user?.role || "Unknown"}</span>
               </div>
               
               <div className={styles.sectionBody}>
@@ -137,47 +143,50 @@ export default function ProfilePage() {
                       <span className={styles.infoLabel}>Email</span>
                       <span className={styles.infoValue}>{session?.user?.email || "Loading..."}</span>
                     </div>
-                    <div className={styles.infoGroup}>
-                      <span className={styles.infoLabel}>Role</span>
-                      <span className={styles.infoBadge}>{session?.user?.role || "Unknown"}</span>
+                    <div className={styles.infoGroup} style={{ justifyContent: "flex-end", gridColumn: "1 / -1" }}>
+                      <button 
+                        onClick={() => setIsEditingProfile(true)} 
+                        className={styles.saveButtonSecondary} 
+                        style={{ marginTop: "8px" }}
+                      >
+                        Edit Profile
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => setIsEditingProfile(true)} 
-                      className={styles.saveButton} 
-                      style={{ marginTop: "8px", background: "transparent", color: "#4f46e5", border: "1px solid #4f46e5", padding: "10px 20px" }}
-                    >
-                      Edit Profile
-                    </button>
                   </>
                 ) : (
-                  <form onSubmit={handleProfileSave} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div className={styles.inputGroup}>
-                      <label>First Name</label>
-                      <div className={styles.inputWrapper}>
-                        <input 
-                          type="text" 
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          placeholder="e.g. John"
-                          disabled={isSavingProfile}
-                        />
+                  <form onSubmit={handleProfileSave} style={{ display: "flex", flexDirection: "column", gap: "16px", gridColumn: "1 / -1" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                      <div className={styles.inputGroup}>
+                        <label>First Name</label>
+                        <div className={styles.inputWrapper}>
+                          <FiUser className={styles.inputIcon} />
+                          <input 
+                            type="text" 
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder="e.g. John"
+                            disabled={isSavingProfile}
+                          />
+                        </div>
+                      </div>
+                      <div className={styles.inputGroup}>
+                        <label>Last Name</label>
+                        <div className={styles.inputWrapper}>
+                          <FiUser className={styles.inputIcon} />
+                          <input 
+                            type="text" 
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder="e.g. Doe"
+                            disabled={isSavingProfile}
+                          />
+                        </div>
                       </div>
                     </div>
                     <div className={styles.inputGroup}>
-                      <label>Last Name</label>
+                      <label>Email Address</label>
                       <div className={styles.inputWrapper}>
-                        <input 
-                          type="text" 
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
-                          placeholder="e.g. Doe"
-                          disabled={isSavingProfile}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.inputGroup}>
-                      <label>Email</label>
-                      <div className={styles.inputWrapper}>
+                        <FiMail className={styles.inputIcon} />
                         <input 
                           type="email" 
                           required
@@ -204,8 +213,7 @@ export default function ProfilePage() {
                           setFirstName(session?.user?.firstName || "");
                           setLastName(session?.user?.lastName || "");
                         }}
-                        className={styles.saveButton}
-                        style={{ background: "transparent", color: "#64748b", border: "1px solid #cbd5e1" }}
+                        className={styles.saveButtonSecondary}
                         disabled={isSavingProfile}
                       >
                         Cancel
@@ -217,13 +225,13 @@ export default function ProfilePage() {
             </section>
 
             {/* Change Password Section */}
-            <section className={styles.settingsSection}>
+            <section className={styles.formSectionGridBlockCard}>
               <div className={styles.sectionHeader}>
                 <h2>Change Password</h2>
                 <p>Ensure your account is using a long, random password to stay secure.</p>
               </div>
               <div className={styles.sectionBody}>
-                <form onSubmit={handlePasswordChange} className={styles.passwordForm}>
+                <form onSubmit={handlePasswordChange} className={styles.passwordForm} style={{ gridColumn: "1 / -1" }}>
                   
                   <div className={styles.inputGroup}>
                     <label>Current Password</label>
@@ -240,33 +248,35 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className={styles.inputGroup}>
-                    <label>New Password</label>
-                    <div className={styles.inputWrapper}>
-                      <FiLock className={styles.inputIcon} />
-                      <input 
-                        type="password" 
-                        required 
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password"
-                        disabled={isLoading}
-                      />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
+                    <div className={styles.inputGroup}>
+                      <label>New Password</label>
+                      <div className={styles.inputWrapper}>
+                        <FiLock className={styles.inputIcon} />
+                        <input 
+                          type="password" 
+                          required 
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new password"
+                          disabled={isLoading}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className={styles.inputGroup}>
-                    <label>Confirm New Password</label>
-                    <div className={styles.inputWrapper}>
-                      <FiCheck className={styles.inputIcon} />
-                      <input 
-                        type="password" 
-                        required 
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm your new password"
-                        disabled={isLoading}
-                      />
+                    <div className={styles.inputGroup}>
+                      <label>Confirm New Password</label>
+                      <div className={styles.inputWrapper}>
+                        <FiCheck className={styles.inputIcon} />
+                        <input 
+                          type="password" 
+                          required 
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm your new password"
+                          disabled={isLoading}
+                        />
+                      </div>
                     </div>
                   </div>
 
