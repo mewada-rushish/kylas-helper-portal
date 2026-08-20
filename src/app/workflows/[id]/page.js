@@ -8,7 +8,7 @@ import {
   FiLayout, FiCreditCard, FiSettings, FiArrowLeft, FiClock, 
   FiMove, FiGrid, FiPlus, FiList, FiCheckCircle, FiAlertCircle,
   FiCode, FiFileText, FiMinus, FiX, FiLoader, FiMoreVertical,
-  FiActivity, FiChevronDown, FiCheck, FiRotateCcw, FiCopy
+  FiActivity, FiChevronDown, FiCheck, FiRotateCcw, FiCopy, FiRefreshCw
 } from "react-icons/fi";
 import { JsonView } from 'react-json-view-lite';
 import Sidebar from "@/components/layout/sidebar/sidebar";
