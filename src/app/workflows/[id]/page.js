@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { 
@@ -1107,6 +1107,18 @@ export default function WorkflowCanvasEngine() {
     document.body.removeChild(textArea);
   };
 
+  const parsedSelectedContext = useMemo(() => {
+    if (!selectedLog?.context) return { _info: "No context available" };
+    try { return JSON.parse(selectedLog.context); } 
+    catch (e) { return { unparsable_raw_string: selectedLog.context }; }
+  }, [selectedLog?.context]);
+
+  const parsedSelectedLogs = useMemo(() => {
+    if (!selectedLog?.logs) return { _info: "No execution logs available" };
+    try { return JSON.parse(selectedLog.logs); } 
+    catch (e) { return { unparsable_raw_string: selectedLog.logs }; }
+  }, [selectedLog?.logs]);
+
   return (
     <div className={styles.adminLayout} onClick={closeContextMenu}>
       <Sidebar items={sidebarMenuItems} activeId="workflows" />
@@ -1860,6 +1872,13 @@ export default function WorkflowCanvasEngine() {
                 <div className={styles.logsListBlockColumn}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <h3>Recent Trigger Events</h3>
+                    <button 
+                      type="button"
+                      onClick={() => fetchLogs()}
+                      style={{ background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#334155' }}
+                    >
+                      <FiRefreshCw /> Refresh
+                    </button>
                   </div>
                   
                   <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexDirection: 'column' }}>
@@ -1950,15 +1969,7 @@ export default function WorkflowCanvasEngine() {
                           </button>
                         </div>
                         <div className={styles.jsonPreformattingBlock}>
-                          {(() => {
-                            let parsedData;
-                            try {
-                              parsedData = JSON.parse(selectedLog.context);
-                            } catch (e) {
-                              parsedData = { unparsable_raw_string: selectedLog.context };
-                            }
-                            return <JsonView data={parsedData} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />;
-                          })()}
+                          <JsonView data={parsedSelectedContext} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />
                         </div>
                       </div>
 
@@ -1981,15 +1992,7 @@ export default function WorkflowCanvasEngine() {
                           </button>
                         </div>
                         <div className={styles.jsonPreformattingBlock}>
-                          {(() => {
-                            let parsedData;
-                            try {
-                              parsedData = JSON.parse(selectedLog.logs);
-                            } catch (e) {
-                              parsedData = { unparsable_raw_string: selectedLog.logs };
-                            }
-                            return <JsonView data={parsedData} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />;
-                          })()}
+                          <JsonView data={parsedSelectedLogs} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />
                         </div>
                       </div>
                     </div>
