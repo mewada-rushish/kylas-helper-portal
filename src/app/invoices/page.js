@@ -709,7 +709,7 @@ export default function InvoicesListPage() {
                         const el = document.getElementById("invoice-preview-container");
                         if (el) {
                           const html2pdf = (await import("html2pdf.js")).default;
-                          html2pdf().from(el).set({ margin: 0, filename: `${activeInvoice.id}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).save();
+                          html2pdf().from(el).set({ margin: 0, filename: `${activeInvoice.id}.pdf`, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).save();
                         }
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><FiDownload /> <span>Download PDF</span></div>
