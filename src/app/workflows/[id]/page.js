@@ -1928,9 +1928,13 @@ export default function WorkflowCanvasEngine() {
                         </div>
                         <pre className={styles.jsonPreformattingBlock}>
                           {(() => {
+                            let raw = selectedLog.context || "";
+                            if (raw.length > 100000) {
+                              return raw.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - RAW UNFORMATTED DATA SHOWN. COPY TO CLIPBOARD TO VIEW FULL JSON]";
+                            }
                             let text = "";
-                            try { text = JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
-                            catch(e) { text = selectedLog.context || ""; }
+                            try { text = JSON.stringify(JSON.parse(raw), null, 2); } 
+                            catch(e) { text = raw; }
                             if (text.length > 50000) {
                               return text.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - COPY TO CLIPBOARD TO VIEW FULL PAYLOAD]";
                             }
@@ -1959,9 +1963,13 @@ export default function WorkflowCanvasEngine() {
                         </div>
                         <pre className={styles.jsonPreformattingBlock}>
                           {(() => {
+                            let raw = selectedLog.logs || "";
+                            if (raw.length > 100000) {
+                              return raw.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - RAW UNFORMATTED DATA SHOWN. COPY TO CLIPBOARD TO VIEW FULL JSON]";
+                            }
                             let text = "";
-                            try { text = JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
-                            catch(e) { text = selectedLog.logs || ""; }
+                            try { text = JSON.stringify(JSON.parse(raw), null, 2); } 
+                            catch(e) { text = raw; }
                             if (text.length > 50000) {
                               return text.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - COPY TO CLIPBOARD TO VIEW FULL PAYLOAD]";
                             }
