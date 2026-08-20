@@ -6,23 +6,8 @@ import CustomDropdown from "@/components/ui/dropdown/dropdown";
 import SkeletonLoader from "@/components/ui/skeleton/skeleton";
 import toast from "react-hot-toast";
 import styles from "./SystemLogs.module.css";
-import { JsonView } from 'react-json-view-lite';
+import Editor from "@monaco-editor/react";
 
-const customJsonStyles = {
-  container: styles.jsonContainer,
-  basicChildStyle: styles.jsonBasicChildStyle,
-  label: styles.jsonLabel,
-  nullValue: styles.jsonNullValue,
-  undefinedValue: styles.jsonUndefinedValue,
-  stringValue: styles.jsonStringValue,
-  booleanValue: styles.jsonBooleanValue,
-  numberValue: styles.jsonNumberValue,
-  otherValue: styles.jsonOtherValue,
-  punctuation: styles.jsonPunctuation,
-  collapseIcon: styles.jsonCollapseIcon,
-  expandIcon: styles.jsonExpandIcon,
-  collapsedContent: styles.jsonCollapsedContent,
-};
 
 // No INITIAL_LOGS anymore
 
@@ -308,8 +293,22 @@ export default function SystemLogs() {
               Dismiss View
             </button>
           </div>
-          <div className={styles.drawerCodeBlockTerminalBox}>
-            <JsonView data={activeInspectedLog} shouldExpandNode={() => true} style={customJsonStyles} />
+          <div className={styles.drawerCodeBlockTerminalBox} style={{ height: '400px', padding: 0, overflow: 'hidden' }}>
+            <Editor
+              height="100%"
+              defaultLanguage="json"
+              theme="vs-dark"
+              value={JSON.stringify(activeInspectedLog, null, 2)}
+              options={{
+                readOnly: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                folding: true,
+                lineNumbers: "off",
+                formatOnPaste: true,
+              }}
+            />
           </div>
         </div>
       )}

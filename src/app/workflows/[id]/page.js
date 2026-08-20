@@ -10,7 +10,7 @@ import {
   FiCode, FiFileText, FiMinus, FiX, FiLoader, FiMoreVertical,
   FiActivity, FiChevronDown, FiCheck, FiRotateCcw, FiCopy, FiRefreshCw
 } from "react-icons/fi";
-import { JsonView } from 'react-json-view-lite';
+import Editor from "@monaco-editor/react";
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
@@ -226,22 +226,6 @@ const NODE_TYPE_COLORS = {
   condition: "#fef3c7"
 };
 
-const customJsonStyles = {
-  container: styles.jsonContainer,
-  basicChildStyle: styles.jsonBasicChildStyle,
-  label: styles.jsonLabel,
-  nullValue: styles.jsonNullValue,
-  undefinedValue: styles.jsonUndefinedValue,
-  stringValue: styles.jsonStringValue,
-  booleanValue: styles.jsonBooleanValue,
-  numberValue: styles.jsonNumberValue,
-  otherValue: styles.jsonOtherValue,
-  punctuation: styles.jsonPunctuation,
-  collapseIcon: styles.jsonCollapseIcon,
-  expandIcon: styles.jsonExpandIcon,
-  collapsedContent: styles.jsonCollapsedContent,
-};
-
 export default function WorkflowCanvasEngine() {
   const router = useRouter();
   const params = useParams();
@@ -292,6 +276,9 @@ export default function WorkflowCanvasEngine() {
   const [logsDateRange, setLogsDateRange] = useState({ start: '', end: '' });
   const [versionsDateRange, setVersionsDateRange] = useState({ start: '', end: '' });
   const [selectedLog, setSelectedLog] = useState(null);
+  const [activeLogId, setActiveLogId] = useState(null);
+  const [isLoadingLogData, setIsLoadingLogData] = useState(false);
+  const fetchedLogsCache = useRef({});
   const [revertedVersion, setRevertedVersion] = useState(null);
   const pollIntervalRef = useRef(null);
 
@@ -442,6 +429,10 @@ export default function WorkflowCanvasEngine() {
           }
           return prev;
         });
+        
+        // Also update activeLogId if we don't have one but have a selected log
+        setActiveLogId(prev => prev || (data.logs.length > 0 && selectedLog ? selectedLog.id : null));
+        
         return data.logs;
       }
     } catch (e) {
@@ -1107,17 +1098,14 @@ export default function WorkflowCanvasEngine() {
     document.body.removeChild(textArea);
   };
 
-  const parsedSelectedContext = useMemo(() => {
-    if (!selectedLog?.context) return { _info: "No context available" };
-    try { return JSON.parse(selectedLog.context); } 
-    catch (e) { return { unparsable_raw_string: selectedLog.context }; }
-  }, [selectedLog?.context]);
-
-  const parsedSelectedLogs = useMemo(() => {
-    if (!selectedLog?.logs) return { _info: "No execution logs available" };
-    try { return JSON.parse(selectedLog.logs); } 
-    catch (e) { return { unparsable_raw_string: selectedLog.logs }; }
-  }, [selectedLog?.logs]);
+  const formatMonacoString = (str) => {
+    if (!str) return "{}";
+    try {
+      return JSON.stringify(JSON.parse(str), null, 2);
+    } catch(e) {
+      return str;
+    }
+  };
 
   return (
     <div className={styles.adminLayout} onClick={closeContextMenu}>
@@ -1904,21 +1892,39 @@ export default function WorkflowCanvasEngine() {
                     {filteredLogs.map((log) => (
                       <div 
                         key={log.id} 
-                        className={`${styles.logRowItemSummary} ${selectedLog?.id === log.id ? styles.logRowActiveSelected : ""}`}
-                        onClick={async () => {
-                          if (log.status === "PENDING" || log.status === "PENDING_TEST" || log.status === "RUNNING") {
-                            setSelectedLog(log);
+                        className={`${styles.logRowItemSummary} ${activeLogId === log.id ? styles.logRowActiveSelected : ""}`}
+                        onClick={() => {
+                          setActiveLogId(log.id);
+                          
+                          // Allow the browser to paint the active card state immediately before running heavy parsing/rendering
+                          setTimeout(async () => {
+                            if (log.status === "PENDING" || log.status === "PENDING_TEST" || log.status === "RUNNING") {
+                              setSelectedLog(log);
+                              return;
+                            }
+                          
+                          if (fetchedLogsCache.current[log.id]) {
+                            setSelectedLog(fetchedLogsCache.current[log.id]);
                             return;
                           }
+                          
+                          // Pre-select the log with stripped context to indicate a switch
+                          setSelectedLog({ ...log, context: null, logs: null });
+                          setIsLoadingLogData(true);
+                          
                           try {
                             const res = await fetch(`/api/workflows/${params.id}/logs/${log.id}`);
                             if (res.ok) {
                               const data = await res.json();
+                              fetchedLogsCache.current[log.id] = data.log;
                               setSelectedLog(data.log);
                             }
-                          } catch (e) {
-                            console.error(e);
-                          }
+                            } catch (e) {
+                              console.error(e);
+                            } finally {
+                              setIsLoadingLogData(false);
+                            }
+                          }, 10);
                         }}
                       >
                         <div className={styles.logLeftIndicatorMeta}>
@@ -1968,8 +1974,28 @@ export default function WorkflowCanvasEngine() {
                             <FiCopy size={14} />
                           </button>
                         </div>
-                        <div className={styles.jsonPreformattingBlock}>
-                          <JsonView data={parsedSelectedContext} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />
+                        <div className={styles.jsonPreformattingBlock} style={{ height: '400px', padding: 0, overflow: 'hidden' }}>
+                          {isLoadingLogData || !selectedLog.context ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+                               <FiLoader className={styles.spinningIcon} style={{ marginRight: '8px' }} /> Fetching payload...
+                            </div>
+                          ) : (
+                            <Editor
+                              height="100%"
+                              defaultLanguage="json"
+                              theme="vs-dark"
+                              value={formatMonacoString(selectedLog.context)}
+                              options={{
+                                readOnly: true,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                wordWrap: "on",
+                                folding: true,
+                                lineNumbers: "off",
+                                formatOnPaste: true,
+                              }}
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -1991,8 +2017,28 @@ export default function WorkflowCanvasEngine() {
                             <FiCopy size={14} />
                           </button>
                         </div>
-                        <div className={styles.jsonPreformattingBlock}>
-                          <JsonView data={parsedSelectedLogs} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />
+                        <div className={styles.jsonPreformattingBlock} style={{ height: '400px', padding: 0, overflow: 'hidden' }}>
+                          {isLoadingLogData || !selectedLog.logs ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+                               <FiLoader className={styles.spinningIcon} style={{ marginRight: '8px' }} /> Fetching execution trace...
+                            </div>
+                          ) : (
+                            <Editor
+                              height="100%"
+                              defaultLanguage="json"
+                              theme="vs-dark"
+                              value={formatMonacoString(selectedLog.logs)}
+                              options={{
+                                readOnly: true,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                wordWrap: "on",
+                                folding: true,
+                                lineNumbers: "off",
+                                formatOnPaste: true,
+                              }}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
