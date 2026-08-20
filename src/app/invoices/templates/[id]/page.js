@@ -111,6 +111,7 @@ const VARIABLE_DICTIONARY = [
   { token: "{{settings.companyName}}", description: "Company Legal Name" },
   { token: "{{settings.companyAddress}}", description: "Registered Corporate Address" },
   { token: "{{settings.logoUrl}}", description: "URL of the Company Logo" },
+  { token: "{{settings.signatureUrl}}", description: "URL of the Authorized Signatory" },
   { token: "{{settings.gstin}}", description: "Official GSTIN Identifier" },
   { token: "{{settings.panCode}}", description: "Corporate Identity PAN" }
 ];
@@ -152,6 +153,7 @@ export default function TemplateEditorWorkspace() {
       companyName: "AsmitA Club",
       companyAddress: "105, Naya Nagar Road, Naya Nagar, Mira Road East, Mira Bhayandar, Maharashtra 401107",
       logoUrl: "/uploads/logo-1783144818440.svg",
+      signatureUrl: "", // Users can use settings.signatureUrl to render signatures
       gstin: "27AAAAA0000A1Z5",
       panCode: "ABCDE1234F"
     }
