@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { AutomationEngine } from '@/lib/AutomationEngine';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request, { params }) {
   let routeId = null;
   let execId = null;
