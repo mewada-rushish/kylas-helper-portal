@@ -10,6 +10,7 @@ import {
   FiCode, FiFileText, FiMinus, FiX, FiLoader, FiMoreVertical,
   FiActivity, FiChevronDown, FiCheck, FiRotateCcw, FiCopy
 } from "react-icons/fi";
+import { JsonView } from 'react-json-view-lite';
 import Sidebar from "@/components/layout/sidebar/sidebar";
 import AdminButton from "@/components/ui/button/button";
 import Dropdown from "@/components/ui/dropdown/dropdown";
@@ -217,6 +218,28 @@ const getAvailableFieldsForNode = (nodeId, allNodes, allEdges, webhooks, recentC
   });
 
   return groupedFields;
+};
+
+const NODE_TYPE_COLORS = {
+  trigger: "#e0f2fe",
+  action: "#f1f5f9",
+  condition: "#fef3c7"
+};
+
+const customJsonStyles = {
+  container: styles.jsonContainer,
+  basicChildStyle: styles.jsonBasicChildStyle,
+  label: styles.jsonLabel,
+  nullValue: styles.jsonNullValue,
+  undefinedValue: styles.jsonUndefinedValue,
+  stringValue: styles.jsonStringValue,
+  booleanValue: styles.jsonBooleanValue,
+  numberValue: styles.jsonNumberValue,
+  otherValue: styles.jsonOtherValue,
+  punctuation: styles.jsonPunctuation,
+  collapseIcon: styles.jsonCollapseIcon,
+  expandIcon: styles.jsonExpandIcon,
+  collapsedContent: styles.jsonCollapsedContent,
 };
 
 export default function WorkflowCanvasEngine() {
@@ -1926,21 +1949,17 @@ export default function WorkflowCanvasEngine() {
                             <FiCopy size={14} />
                           </button>
                         </div>
-                        <pre className={styles.jsonPreformattingBlock}>
+                        <div className={styles.jsonPreformattingBlock}>
                           {(() => {
-                            let raw = selectedLog.context || "";
-                            if (raw.length > 100000) {
-                              return raw.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - RAW UNFORMATTED DATA SHOWN. COPY TO CLIPBOARD TO VIEW FULL JSON]";
+                            let parsedData;
+                            try {
+                              parsedData = JSON.parse(selectedLog.context);
+                            } catch (e) {
+                              parsedData = { unparsable_raw_string: selectedLog.context };
                             }
-                            let text = "";
-                            try { text = JSON.stringify(JSON.parse(raw), null, 2); } 
-                            catch(e) { text = raw; }
-                            if (text.length > 50000) {
-                              return text.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - COPY TO CLIPBOARD TO VIEW FULL PAYLOAD]";
-                            }
-                            return text;
+                            return <JsonView data={parsedData} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />;
                           })()}
-                        </pre>
+                        </div>
                       </div>
 
                       <div className={styles.jsonBlockWrapperContainer}>
@@ -1961,21 +1980,17 @@ export default function WorkflowCanvasEngine() {
                             <FiCopy size={14} />
                           </button>
                         </div>
-                        <pre className={styles.jsonPreformattingBlock}>
+                        <div className={styles.jsonPreformattingBlock}>
                           {(() => {
-                            let raw = selectedLog.logs || "";
-                            if (raw.length > 100000) {
-                              return raw.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - RAW UNFORMATTED DATA SHOWN. COPY TO CLIPBOARD TO VIEW FULL JSON]";
+                            let parsedData;
+                            try {
+                              parsedData = JSON.parse(selectedLog.logs);
+                            } catch (e) {
+                              parsedData = { unparsable_raw_string: selectedLog.logs };
                             }
-                            let text = "";
-                            try { text = JSON.stringify(JSON.parse(raw), null, 2); } 
-                            catch(e) { text = raw; }
-                            if (text.length > 50000) {
-                              return text.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - COPY TO CLIPBOARD TO VIEW FULL PAYLOAD]";
-                            }
-                            return text;
+                            return <JsonView data={parsedData} shouldExpandNode={(level) => level < 2} style={customJsonStyles} />;
                           })()}
-                        </pre>
+                        </div>
                       </div>
                     </div>
                   ) : (
