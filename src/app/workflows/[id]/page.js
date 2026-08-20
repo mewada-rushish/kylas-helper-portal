@@ -1928,8 +1928,13 @@ export default function WorkflowCanvasEngine() {
                         </div>
                         <pre className={styles.jsonPreformattingBlock}>
                           {(() => {
-                            try { return JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
-                            catch(e) { return selectedLog.context; }
+                            let text = "";
+                            try { text = JSON.stringify(JSON.parse(selectedLog.context), null, 2); } 
+                            catch(e) { text = selectedLog.context || ""; }
+                            if (text.length > 50000) {
+                              return text.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - COPY TO CLIPBOARD TO VIEW FULL PAYLOAD]";
+                            }
+                            return text;
                           })()}
                         </pre>
                       </div>
@@ -1954,8 +1959,13 @@ export default function WorkflowCanvasEngine() {
                         </div>
                         <pre className={styles.jsonPreformattingBlock}>
                           {(() => {
-                            try { return JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
-                            catch(e) { return selectedLog.logs; }
+                            let text = "";
+                            try { text = JSON.stringify(JSON.parse(selectedLog.logs), null, 2); } 
+                            catch(e) { text = selectedLog.logs || ""; }
+                            if (text.length > 50000) {
+                              return text.substring(0, 50000) + "\n\n... [TRUNCATED FOR PERFORMANCE - COPY TO CLIPBOARD TO VIEW FULL PAYLOAD]";
+                            }
+                            return text;
                           })()}
                         </pre>
                       </div>
