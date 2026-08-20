@@ -250,6 +250,17 @@ export default function WorkflowCanvasEngine() {
   const [saveStatus, setSaveStatus] = useState("All changes saved");
   const canvasRef = useRef(null);
 
+  useEffect(() => {
+    const savedTab = localStorage.getItem(`workflowTab_${params.id}`);
+    if (savedTab && ["builder", "versions", "logs"].includes(savedTab)) {
+      setActiveTab(savedTab);
+    }
+  }, [params.id]);
+
+  useEffect(() => {
+    localStorage.setItem(`workflowTab_${params.id}`, activeTab);
+  }, [activeTab, params.id]);
+
   // Testing & History States
   const [isTestingMode, setIsTestingMode] = useState(false);
   const [testExecution, setTestExecution] = useState(null);
