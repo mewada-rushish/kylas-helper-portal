@@ -10,6 +10,14 @@ export async function GET(request, { params }) {
     const versions = await prisma.workflowVersion.findMany({
       where: { workflowId: id },
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        workflowId: true,
+        versionName: true,
+        description: true,
+        author: true,
+        createdAt: true
+      },
       take: 50 // Limit to recent 50 versions
     });
 

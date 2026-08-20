@@ -10,6 +10,16 @@ export async function GET(request, { params }) {
     const logs = await prisma.workflowExecution.findMany({
       where: { workflowId: id },
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        workflowId: true,
+        triggerWebhookId: true,
+        status: true,
+        currentStepIndex: true,
+        errorMessage: true,
+        createdAt: true,
+        updatedAt: true
+      },
       take: 50 // Limit to recent 50 executions
     });
 

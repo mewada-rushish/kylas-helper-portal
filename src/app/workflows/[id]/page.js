@@ -414,7 +414,10 @@ export default function WorkflowCanvasEngine() {
         setSelectedLog(prev => {
           if (!prev) return prev;
           const updatedLog = data.logs.find(l => l.id === prev.id);
-          return updatedLog || prev;
+          if (updatedLog) {
+            return { ...prev, status: updatedLog.status, errorMessage: updatedLog.errorMessage, currentStepIndex: updatedLog.currentStepIndex, updatedAt: updatedLog.updatedAt };
+          }
+          return prev;
         });
         return data.logs;
       }
@@ -998,17 +1001,25 @@ export default function WorkflowCanvasEngine() {
     }
   };
 
-  const handleRevert = (ver) => {
+  const handleRevert = async (ver) => {
+    setIsSaving(true);
     try {
-      const config = JSON.parse(ver.config);
+      const fetchRes = await fetch(`/api/workflows/${params.id}/versions/${ver.id}`);
+      if (!fetchRes.ok) throw new Error("Failed to load version details");
+      const verData = await fetchRes.json();
+      
+      const config = JSON.parse(verData.version.config);
       if (config.nodes) setNodes(config.nodes);
       if (config.edges) setEdges(config.edges);
       
-      setRevertedVersion(ver.versionName);
+      setRevertedVersion(verData.version.versionName);
       setActiveTab("builder");
-      toast.success(`Loaded ${ver.versionName}. Click Save to confirm and make this active.`);
+      toast.success(`Loaded ${verData.version.versionName}. Click Save to confirm and make this active.`);
     } catch(e) {
       toast.error("Failed to parse version config.");
+      console.error(e);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1852,7 +1863,21 @@ export default function WorkflowCanvasEngine() {
                       <div 
                         key={log.id} 
                         className={`${styles.logRowItemSummary} ${selectedLog?.id === log.id ? styles.logRowActiveSelected : ""}`}
-                        onClick={() => setSelectedLog(log)}
+                        onClick={async () => {
+                          if (log.status === "PENDING" || log.status === "PENDING_TEST" || log.status === "RUNNING") {
+                            setSelectedLog(log);
+                            return;
+                          }
+                          try {
+                            const res = await fetch(`/api/workflows/${params.id}/logs/${log.id}`);
+                            if (res.ok) {
+                              const data = await res.json();
+                              setSelectedLog(data.log);
+                            }
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }}
                       >
                         <div className={styles.logLeftIndicatorMeta}>
                           {log.status === "SUCCESS" ? <FiCheckCircle className={styles.logSuccessStatusIcon} /> : (log.status === "FAILED" ? <FiAlertCircle className={styles.logFailStatusIcon} /> : <FiClock className={styles.logFailStatusIcon} style={{color: '#3b82f6'}} />)}
